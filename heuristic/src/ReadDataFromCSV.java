@@ -1,6 +1,5 @@
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -8,7 +7,6 @@ import java.util.ArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.xml.transform.OutputKeys;
 
 public class ReadDataFromCSV {
     private BufferedReader reader;
@@ -75,6 +73,7 @@ public class ReadDataFromCSV {
             Valueslist.add(temp);
         }
     }
+
 
     // read as IntValues, only when it is int.
     public void readIntValues(ArrayList<Integer[]> Valueslist) throws IOException{
