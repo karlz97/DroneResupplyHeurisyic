@@ -21,47 +21,106 @@ public class Orders {
                 if(orderNodeList[i].isRstr == true){
                     System.out.println("WARNING!!!! \t nodeData Problem IN <Order Class repeat>");
                 }else{
-                    OrderList[j].cstmNode = orderNodeList[i].getID(); 
-                    OrderList[j].T_expected = orderNodeList[i].T;
+                    OrderList[j].cstmNode = orderNodeList[i]; 
+                    OrderList[j].T_expected = orderNodeList[i].orderT;
                 }
                 
             }
             if(orderNodeList[i].isRstr == true){
-                OrderList[j].rstrNode = orderNodeList[i].getID(); 
-                OrderList[j].T_prepared = orderNodeList[i].T;
+                OrderList[j].rstrNode = orderNodeList[i]; 
+                OrderList[j].T_prepared = orderNodeList[i].orderT;
             }
         }
     }
+
+    boolean allDone(){
+        for (int i = 0; i < OrderList.length; i++){
+            if(!OrderList[i].isDelivered){
+                return false;
+            }
+        }
+        return true;
+    }
+
+    boolean checkConsitancy(){
+        // TODO
+        return true;
+    }
+
 }
 
 class Order {
-    int orderID;
-    int cstmNode;
-    int rstrNode;
+    int id;
+    Node cstmNode;
+    Node rstrNode; //这些都是指针，这不比用下标方便直接多了; 非也，调用距离矩阵的时候麻烦了
     double T_released;
     double T_prepared;
     double T_expected; 
+    boolean isReleased;
     boolean isPicked;
     boolean isDelivered;
 
-    public Order(int orderID){
-        this.orderID = orderID;
+    public Order(int id){
+        this.id = id;
+        isPicked = false;
+        isDelivered = false;
+        this.isReleased = true;
     }
 
-    public Order(int orderID, int cstmNode, int rstrNode, double T_prepared, double T_expected){
-        this.orderID = orderID;
+    public Order(int id, Node cstmNode, Node rstrNode, double T_prepared, double T_expected){
+        this(id);
         this.cstmNode = cstmNode;
         this.rstrNode = rstrNode;
         this.T_prepared = T_prepared;
         this.T_expected = T_expected;
     }
 
-    public Order(int cstmNode, int rstrNode, double T_prepared, double T_expected){
-        this.cstmNode = cstmNode;
-        this.rstrNode = rstrNode;
-        this.T_prepared = T_prepared;
-        this.T_expected = T_expected;
+
+    Node getNode(){
+        // return the cstm node if not picked, return the rstr node if not picked
+        if(isPicked == true){
+            return cstmNode;
+        }else{
+            return rstrNode;
+        }
+
     }
+
+    double getTime(){
+        /*  return the T_released if not released
+            return the T_prepared if not prepared
+            else return the T_expected
+        */
+        if(isReleased == false){
+            return T_released;
+        }else if(isPicked == false){
+            return T_prepared;
+        }else{
+            return T_expected;
+        }
+    }
+
+    boolean isFeasible(double arriveTime){
+        if(isReleased == false){
+            if (arriveTime >= T_released) {
+                return true; 
+            }else{
+                return false;
+            }
+        }else if(isPicked == false){
+            if (arriveTime >= T_prepared) {
+                return true;
+            }else{
+                return false;
+            }
+        }else if(isDelivered == false ){
+            return true;
+        }else{
+            return false;
+        }
+    }
+
+
 
 
 

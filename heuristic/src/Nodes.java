@@ -1,9 +1,9 @@
 /* Mainly for storing nodes data */
 
-public class Nodes{
+class Nodes{
     /**
     Design Decision: Nodes does not include the start and end nodes.
-    
+    Design Decision: Still use the Virtual Node idea to enable multiple visit to a dronebase node
     **/
     
     int numOfNodes = 0; //to count normal Node (emit the StartNode and EndNodes)
@@ -54,23 +54,15 @@ public class Nodes{
             }
         }
     }
-
-
-
-
-
-
-    
-
 }
 
 
 
 class Node {
-    int nodeID;
+    int id;
     double[] coord = new double[2];
     int orderNum;
-    double  T;   //storge the time information, 
+    double  orderT;   //storge the time information, 
                     //not useful in nodes, just use to initialize 'Orders'.
     String  nodeClass;
     boolean isSply; //isSuppliable?
@@ -78,8 +70,13 @@ class Node {
     boolean isRstr; //isRestaurant
     boolean isDrbs; //isDroneBase?
 
-    public Node(int id, double x, double y, int n, int o, double T /*, int idn*/){
-        nodeID = id;
+    double  T_courier = -1;
+    double  T_drone = -1;
+
+    public Node(){}
+
+    public Node(int id, double x, double y, int n, int o, double orderT /*, int idn*/){
+        this.id = id;
         coord[0] = (double)x;
         coord[1] = (double)y;
         orderNum = o;
@@ -112,12 +109,23 @@ class Node {
                 isDrbs = true;
                 break;
         }
-
     }
 
     public int getID(){
-        return this.nodeID;
+        return this.id;
     }
 }
 
  
+class StartEndNode extends Node{
+    char type;
+    public StartEndNode(int id, double x, double y, char c){
+        id = id;
+        coord[0] = (double)x;
+        coord[1] = (double)y;
+        if(c != 's' && c != 'e'){
+            System.out.println("WARNING!!!! \t Undefined StartEndNode Type");
+        }
+        type = c; 
+    }
+}
