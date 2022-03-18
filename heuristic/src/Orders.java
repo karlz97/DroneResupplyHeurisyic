@@ -56,6 +56,7 @@ class Order {
     double T_released;
     double T_prepared;
     double T_expected; 
+    double T_done = 10000;
     boolean isReleased;
     boolean isPicked;
     boolean isDelivered;
@@ -77,6 +78,7 @@ class Order {
 
 
     Node getNode(){
+        // automatically get the pickup/deliever node
         // return the cstm node if not picked, return the rstr node if not picked
         if(isPicked == true){
             return cstmNode;
@@ -120,6 +122,24 @@ class Order {
         }
     }
 
+    boolean update(){
+        // automatically update the status no matter it is a pickup or delivery
+        if(isReleased == false){
+            System.out.println("WARNING!!! Update to a [unrealeased] order");
+            return false;   //没有release无法update
+        }else if(isPicked == false && isDelivered == false){
+            isPicked = true;
+            return true;
+        }else if(isDelivered == false ){
+            isDelivered = true;
+            return true;
+        }else{
+            System.out.println("WARNING!!! Update to a [delivered] order");
+            return false;
+        }
+    }
+
+    
 
 
 

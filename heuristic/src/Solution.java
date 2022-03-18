@@ -1,6 +1,6 @@
 import java.util.ArrayList;
 import java.util.Arrays;
- class Solution {
+class Solution {
     Orders orders;
     Nodes nodes;
     double[][] distanceMatrix;
@@ -66,14 +66,16 @@ class TrivalSolution extends Solution {
     }
 
     public void initialGreedySolution(){ 
+        /*  currently assume only one courier.
+            [ known better approach exists. ]
+        */
         //initial the vehicle time = 0;
-        int couriertime = 0; 
+        double couriertime = 0;
         Order candidate;
         double eptArrivetime;
         Node temp;
-        // Until: All orders has been done.
-        
 
+        // Until: All orders has been done.
         while (orders.allDone()){
             double[] scoreList = new double[orders.numOfOrders];
 
@@ -82,24 +84,33 @@ class TrivalSolution extends Solution {
                 scoreList[i] = computeOrderPrioScore(orders.OrderList[i],courier.position); 
             }
     
-            // Loop: Choose the order with highest prio,
+            /*  Loop: Choose the feasible order with highest prio, add to the vehicle route
+                this loop is to take care the case that the highest prio node is not prepared(find the next feasible)
+                [ known better approach ]: 
+                change the time factor in compute PrioSocre: remaintime = max(the courier arrival time, feasible time) */
             int index;
             for(int i = 0; i < orders.numOfOrders; i++){
                 index = Functions.findMaxN(scoreList, i);
                 candidate = orders.OrderList[index];
-                eptArrivetime = courier.time + callNodeDistance(courier.position, candidate.getNode());
+                eptArrivetime = couriertime + callNodeDistance(courier.position, candidate.getNode());
                 // -- if the expected arrive time is feasible to pickup:
                 if(candidate.isFeasible(eptArrivetime)){
                     //update the vehicle time
+                    couriertime = eptArrivetime;
                     //add the node to the route
+                    courier.routeSeq.add(candidate.getNode());  //candidate.getNode() automatically get the pickup/deliever node
                     //update the order status, feasible order, etc..
-
+                    candidate.update();     //automatically update the status no matter it is a pickup or delivery
+                    //finished find the candidate, escape from the loop.
+                    break;
                 // -- else:
                 }else{
                     //pass this node and try the next node
+                    continue;
                 }
             }
-        }       
+        }
+
     }
 
     public double ObjfValue(){
