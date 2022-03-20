@@ -13,6 +13,19 @@ public class ReadDataFromCSV {
     private String[] tempStringsSet;
     private int Dim; 
 
+    static public Double[][] readDoubleToMatrix(String path) throws IOException{
+        // readData from csv
+        ArrayList<Double[]> dataInList = new ArrayList<Double[]>();
+        try {
+            ReadDataFromCSV csvReader = new ReadDataFromCSV(path);
+            csvReader.readDoubleValues(dataInList);
+            csvReader.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return  trun2Matirx(dataInList);
+    }
+
 
     public ReadDataFromCSV(String path) throws IOException{
         File infile = new File(path);
@@ -23,6 +36,9 @@ public class ReadDataFromCSV {
             //nothing
         }
     }
+
+    
+
 
     private void readCsvLine() throws IOException{
         String line = reader.readLine();
@@ -90,6 +106,17 @@ public class ReadDataFromCSV {
         }
     }
 
+    //Succeed.
+    public static Double[][] trun2Matirx(ArrayList<Double[]> Valueslist){
+        int numOfRow = Valueslist.size();
+        // System.out.println(numOfRow);
+        Double[][] outputMatrix = new Double[numOfRow][];
+        for (int i = 0; i < numOfRow; i++) {
+            outputMatrix[i] = Valueslist.get(i);
+        }
+
+        return outputMatrix;
+    }
 /*
     public void readIntValues3D(ArrayList<Integer[][]> Valueslist){
         Integer[][] temp = new Integer[this.Dim][];

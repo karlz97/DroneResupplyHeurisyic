@@ -1,9 +1,9 @@
 import java.util.ArrayList;
 import java.util.Arrays;
-class Solution {
+abstract class Solution {
     Orders orders;
     Nodes nodes;
-    double[][] distanceMatrix;
+    Double[][] distanceMatrix;
     Objfunction Objf;
 
     public Solution(Orders orders, Nodes nodes/*, Objfunction f*/){
@@ -12,9 +12,10 @@ class Solution {
         /*this.Objf = f;*/
     }
 
-    public Solution(Orders orders, Nodes nodes, double[][] distanceMatrix/*, Objfunction f*/){
+    public Solution(Orders orders, Nodes nodes, Double[][] distanceMatrix/*, Objfunction f*/){
         this.orders = orders;
         this.nodes = nodes;
+        this.distanceMatrix = distanceMatrix;
         /*this.Objf = f;*/
     }
 
@@ -22,7 +23,35 @@ class Solution {
         return distanceMatrix[node1.id][node2.id];
     }
 
-    public double computeOrderPrioScore(Order order, Node vehiclePosition){
+    public double computeOrderPrioScore(Order order, Vehicle courier){
+        Node orderNode;
+        double earilstPickup_lfn;  //earilst pickup time left from now
+        double prepared_lfn; //prepared time left from now
+        if (!order.isPicked){
+            orderNode = order.cstmNode;
+            prepared_lfn = order.T_prepared - courier.time;
+        } else{
+            orderNode = order.rstrNode;
+            prepared_lfn = 0;
+        }
+        
+        if (order.isDelivered){
+            return -1;
+        }
+
+        // Earilst pickup time left from now 
+        double distance = callNodeDistance(orderNode ,courier.position);
+        earilstPickup_lfn = Math.max(prepared_lfn, distance);
+
+        // how close is the expected delivery time
+        double remaintime = order.T_expected - courier.time;
+
+        double score = 10/remaintime + 10/earilstPickup_lfn; //note that remain time is also acoount by time.
+        // score is always a positive number
+        return score; 
+    }
+
+    public double computeOrderPrioScore_old(Order order, Node vehiclePosition){
         Node orderNode;
         if (!order.isPicked){
             orderNode = order.cstmNode;
@@ -52,6 +81,7 @@ class Solution {
         return score; 
     }
 
+
 }
 
 class TrivalSolution extends Solution {
@@ -59,29 +89,67 @@ class TrivalSolution extends Solution {
     Objfunction Objf; 
     ArrayList<Node> CourierRoute = new ArrayList<Node>();
 
-    public TrivalSolution(Orders orders, Nodes nodes, Objfunction f, Courier courier){
-        super(orders, nodes);
+    public TrivalSolution(Orders orders, Nodes nodes, Objfunction f, Courier courier, Double[][] truckDistanceMatrix){
+        super(orders, nodes, truckDistanceMatrix);
         this.Objf = f;
         this.courier = courier;
     }
 
-    public void initialGreedySolution(){ 
+    public void genGreedySolution(){ 
+        /*  currently assume only one courier.
+            [ known better approach exists. ]
+        */
+        //initial the vehicle time = 0;
+        //double couriertime = 0;
+        Order candidateOrder;
+        Node candidatNode;
+        double eptArrivetime;
+        int index;
+
+        // Until: All orders has been done.
+        while (!orders.allDone()){
+            double[] scoreList = new double[orders.numOfOrders];
+
+            // Compute the prioScore for every orders
+            for(int i = 0; i < orders.numOfOrders; i++){
+                scoreList[i] = computeOrderPrioScore(orders.OrderList[i],courier); 
+            }
+            /* choose one with highest order with priority score*/
+            index = Functions.findMax(scoreList);
+            candidateOrder = orders.OrderList[index];
+            candidatNode = candidateOrder.getNode();
+            
+            /* add route to the route ArrayList */
+            courier.routeSeq.add(candidatNode);
+
+            /* compute expected arrive time */
+            eptArrivetime = courier.time + callNodeDistance(courier.position, candidateOrder.getNode());
+            
+            /* update order, courier status */
+            candidateOrder.update(courier.time);
+            courier.position = candidatNode;
+            courier.time = eptArrivetime;
+        }
+    }
+
+    public void genGreedySolution_old(){ 
         /*  currently assume only one courier.
             [ known better approach exists. ]
         */
         //initial the vehicle time = 0;
         double couriertime = 0;
-        Order candidate;
+        Order candidateOrder;
+        Node candidatNode;
         double eptArrivetime;
-        Node temp;
+
 
         // Until: All orders has been done.
-        while (orders.allDone()){
+        while (!orders.allDone()){
             double[] scoreList = new double[orders.numOfOrders];
 
             // Compute the prioScore for every orders
             for(int i = 0; i < orders.numOfOrders; i++){
-                scoreList[i] = computeOrderPrioScore(orders.OrderList[i],courier.position); 
+                scoreList[i] = computeOrderPrioScore_old(orders.OrderList[i],courier.position); 
             }
     
             /*  Loop: Choose the feasible order with highest prio, add to the vehicle route
@@ -91,17 +159,22 @@ class TrivalSolution extends Solution {
             int index;
             for(int i = 0; i < orders.numOfOrders; i++){
                 index = Functions.findMaxN(scoreList, i);
-                candidate = orders.OrderList[index];
-                eptArrivetime = couriertime + callNodeDistance(courier.position, candidate.getNode());
+                candidateOrder = orders.OrderList[index];
+                eptArrivetime = couriertime + callNodeDistance(courier.position, candidateOrder.getNode());
                 // -- if the expected arrive time is feasible to pickup:
-                if(candidate.isFeasible(eptArrivetime)){
+                if(candidateOrder.isFeasible(eptArrivetime)){
+                    System.out.println("feasible ?");
+                    candidatNode = candidateOrder.getNode(); //candidateOrder.getNode() automatically get the pickup/deliever node
                     //update the vehicle time
                     couriertime = eptArrivetime;
                     //add the node to the route
-                    courier.routeSeq.add(candidate.getNode());  //candidate.getNode() automatically get the pickup/deliever node
-                    //update the order status, feasible order, etc..
-                    candidate.update();     //automatically update the status no matter it is a pickup or delivery
-                    //finished find the candidate, escape from the loop.
+                    courier.routeSeq.add(candidatNode);  
+                    //update the courier status & order status, feasible order, etc..
+                    courier.position = candidatNode;
+                    candidateOrder.update(couriertime);     //automatically update the status no matter it is a pickup or delivery
+                    System.out.println("candidateNode " + candidatNode);
+                    CourierRoute.add(candidatNode);
+                    //finished find the candidateOrder, escape from the loop.
                     break;
                 // -- else:
                 }else{
@@ -135,6 +208,15 @@ class Functions{
         return ( Math.sqrt((x1-x2)*(x1-x2) + (y1-y2)*(y1-y2)) );
     }
 
+    static public void printMatrix(Double[][] dataMatrix){
+        for (int i = 0; i < dataMatrix.length; i++) {
+            for (int j = 0; j <dataMatrix[i].length; j++) {  //testValue.get(0) 第一行元素的长度
+                System.out.print(dataMatrix[i][j]+"\t");
+            }
+            System.out.println();
+        }
+    }
+
     static public int findMax(double[] matrix){
         //only works for matrix has at least one positive numbers
         //Find the first max number in a matrix
@@ -164,17 +246,17 @@ class Functions{
         if(n == 0){
             if(temp[n] == temp[n+1]){
                 System.out.println("WARNING!!!! \t duplicate values Trouble in <findMaxN>");
-                return -1;
+                //return -1;
             }
         }else if(n == matrix.length-1){
             if(temp[n] == temp[n-1]){
                 System.out.println("WARNING!!!! \t duplicate values Trouble in <findMaxN>");
-                return -1;
+                //return -1;
             }
         }else{
             if(temp[n] == temp[n+1] || temp[n] == temp[n-1]){
                 System.out.println("WARNING!!!! \t duplicate values Trouble in <findMaxN>");
-                return -1;
+                //return -1;
             }
         }
         for(int i = 0; i < matrix.length; i++){

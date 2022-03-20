@@ -16,7 +16,9 @@ public class Orders {
         OrderList = new Order[numOfOrders];
         for (int i = 0; i < orderNodeList.length; i++ ){
             int j = orderNodeList[i].orderNum;   //降低了运行效率但是增加了可读性...
-            OrderList[j]  = new Order(j);
+            if(!(OrderList[j] != null )){
+                OrderList[j]  = new Order(j);   
+            }
             if(orderNodeList[i].isCstm == true){
                 if(orderNodeList[i].isRstr == true){
                     System.out.println("WARNING!!!! \t nodeData Problem IN <Order Class repeat>");
@@ -24,9 +26,9 @@ public class Orders {
                     OrderList[j].cstmNode = orderNodeList[i]; 
                     OrderList[j].T_expected = orderNodeList[i].orderT;
                 }
-                
             }
             if(orderNodeList[i].isRstr == true){
+                System.out.println("look " + orderNodeList[i].id);
                 OrderList[j].rstrNode = orderNodeList[i]; 
                 OrderList[j].T_prepared = orderNodeList[i].orderT;
             }
@@ -56,7 +58,7 @@ class Order {
     double T_released;
     double T_prepared;
     double T_expected; 
-    double T_done = 10000;
+    double T_delivered = 10000;
     boolean isReleased;
     boolean isPicked;
     boolean isDelivered;
@@ -122,7 +124,7 @@ class Order {
         }
     }
 
-    boolean update(){
+    boolean update(double time){
         // automatically update the status no matter it is a pickup or delivery
         if(isReleased == false){
             System.out.println("WARNING!!! Update to a [unrealeased] order");
@@ -132,6 +134,7 @@ class Order {
             return true;
         }else if(isDelivered == false ){
             isDelivered = true;
+            T_delivered = time;
             return true;
         }else{
             System.out.println("WARNING!!! Update to a [delivered] order");

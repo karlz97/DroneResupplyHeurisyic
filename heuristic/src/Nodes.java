@@ -16,42 +16,51 @@ class Nodes{
 
     public Nodes(Double[][] nodeData){
 
-        //count Numbers... 数组长度只能静态声明很烦,只能暂时记个数
+        /*count Numbers... 数组长度只能静态声明很烦,只能暂时记个数 */
         for (int i = 0; i < nodeData.length; i++) {
             Double[] temp = nodeData[i];
-            //count the number of normal Nodes
+            /*count the number of normal Nodes */
             if ( temp[3] < 0){    //emit the StartNode and EndNodes
                 continue;  
             }
             numOfNodes ++;
-            //count the number of order Nodes
-            if ( temp[3] < 300 && temp[3] >= 100){
+            /*count the number of order Nodes */
+            if ( temp[2] < 300 && temp[2] >= 100){
                 numOfOrderNode ++;
             }
         }
-        
-        //initialize NodeList[]
+    //System.out.println(numOfOrderNode);
+
+        /*initialize NodeList[] */
         NodeList = new Node[numOfNodes];
         numOfNodes = 0;
 
-        //initialize orderNodeList[]
+        /*initialize orderNodeList[] */
         orderNodeList = new Node[numOfOrderNode];
         numOfOrderNode = 0;
 
-        //fill the NodeList
+        /*fill the NodeList */
         for (int i = 0; i < nodeData.length; i++) {
             Double[] temp = nodeData[i];
-            //count the number of normal Nodes
+            /*count the number of normal Nodes */
             if ( temp[3] < 0){    //emit the StartNode and EndNodes
                 continue;  
             }
-            numOfNodes++;
-            NodeList[numOfNodes] = new Node(numOfNodes, temp[1], temp[2], temp[3].intValue(), temp[4].intValue(), temp[5]);
-            //count the number of order Nodes
-            if ( temp[3] < 300 && temp[3] >= 100){
+            NodeList[numOfNodes] = new Node(numOfNodes, temp[0], temp[1], temp[2].intValue(), temp[3].intValue(), temp[4]);
+
+            /* check */
+            //System.out.println("temp - x,y: " + temp[0] + ", " + temp[1]);
+            //System.out.println("node - x,y: " + NodeList[numOfNodes].coord[0] + ", " + NodeList[numOfNodes].coord[1]);
+
+
+            /*count the number of order Nodes */
+            if ( temp[2] < 300 && temp[2] >= 100){
+                //System.out.println(numOfOrderNode);
+                orderNodeList[numOfOrderNode] = NodeList[numOfNodes];
+                System.out.println("order - x,y: " + orderNodeList[numOfNodes].orderT + ", " + orderNodeList[numOfNodes].orderNum);
                 numOfOrderNode++;
-                NodeList[numOfOrderNode] = NodeList[numOfNodes];
             }
+            numOfNodes++;
         }
     }
 }
@@ -70,8 +79,8 @@ class Node {
     boolean isRstr; //isRestaurant
     boolean isDrbs; //isDroneBase?
 
-    double  T_courier = -1;
-    double  T_drone = -1;
+    double  T_courier = -1; //arrive time of courier
+    double  T_drone = -1;   //arrive time of drone
 
     public Node(){}
 
@@ -80,6 +89,7 @@ class Node {
         coord[0] = (double)x;
         coord[1] = (double)y;
         orderNum = o;
+        this.orderT = orderT;
         isSply = true;
         isDrbs = false;
         isCstm = false;
@@ -120,7 +130,7 @@ class Node {
 class StartEndNode extends Node{
     char type;
     public StartEndNode(int id, double x, double y, char c){
-        id = id;
+        this.id = id;
         coord[0] = (double)x;
         coord[1] = (double)y;
         if(c != 's' && c != 'e'){

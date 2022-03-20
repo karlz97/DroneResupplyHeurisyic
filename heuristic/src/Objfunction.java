@@ -1,17 +1,27 @@
+
 abstract class Objfunction {
     public abstract double computeObjValue(Solution s);
 }
 
-class ObjF_ODFDRS extends Objfunction {
+class ObjF_latePunish extends Objfunction {
+    double alpha; //paramter
+
+    ObjF_latePunish(double alpha){
+        this.alpha = alpha; 
+    }
 
     @Override
     public double computeObjValue(Solution s) {
         double ObjValue = 0;
-        for (i)
-        // TODO Auto-generated method stub
+        for ( Order ord : s.orders.OrderList){
+            ObjValue += objfByOne(ord);
+        }
         return ObjValue;
     }
 
+    private double objfByOne(Order ord){
+        return ord.T_delivered + alpha * Math.max((ord.T_delivered - ord.T_expected) , 0);
+    }
 
 }
 
