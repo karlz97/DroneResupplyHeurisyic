@@ -1,6 +1,6 @@
 
 abstract class Objfunction {
-    public abstract double computeObjValue(Solution s);
+    abstract public double computeObjValue(Solution s);
 }
 
 class ObjF_latePunish extends Objfunction {

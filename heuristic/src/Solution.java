@@ -1,5 +1,6 @@
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
 abstract class Solution {
     Orders orders;
     Nodes nodes;
@@ -18,6 +19,8 @@ abstract class Solution {
         this.distanceMatrix = distanceMatrix;
         /*this.Objf = f;*/
     }
+
+    abstract public void printSolution();
 
     public double callNodeDistance(Node node1 ,Node node2){
         return distanceMatrix[node1.id][node2.id];
@@ -72,7 +75,7 @@ abstract class Solution {
         double distance = Functions.computeNorm2Distance(x_order, y_order, x_vhcle, y_vhcle); */
         
         // DistanceMatrix approach 
-        double distance = callNodeDistance(orderNode ,vehiclePosition);
+        double distance = callNodeDistance(orderNode, vehiclePosition);
         // how close is the expected delivery time
         double remaintime = order.T_expected;
 
@@ -131,6 +134,14 @@ class TrivalSolution extends Solution {
             courier.time = eptArrivetime;
         }
     }
+
+    public void printSolution(){
+        for () {
+             
+            iterator.next();
+        }
+        
+    } 
 
     public void genGreedySolution_old(){ 
         /*  currently assume only one courier.

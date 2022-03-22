@@ -1,8 +1,7 @@
 import java.util.ArrayList;
 
 import javax.swing.text.Position;
-
-class Vehicle {
+abstract class Vehicle {
     int id;
     double speed;
     Node position;
