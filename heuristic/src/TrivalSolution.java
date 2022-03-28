@@ -11,7 +11,7 @@ class TrivalSolution extends Solution {
     Courier courier;
     Objfunction Objf; 
     Random rand = new Random();
-    ArrayList<Node> globalRouteSeq;
+    ArrayList<Node> globalRouteSeq = new ArrayList<Node>();
 
     public TrivalSolution(Orders orders, Nodes nodes, Objfunction f, Courier courier, Double[][] truckDistanceMatrix){
         super(orders, nodes, truckDistanceMatrix);
@@ -69,9 +69,7 @@ class TrivalSolution extends Solution {
         }
     }
 
-
-
-
+    /*              Heuristic               */
     public void LNS1(int maxIteration){
         ArrayList<Node> candidateRoute = new ArrayList<Node>();   //仅用于储存临时解，全局最优解在courier->roueSeq中
         candidateRoute.addAll(courier.routeSeq); //初始化临时解(对于List使用clone是不标准的操作)
@@ -92,7 +90,7 @@ class TrivalSolution extends Solution {
 
             /* insert heuristic */
          }
-
+         
 
     }
 
@@ -101,6 +99,7 @@ class TrivalSolution extends Solution {
     public void largeNeiborhoodSearch(){
 
     }
+
 
     public void genGreedySolution(){ 
         /*  currently assume only one courier.
@@ -147,10 +146,16 @@ class TrivalSolution extends Solution {
             courier.time = eptArrivetime;
             candidateOrder.update(courier.time);
         }
+
+        /* update globalSolution(globalRouteSeq) */
+        globalRouteSeq.clear();
+        globalRouteSeq.addAll(courier.routeSeq);
+
     }
     
 
-    /*          Herusitics          */
+
+    /*          Herusitics Method           */
     ArrayList<Order> shawRemoval_old(ArrayList<Node> routeSeq, int q, int p){  //a low efficiency implement, can be optimized a lot(the index of maxN problem)
         Order order_in = orders.OrderList[rand.nextInt(orders.OrderList.length)];    //randomly choose an order
         double[] relaArray = new double[orders.OrderList.length];
@@ -184,11 +189,17 @@ class TrivalSolution extends Solution {
 
         for (int i = 0; i < orderlistlen; i++) {
             double relatedness = order_relatedness(order_in, orders.OrderList[i]);
-            orderPool.inpool(relatedness, i);       //一趟循环下来，pool里面将所有relatedness排好序并带有对应的index
+            orderPool.inpool(relatedness, i);         //一趟循环下来，pool里面将所有relatedness排好序并带有对应的index
+            System.out.println("length:" + orderPool.length);
+            System.out.println("currlen:" + orderPool.currlen);
         }
+        System.out.println("orderlistlen:" + orderlistlen);
         for (int i = 0; i < q; i++) {
             int index = randomExpOne(p, orderlistlen);
+            System.out.println("index1:" + index);
+            System.out.println("currlen:" + orderPool.currlen);
             index = (int) orderPool.indexlist.get(index);  //convert the relatedness-index to the Order index 
+            System.out.println("index2:" + index);
             Order order = orders.OrderList[index];
             removedOrderList.add(order);
             routeSeq.remove(order.cstmNode);
@@ -240,7 +251,7 @@ class TrivalSolution extends Solution {
             /* inset delivery position */
             for (int j = i+1; j < Math.max(i + 2, length + 1); j++) {
                 toInsertList.add(j, order.cstmNode);
-                /* rebuild the solution base on the tempRoute */
+                /* rebuild the solution base on the tempR       oute */
                 instantiateSolution(toInsertList);
                 /* compute the ObjF & record the lowest k ObjF */
                 insertObjfPool.inpool( - ObjfValue(), toInsertList.clone()); //'- ObjfValue' inpool will save the max k, we need save the lowest k 
@@ -276,7 +287,7 @@ class TrivalSolution extends Solution {
         return relatedness;                         
     }
 
-    int randomExpOne(int p, int range){    
+    int randomExpOne(int p, float range){    
         /** 
          * get 1 with probability, 
          * bigger p, higher probability to get an int close or equal to one. 
@@ -285,13 +296,14 @@ class TrivalSolution extends Solution {
         float rd = rand.nextFloat();
         rd = (float) Math.pow(rd, p);
         int i;
-        for (i = 1; i < range + 1; i++) {
-            if ( i*div > rd) {
-                return i-1;
+        for (i = 1; i <= range; i++) {
+            if ( i*div >= rd) {
+                return (i-1);
             }
         }
         System.out.println("!!!     Error in <randomOne>");
-        return i-1;
+        System.out.println("range: " + range + ", randomNumber: " + rd + " i*div: " +  i*div + " i*div: " + div);
+        return (i-1);
     }
 
     ArrayList<Integer> randomExpOneList(int q, int p, int range){

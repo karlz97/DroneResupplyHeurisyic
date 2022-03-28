@@ -1,6 +1,8 @@
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.List;
 abstract class Solution {
     Orders orders;
     Nodes nodes;
@@ -104,6 +106,23 @@ class Functions{
         }
     }
 
+    static public void printRouteSeq(List<Node> routeSeq){
+        System.out.println("Routes: ");
+        for (Iterator<Node> it = routeSeq.iterator(); it.hasNext();) {
+            System.out.print( it.next().id + " --> ");
+        }
+        System.out.print("over");
+        System.out.println();
+    }
+
+    static public void printOrderList(List<Order> orderList){
+        System.out.println("OrderList: ");
+        for (Iterator<Order> it = orderList.iterator(); it.hasNext();) {
+            System.out.print( it.next().id + ", " );
+        }
+        System.out.println();
+    }
+
     static public int findMax(double[] matrix){
         //only works for matrix has at least one positive numbers
         //Find the first max number in a matrix
@@ -163,21 +182,22 @@ class OddPool {  //OddPool for 'ordered Pool'
     LinkedList<Double> list;
     LinkedList<Object> indexlist;
     int currlen;
-    int length;
+    final int length;
     public OddPool(int length) {
-        list = new LinkedList<Double>();
-        indexlist = new LinkedList<Object>();
+        list = new LinkedList<Double>(); 
+        indexlist = new LinkedList<Object>(); 
         this.currlen = 0;
         this.length = length;
     }
 
     public void inpool(double value, Object index){
+        System.out.println("currlen:" + currlen + "truelen" + list.size());
         if (currlen > 0 ) {
             if (value > list.getFirst() ){   //smaller than the last 
                 inhead(value, index);
-            } else if (value > list.getFirst() ) {
+            } else if (value > list.getLast() || currlen < length ) {
                 inbody(value, index);
-            }
+            } 
         } else {
             list.add(value);
             indexlist.add(index);
@@ -202,6 +222,10 @@ class OddPool {  //OddPool for 'ordered Pool'
             if ( value > list.get(i) ) {
                 list.add(i, value);
                 indexlist.add(i,index);
+                break;
+            } else {
+                list.addLast(value);
+                indexlist.addLast(index);
                 break;
             }
         }

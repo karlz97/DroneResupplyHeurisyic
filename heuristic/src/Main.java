@@ -28,7 +28,6 @@ public class Main {
     
         /* initialize Orders(by orderNodeList) */
         //System.out.println("foo" + nodes.NodeList[0].coord[1]);
-        //
         orders = new Orders(nodes.orderNodeList);  
         //System.out.println(orders.OrderList[2].id);
         //System.out.println(orders.OrderList[2].cstmNode.id);
@@ -46,13 +45,18 @@ public class Main {
 
         /* call generate greedy solution */
         solution.genGreedySolution();
-        
-        /* print route of solution */
         solution.printSolution();
-        System.out.println(solution.ObjfValue());
 
-        solution.instantiateSolution(courier.routeSeq);
-        System.out.println(solution.ObjfValue());
+        /* test on heuristics   */
+        ArrayList<Order> removedOrderList = solution.shawRemoval_fast(solution.courier.routeSeq, 2, 2);
+        Functions.printRouteSeq(courier.routeSeq);
+        Functions.printOrderList(removedOrderList);
+        //solution.regeretInsert(solution.courier.routeSeq, removedOrderList, 2);
+        Functions.printRouteSeq(courier.routeSeq);
+        
+        /* print route of solution 
+        solution.printSolution();
+        System.out.println(solution.ObjfValue());*/
 
         /*for (Order order : solution.orders.OrderList) {
             System.out.println(order.T_delivered);
