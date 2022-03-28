@@ -12,6 +12,7 @@ abstract class Vehicle {
 }
 
 
+
 class Courier extends Vehicle{
     public Courier(int id, double speed, Node startPosition){
         this.id = id;
@@ -19,6 +20,7 @@ class Courier extends Vehicle{
         this.position = startPosition; 
         this.time = 0;
         routeSeq = new ArrayList<Node>();
+        routeSeq.add(position); //将起始点加入
         timeSeq = new ArrayList<Integer>();
     }
 }

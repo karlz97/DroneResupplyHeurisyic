@@ -28,7 +28,7 @@ public class Orders {
                 }
             }
             if(orderNodeList[i].isRstr == true){
-                System.out.println("look " + orderNodeList[i].id);
+                //System.out.println("look " + orderNodeList[i].id);
                 OrderList[j].rstrNode = orderNodeList[i]; 
                 OrderList[j].T_prepared = orderNodeList[i].orderT;
             }
@@ -52,7 +52,7 @@ public class Orders {
 }
 
 class Order {
-    int id;
+    final int id;
     Node cstmNode;
     Node rstrNode; //这些都是指针，这不比用下标方便直接多了; 非也，调用距离矩阵的时候麻烦了
     double T_released;
@@ -62,22 +62,31 @@ class Order {
     boolean isReleased;
     boolean isPicked;
     boolean isDelivered;
-
+    
     public Order(int id){
         this.id = id;
+        isReleased = true;
         isPicked = false;
         isDelivered = false;
-        this.isReleased = true;
     }
 
     public Order(int id, Node cstmNode, Node rstrNode, double T_prepared, double T_expected){
         this(id);
         this.cstmNode = cstmNode;
         this.rstrNode = rstrNode;
+        this.T_released = 0;
         this.T_prepared = T_prepared;
         this.T_expected = T_expected;
     }
 
+    void reset_r(){  //reset order to released status
+        T_delivered = 10000;
+        isReleased = true;
+        isPicked = false;
+        isDelivered = false;
+        //cstmNode.reset();
+        //rstrNode.reset();
+    }
 
     Node getNode(){
         // automatically get the pickup/deliever node

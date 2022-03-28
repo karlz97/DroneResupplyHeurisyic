@@ -57,7 +57,7 @@ class Nodes{
             if ( temp[2] < 300 && temp[2] >= 100){
                 //System.out.println(numOfOrderNode);
                 orderNodeList[numOfOrderNode] = NodeList[numOfNodes];
-                System.out.println("order - x,y: " + orderNodeList[numOfNodes].orderT + ", " + orderNodeList[numOfNodes].orderNum);
+                //System.out.println("order - x,y: " + orderNodeList[numOfNodes].orderT + ", " + orderNodeList[numOfNodes].orderNum);
                 numOfOrderNode++;
             }
             numOfNodes++;
@@ -123,6 +123,11 @@ class Node {
 
     public int getID(){
         return this.id;
+    }
+
+    void reset(){
+        T_courier = -1;
+        T_drone = -1;
     }
 }
 
