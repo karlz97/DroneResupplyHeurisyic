@@ -106,6 +106,15 @@ class Functions{
         }
     }
 
+    static public ArrayList<Node> buildFromArray(Integer[] routeArray, Node startnode, Node[] NodeList){
+        ArrayList<Node> routeSeq = new ArrayList<>();
+        routeSeq.add(startnode);
+        for (int i = 0; i < routeArray.length; i++) {
+            routeSeq.add(NodeList[routeArray[i]]);
+        }
+        return routeSeq;
+    }
+
     static public void printRouteSeq(List<Node> routeSeq){
         System.out.println("Routes: ");
         for (Iterator<Node> it = routeSeq.iterator(); it.hasNext();) {
@@ -190,8 +199,17 @@ class OddPool {  //OddPool for 'ordered Pool'
         this.length = length;
     }
 
-    public void inpool(double value, Object index){
-        System.out.println("currlen:" + currlen + "truelen" + list.size());
+    public Object getitem(int i) {     // remove i and return indexlist[i]
+        Object item;
+        item = indexlist.get(i);
+        indexlist.remove(i);
+        list.remove(i);
+        currlen -- ;
+        return item;
+    }
+
+    public void inpool(double value, Object index) {
+        //System.out.println("currlen:" + currlen + "truelen" + list.size());
         if (currlen > 0 ) {
             if (value > list.getFirst() ){   //smaller than the last 
                 inhead(value, index);
@@ -206,7 +224,7 @@ class OddPool {  //OddPool for 'ordered Pool'
     }
 
 
-    private void inhead(double value, Object index){
+    private void inhead(double value, Object index) {
         list.addFirst(value);
         indexlist.addFirst(index);
         if (currlen == length) {

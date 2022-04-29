@@ -13,7 +13,8 @@ class TrivalSolution extends Solution {
     Random rand = new Random();
     ArrayList<Node> globalRouteSeq = new ArrayList<Node>();
 
-    public TrivalSolution(Orders orders, Nodes nodes, Objfunction f, Courier courier, Double[][] truckDistanceMatrix){
+    public TrivalSolution(Orders orders, Nodes nodes, Objfunction f, Courier courier, 
+            Double[][] truckDistanceMatrix){
         super(orders, nodes, truckDistanceMatrix);
         this.Objf = f;
         this.courier = courier;
@@ -27,7 +28,7 @@ class TrivalSolution extends Solution {
 
     public void printSolution(){
         System.out.println("Routes: ");
-        for (Iterator<Node> it = courier.routeSeq.iterator(); it.hasNext();) {
+        for (Iterator<Node> it = globalRouteSeq.iterator(); it.hasNext();) {
             System.out.print( it.next().id + " --> ");
         }
         if (orders.allDone()) {
@@ -35,6 +36,7 @@ class TrivalSolution extends Solution {
         }else{
             System.out.println("unfinieshed.");
         }
+        System.out.println("ObjF: " + ObjfValue());
     } 
 
 
@@ -69,29 +71,46 @@ class TrivalSolution extends Solution {
         }
     }
 
+    void instantiateSolution(){
+        instantiateSolution(globalRouteSeq);
+    }
+
     /*              Heuristic               */
-    public void LNS1(int maxIteration){
-        ArrayList<Node> candidateRoute = new ArrayList<Node>();   //仅用于储存临时解，全局最优解在courier->roueSeq中
-        candidateRoute.addAll(courier.routeSeq); //初始化临时解(对于List使用clone是不标准的操作)
-        /**
-         * optimize the solution *after* genGreedySolution
-         * remove heuristic: Random removal & shaw removal
-         * insert heuristic: Regret heuristic
-         */
-
-         /* Acceptance and Stopping Criteria */
-         int iter = 0;
-         while (iter < maxIteration) {
+    
+    /* LNS1
+     * optimize the solution *after* genGreedySolution
+     * --------------------- operation ---------------------
+     * remove heuristic: Shaw removal //& Random removal  
+     * insert heuristic: Regret heuristic
+     * no dynamic weight adjustment of different heuristics.
+     * 
+     */
+    public void LNS1(int maxIteration){ 
+        
+        /* 仅用于储存临时解，全局最优解在globalRouteSeq中 */
+        ArrayList<Node> candidateRoute = new ArrayList<Node>(courier.routeSeq);   
+        double minObjfValue = ObjfValue();
+        /* Acceptance and Stopping Criteria */
+        int iter = 0;
+        while (iter < maxIteration) {
             /* remove heuristic */
-
-                /* randomly choose a heuristic */
-                
-                /*  */
-
+            ArrayList<Order> removedOrderList = shawRemoval_fast(courier.routeSeq, 2, 2);
             /* insert heuristic */
-         }
-         
-
+            courier.routeSeq = regeretInsert(courier.routeSeq, removedOrderList, 2);
+            /* decide whether accept new solution */
+            instantiateSolution(courier.routeSeq);
+            double tempObjValue = ObjfValue();
+            if (tempObjValue < minObjfValue) {
+                minObjfValue = tempObjValue;
+                //candidateRoute = courier.routeSeq; 这样写会有bug，因为在下一轮while循环中 同样的 courier.routeSeq 会被 shawRemoval_fast
+                candidateRoute.clear(); candidateRoute.addAll(courier.routeSeq);
+                //System.out.println("miniObjValue: " + minObjfValue);
+                Functions.printRouteSeq(candidateRoute);
+            }
+            iter++;
+        }
+        globalRouteSeq = candidateRoute;
+        instantiateSolution();
     }
 
     
@@ -181,7 +200,7 @@ class TrivalSolution extends Solution {
         return removedOrderList;
     }
 
-    ArrayList<Order> shawRemoval_fast(ArrayList<Node> routeSeq, int q, int p){  //a low efficiency implement, can be optimized a lot(the index of maxN problem)
+    ArrayList<Order> shawRemoval_fast(ArrayList<Node> routeSeq, int q, int p){  
         int orderlistlen = orders.OrderList.length;
         Order order_in = orders.OrderList[rand.nextInt(orderlistlen)];    //randomly choose an order
         ArrayList<Order> removedOrderList = new ArrayList<Order>();
@@ -190,16 +209,13 @@ class TrivalSolution extends Solution {
         for (int i = 0; i < orderlistlen; i++) {
             double relatedness = order_relatedness(order_in, orders.OrderList[i]);
             orderPool.inpool(relatedness, i);         //一趟循环下来，pool里面将所有relatedness排好序并带有对应的index
-            System.out.println("length:" + orderPool.length);
-            System.out.println("currlen:" + orderPool.currlen);
         }
-        System.out.println("orderlistlen:" + orderlistlen);
+        //System.out.println("orderlistlen:" + orderlistlen);
         for (int i = 0; i < q; i++) {
-            int index = randomExpOne(p, orderlistlen);
-            System.out.println("index1:" + index);
-            System.out.println("currlen:" + orderPool.currlen);
-            index = (int) orderPool.indexlist.get(index);  //convert the relatedness-index to the Order index 
-            System.out.println("index2:" + index);
+            int index = randomExpOne(p, orderlistlen - i);
+            //index = (int) orderPool.indexlist.get(index);  //convert the relatedness-index to the Order index 
+            index = (int) orderPool.getitem(index);
+            //System.out.println("index2:" + index);
             Order order = orders.OrderList[index];
             removedOrderList.add(order);
             routeSeq.remove(order.cstmNode);
@@ -210,8 +226,12 @@ class TrivalSolution extends Solution {
 
     ArrayList<Order> randomRemoval(ArrayList<Node> routeSeq, int q){
         ArrayList<Order> removedOrderList = new ArrayList<Order>();
+        ArrayList<Order> toremoveOrderList = new ArrayList<Order>();
+        toremoveOrderList.addAll(Arrays.asList(orders.OrderList));
+
         for (int i = 0; i < q; i++) {
-            Order order = orders.OrderList[rand.nextInt(orders.OrderList.length)];
+            Order order = toremoveOrderList.get(rand.nextInt(toremoveOrderList.size()));
+            toremoveOrderList.remove(order);
             removedOrderList.add(order);
             routeSeq.remove(order.cstmNode);
             routeSeq.remove(order.rstrNode);
@@ -219,11 +239,12 @@ class TrivalSolution extends Solution {
         return removedOrderList;
     }
 
-    void regeretInsert(ArrayList<Node> toInsertList, ArrayList<Order> removedOrdersList, int k){
+    ArrayList<Node> regeretInsert(ArrayList<Node> toInsertList, ArrayList<Order> removedOrdersList, int k){
         int length = removedOrdersList.size();
-        //OddPool maxRegret = new OddPool(1);  //alternative common approach exist, but I just want to unify this kind of operation as Oddpool
+        //OddPool maxRegret = new OddPool(1);  
+        //alternative common approach exist, but I just want to unify this kind of operation as Oddpool
         for (int i = 0; i < length; i++) {
-            //insert the i_th order
+            /* insert the i_th order */ 
             double maxRegret = 0; int index_maxRegret = 0; ArrayList<Node> tempInsertList = new ArrayList<Node>();
             for (int j = 0; j < removedOrdersList.size(); j++) {
                 PseudoSolution presudoSol = regeretInsertOne(toInsertList, removedOrdersList.get(j), k);
@@ -234,10 +255,11 @@ class TrivalSolution extends Solution {
                     index_maxRegret = j;
                 }
             }
-            //update the 'toInsertList' and 'removedOrdersList'
+            /* update the 'toInsertList' and 'removedOrdersList' */
             removedOrdersList.remove(index_maxRegret);
-            toInsertList = tempInsertList;
+            toInsertList = tempInsertList; 
         }
+        return toInsertList;
     }
 
 
@@ -246,15 +268,18 @@ class TrivalSolution extends Solution {
         OddPool insertObjfPool = new OddPool(k + 1);
         /* test every insert position */
         /* insert pickup position  */
+        
         for (int i = 1; i < length + 1; i++) { //插入pickup node 从1开始可以插入，可插到最后。
-            toInsertList.add(i, order.rstrNode);
+            ArrayList<Node> toInsert_rstr = new ArrayList<Node>(toInsertList);
+            toInsert_rstr.add(i, order.rstrNode);
             /* inset delivery position */
             for (int j = i+1; j < Math.max(i + 2, length + 1); j++) {
-                toInsertList.add(j, order.cstmNode);
-                /* rebuild the solution base on the tempR       oute */
-                instantiateSolution(toInsertList);
+                ArrayList<Node> toInsert_cstm = new ArrayList<Node>(toInsert_rstr);
+                toInsert_cstm.add(j, order.cstmNode);
+                /* rebuild the solution base on the tempRoute */
+                instantiateSolution(toInsert_cstm);
                 /* compute the ObjF & record the lowest k ObjF */
-                insertObjfPool.inpool( - ObjfValue(), toInsertList.clone()); //'- ObjfValue' inpool will save the max k, we need save the lowest k 
+                insertObjfPool.inpool( - ObjfValue(), toInsert_cstm.clone()); //'- ObjfValue' inpool will save the max k, we need save the lowest k 
             }
         } 
         /* calculate the regretK, return the propInsertation */
