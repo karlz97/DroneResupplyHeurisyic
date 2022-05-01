@@ -11,15 +11,15 @@ class TrivalSolution extends Solution {
     Courier courier;
     Objfunction Objf; 
     Random rand = new Random();
-    ArrayList<Node> globalRouteSeq = new ArrayList<Node>();
+    ArrayList<Node> courierGlobalRouteSeq = new ArrayList<Node>();
 
     public TrivalSolution(Orders orders, Nodes nodes, Objfunction f, Courier courier, 
-            Double[][] truckDistanceMatrix){
+                       Double[][] truckDistanceMatrix){
         super(orders, nodes, truckDistanceMatrix);
         this.Objf = f;
         this.courier = courier;
-        vehicleList = new Vehicle[1];
-        vehicleList[0] = courier;
+        // vehicleList = new Vehicle[1];
+        // vehicleList[0] = courier;
     }
 
     public double ObjfValue(){
@@ -28,7 +28,7 @@ class TrivalSolution extends Solution {
 
     public void printSolution(){
         System.out.println("Routes: ");
-        for (Iterator<Node> it = globalRouteSeq.iterator(); it.hasNext();) {
+        for (Iterator<Node> it = courierGlobalRouteSeq.iterator(); it.hasNext();) {
             System.out.print( it.next().id + " --> ");
         }
         if (orders.allDone()) {
@@ -72,20 +72,20 @@ class TrivalSolution extends Solution {
     }
 
     void instantiateSolution(){
-        instantiateSolution(globalRouteSeq);
+        instantiateSolution(courierGlobalRouteSeq);
     }
 
     /*              Heuristic               */
     
     /* LNS1
      * optimize the solution *after* genGreedySolution
-     * --------------------- operation ---------------------
+     * --------------------- operator ---------------------
      * remove heuristic: Shaw removal //& Random removal  
      * insert heuristic: Regret heuristic
      * no dynamic weight adjustment of different heuristics.
      * 
      */
-    public void LNS1(int maxIteration){ 
+    public void LNS1t(int maxIteration){ 
         
         /* 仅用于储存临时解，全局最优解在globalRouteSeq中 */
         ArrayList<Node> candidateRoute = new ArrayList<Node>(courier.routeSeq);   
@@ -109,7 +109,7 @@ class TrivalSolution extends Solution {
             }
             iter++;
         }
-        globalRouteSeq = candidateRoute;
+        courierGlobalRouteSeq = candidateRoute;
         instantiateSolution();
     }
 
@@ -166,15 +166,15 @@ class TrivalSolution extends Solution {
             candidateOrder.update(courier.time);
         }
 
-        /* update globalSolution(globalRouteSeq) */
-        globalRouteSeq.clear();
-        globalRouteSeq.addAll(courier.routeSeq);
+        /* update globalSolution(courierGlobalRouteSeq) */
+        courierGlobalRouteSeq.clear();
+        courierGlobalRouteSeq.addAll(courier.routeSeq);
 
     }
     
 
 
-    /*          Herusitics Method           */
+    /*          Herusitics operators           */
     ArrayList<Order> shawRemoval_old(ArrayList<Node> routeSeq, int q, int p){  //a low efficiency implement, can be optimized a lot(the index of maxN problem)
         Order order_in = orders.OrderList[rand.nextInt(orders.OrderList.length)];    //randomly choose an order
         double[] relaArray = new double[orders.OrderList.length];

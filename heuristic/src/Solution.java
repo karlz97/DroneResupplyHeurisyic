@@ -92,6 +92,17 @@ abstract class Solution {
 
 class Functions{
     //for static functions only
+    static boolean debug = true;
+    static public void printAlert(String s){
+        System.out.println("\033[31;1m" + "\t<Alert!>\t" s + "\033[0m");
+    }
+
+    static public void printDebug(String s){
+        if (debug) {
+            System.out.println("\033[33m" + s + "\033[0m");
+        }
+    }
+
 
     static public double computeNorm2Distance(double x1, double y1, double x2, double y2){
         return ( Math.sqrt((x1-x2)*(x1-x2) + (y1-y2)*(y1-y2)) );

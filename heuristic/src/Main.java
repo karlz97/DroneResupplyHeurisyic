@@ -42,7 +42,7 @@ public class Main {
         solution.printSolution();    
 
         /* call LNS1 to improve the solution */
-        solution.LNS1(100); //finish in a acceptable time(less than 5 min) at 10,000,000 (千万次), 
+        solution.LNS1t(100); //finish in a acceptable time(less than 5 min) at 10,000,000 (千万次), 
         System.out.println("---------------------   LNS1(100) Solution  ---------------------");
         solution.printSolution();  
 
@@ -99,7 +99,7 @@ public class Main {
         Functions.printRouteSeq(courier.routeSeq);
         Functions.printOrderList(removedOrderList);
 
-        solution.globalRouteSeq = solution.regeretInsert(solution.courier.routeSeq, removedOrderList, 3);
+        solution.courierGlobalRouteSeq = solution.regeretInsert(solution.courier.routeSeq, removedOrderList, 3);
         solution.instantiateSolution(); 
         solution.printSolution();
         //System.out.println("ObjF: " + solution.ObjfValue());
