@@ -84,6 +84,8 @@ class Node {
     double  T_courier = -1; //arrive time of courier
     double  T_drone = -1;   //arrive time of drone
 
+    public Node() {}
+
     public Node(int id, double x, double y, int n, int o, double orderT /*, int idn*/){
         this.id = id;
         coord[0] = (double)x;

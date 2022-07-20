@@ -94,7 +94,7 @@ class Functions{
     //for static functions only
     static boolean debug = true;
     static public void printAlert(String s){
-        System.out.println("\033[31;1m" + "\t<Alert!>\t" s + "\033[0m");
+        System.out.println("\033[31;1m" + "\t<Alert!>\t" + s + "\033[0m");
     }
 
     static public void printDebug(String s){
@@ -247,7 +247,7 @@ class OddPool {  //OddPool for 'ordered Pool'
     }
 
     private void inbody(double value, Object index){
-        for (int i = 0; i < currlen; i++) {
+        for (int i = 0; i < currlen; i ++) {
             if ( value > list.get(i) ) {
                 list.add(i, value);
                 indexlist.add(i,index);
