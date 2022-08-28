@@ -55,15 +55,15 @@ class Drone extends Vehicle{
     double buildFlight(Node meetNode){
         Flight currFlight = flights.get(currFlight_id);
         while (currFlight.supplyNode != meetNode) {
-            /* check */
-            if (currFlight.launchNode != position) {
-                Functions.printAlert("in Drone.buildFlight: currFlight.launchNode != position");   
-                return -1;
-            }
+            // /* check */
+            // if (currFlight.launchNode != position) {
+            //     Functions.printAlert("in Drone.buildFlight: currFlight.launchNode != position");   
+            //     return -1;
+            // }
 
             currFlight.launchTime = this.time;
             currFlight.pickupTime = currFlight.launchTime 
-                 + callNodeDistance(currFlight.launchNode,currFlight.pickupNode);
+                + callNodeDistance(currFlight.launchNode,currFlight.pickupNode);
             currFlight.supplyTime = currFlight.pickupTime 
                 + callNodeDistance(currFlight.pickupNode,currFlight.supplyNode);
             currFlight.landTime = currFlight.supplyTime 
@@ -153,6 +153,8 @@ class Drone extends Vehicle{
 }
 
 class Flight{
+    //Flight defines as from one resupply node to another resupply node; not a drone base to another dorne base.
+
     boolean hasBuilt;
     double gapTime; //time between currently launch and last flight land.
     Node launchNode; double launchTime;

@@ -275,11 +275,12 @@ class TrivalSolution extends Solution {
             /* inset delivery position */
             for (int j = i+1; j < Math.max(i + 2, length + 1); j++) {
                 ArrayList<Node> toInsert_cstm = new ArrayList<Node>(toInsert_rstr);
-                toInsert_cstm.add(j, order.cstmNode);
+                toInsert_cstm.add(j, order.cstmNode);   //TODO: a lot can be optimized, there is no need for create a new array
                 /* rebuild the solution base on the tempRoute */
                 instantiateSolution(toInsert_cstm);
                 /* compute the ObjF & record the lowest k ObjF */
-                insertObjfPool.inpool( - ObjfValue(), toInsert_cstm.clone()); //'- ObjfValue' inpool will save the max k, we need save the lowest k 
+                insertObjfPool.inpool( - ObjfValue(), toInsert_cstm); 
+                //'- ObjfValue' inpool will save the max k, we need save the lowest k 
             }
         } 
         /* calculate the regretK, return the propInsertation */

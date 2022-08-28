@@ -54,7 +54,7 @@ class Nodes{
 
 
             /*count the number of order Nodes */
-            if ( temp[2] < 300 && temp[2] >= 100){
+            if ( temp[2] < 300 && temp[2] >= 100){    //only temp[2] between 100 - 299 are data belongs to orders. 
                 //System.out.println(numOfOrderNode);
                 orderNodeList[numOfOrderNode] = NodeList[numOfNodes];
                 //System.out.println("order - x,y: " + orderNodeList[numOfNodes].orderT + ", " + orderNodeList[numOfNodes].orderNum);
@@ -84,7 +84,7 @@ class Node {
     double  T_courier = -1; //arrive time of courier
     double  T_drone = -1;   //arrive time of drone
 
-    public Node() {}
+    public Node(){}
 
     public Node(int id, double x, double y, int n, int o, double orderT /*, int idn*/){
         this.id = id;

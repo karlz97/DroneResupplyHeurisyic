@@ -80,7 +80,7 @@ class Order {
     }
 
     void reset_r(){  //reset order to released status
-        T_delivered = 10000;
+        T_delivered = 10000; 
         isReleased = true;
         isPicked = false;
         isDelivered = false;

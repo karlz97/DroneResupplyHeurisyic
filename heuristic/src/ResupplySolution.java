@@ -30,8 +30,8 @@ class ResupplySolution extends TrivalSolution{
 
         /* try to instantiate solution by courier route untill the first meet node */
         Node currNode;      //temp variables to speedup the program
-        Order currOrder;    //temp variables
-        courier.position  = routeSeq.get(0); //deal with startnode
+        Order currOrder;    //temp variablesTODO 打电话联系保险TODO 打电话联系保险TODO 打电话联系保险
+        courier.position  = routeSeq.get(0); //deal      with startnode
         courier.time = 0;
         int i = 1; 
         for(; i<routeSeq.size(); i++) {  //start after the startnode
@@ -84,13 +84,17 @@ class ResupplySolution extends TrivalSolution{
      */
 
     public void LNS1r(int maxIteration){
-
+        
     } 
 
+
+
     /*          Herusitics operators           */
+
+    /*          destory operators               */
     ArrayList<Order> randomFlightRemoval(Drone drone, int removeNum){
         /* generate p-randomly choose a flight, remove it and its following flights */
-
+        
         return null;
     }
 
@@ -100,7 +104,9 @@ class ResupplySolution extends TrivalSolution{
         return null;
     }
 
-    ArrayList<Order> randomFlightCreate(Drone drone, int removeNum){
+    /*          repair operators            */
+
+    ArrayList<Order> randomFlightCreate(Drone drone, int removeNum){      
         /* generate p-randomly choose a flight, remove it and its following flights */
 
         return null;
