@@ -1,5 +1,6 @@
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -161,7 +162,6 @@ class Functions{
         return index;
     }
 
-
     static public int findMaxN(double[] matrix, int n){
         /* count n begin with 0 (0 == the bigest)
         only works for matrix has at least one positive numbers
@@ -194,7 +194,8 @@ class Functions{
         return -1;
     }
 
-    
+
+
 
 }
 

@@ -1,4 +1,9 @@
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+
 import javax.swing.text.Position;
 
 abstract class Vehicle {
@@ -6,12 +11,15 @@ abstract class Vehicle {
     double speed;
     Node position;
     double time;
+
+    
     public Vehicle(int id, double speed, Node startPosition){
         this.id = id;
         this.speed = speed;
         this.time = 0;
         this.position = startPosition; 
     }
+
 
     // ArrayList<Route> routeSeq //方便起见没有再创类，免得每次使用还得初始化
 }
@@ -35,6 +43,9 @@ class Drone extends Vehicle{
     ArrayList<Flight> flights;
     int currFlight_id = 0;
     Double[][] distanceMatrix;
+    LinkedList<Node>[] feasibleDeliverSet;
+    LinkedList<Node>[] feasibleTransferSet;
+    LinkedList<Node>[][] feasibleLandSet;
 
     public Drone(int id, double speed, Node startPosition, Double[][] distanceMatrix){
         super(id, speed, startPosition);
@@ -46,6 +57,18 @@ class Drone extends Vehicle{
         this.currFlight_id = 0;
     }
 
+
+    List<Flight> findFeasiFlight(Drone drone) {
+        List<Flight> feasibleFlight = new ArrayList<>();
+        //Begin with the last flight meetNode, find the possible next flights
+        Node tempPosition;
+        Flight lastFlight = flights.get(flights.size());
+        if(lastFlight.supplyNode != null) {
+            tempPosition = lastFlight.pickupNode;
+            int reservedMileage = MAXFILGHT - callNodeDistance(lastFlight., node2)
+        }
+        return feasibleFlight;
+    }
     
     /* This will build all flights from currflight_id untill meet the meetnode 
         build launchTime...(etc)...landTime, set flag: hasBuilt. 
@@ -149,6 +172,60 @@ class Drone extends Vehicle{
     public double callNodeDistance(Node node1 ,Node node2){
         return distanceMatrix[node1.id][node2.id];
     }
+
+    public void computeFeasibleFlight(Nodes nodes) {
+        //cancel the seting of dummy node(drone base)
+        Node[] nodeList = nodes.NodeList;
+        for (int i1 = 0; i1 < nodeList.length; i1++) {
+            Node n1 = nodeList[i1];
+            if (!n1.isDrbs) {
+                continue;
+            }
+            
+            for (int i2 = 0; i2 < nodeList.length; i2++) {
+                Node n2 = nodeList[i2];
+                Double dist1 = callNodeDistance(n1, n2);
+                if (!n2.isSply || dist1 > this.MAXFILGHT) {
+                    continue;
+                }
+                for (int j = 0; j < nodeList.length; j++) {
+                    Node m = nodeList[j];
+                    Double dist2 = callNodeDistance(n2, m) + dist1;
+                    if (!m.isDrbs || dist2 + dist1 > this.MAXFILGHT) {
+                        continue;
+                    }
+                    if (feasibleDeliverSet[n1.id] == null) {
+                        feasibleDeliverSet[n1.id] = new LinkedList<Node>();                
+                    }
+                    if (feasibleLandSet[n1.id][n2.id] == null) {
+                        feasibleLandSet[n1.id][n2.id] = new LinkedList<Node>();                
+                    }
+                    feasibleDeliverSet[n1.id].add(n2);
+                    feasibleLandSet[n1.id][n2.id].add(m);
+                }
+            }
+            
+            for (int j = 0; j < nodeList.length; j++) {
+                Node m = nodeList[j];
+                Double dist = callNodeDistance(n1, m);
+                if (!m.isDrbs || dist > this.MAXFILGHT) {
+                    continue;
+                }
+                if (feasibleTransferSet[n1.id] == null) {
+                    feasibleTransferSet[n1.id] = new LinkedList<Node>();                
+                }
+                feasibleTransferSet[n1.id].add(m);
+            }
+            
+        }
+    } 
+
+
+    public void geteasibleFlight(Drone drone) {
+        this.feasibleDeliverSet = drone.feasibleDeliverSet;
+        this.feasibleLandSet = drone.feasibleLandSet;
+        this.feasibleTransferSet = drone.feasibleTransferSet;
+    } 
 
 }
 

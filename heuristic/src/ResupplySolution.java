@@ -145,9 +145,11 @@ class ResupplySolution extends TrivalSolution{
 
     /*          repair operators            */
 
+
     ArrayList<Order> randomSupplyFlightCreate(Drone drone){      
         /* generate p-randomly choose a flight, remove it and its following flights */
-        ArrayList
+        int r = rand.nextInt(drone.flights.size());
+        
         return null;
     }
 
