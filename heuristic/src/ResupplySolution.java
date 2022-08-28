@@ -4,8 +4,6 @@ import java.util.ArrayList;
 class ResupplySolution extends TrivalSolution{
     Drone drone;    //drone and courier are per Solution resources use as memory to instantiate solution
     Double[][] drone_distanceMatrix;
-
-
     public ResupplySolution(Orders orders, Nodes nodes, Objfunction f, Courier courier, Drone drone,
             Double[][] truckDistanceMatrix) {
         super(orders, nodes, f, courier, truckDistanceMatrix);
@@ -92,27 +90,68 @@ class ResupplySolution extends TrivalSolution{
     /*          Herusitics operators           */
 
     /*          destory operators               */
-    ArrayList<Order> randomFlightRemoval(Drone drone, int removeNum){
-        /* generate p-randomly choose a flight, remove it and its following flights */
-        
-        return null;
+    /* Randomly remove a Flight and its following flights from a drone */
+    void randomFlightRemovalOne(Drone drone){
+        /* generate randomly choose a flight, remove it and its following flights */
+        int r = rand.nextInt(drone.flights.size());
+        //Add the picked node's and the subsequence nodes' corresbonding orders to the 'removedOrderList' 
+        //+ remove the cooresbounding deliver node
+        for (int j = r; j < drone.flights.size(); j++) {
+            Flight f =  drone.flights.get(j);
+            Node pickupNode =  f.pickupNode;
+            if (pickupNode != null) {
+                Order o = orders.OrderList[pickupNode.orderNum];
+                // remove the corresponding delivery node
+                this.removedOrderList.add(o);
+                // remove the corresbounding delivery node
+                Node deliveryNode = o.cstmNode;
+                courier.routeSeq.remove(deliveryNode);
+            }
+        }
+        //Remove the picked node and the subsequence nodes from flights
+        drone.flights.subList(r, drone.flights.size() - 1).clear();
+        return;
     }
 
+    /* Randomly choose a flight and cancel its supply task */
+    void randomSupplyRemovalOne(Drone drone){
+        int r = rand.nextInt(drone.flights.size());
+        Flight f =  drone.flights.get(r);
+        Node pickupNode = f.pickupNode;
+        if (pickupNode != null) {
+            Order o = orders.OrderList[pickupNode.orderNum];
+            //add order to removedOrderList
+            this.removedOrderList.add(o);
+            // remove the corresponding delivery node
+            Node deliveryNode = o.cstmNode;
+            courier.routeSeq.remove(deliveryNode);
+            // remove the supply task from flight
+            pickupNode = null;
+            f.supplyNode = null;
+        }
+        return;
+    }
 
-    ArrayList<Order> randomSupplyRemoval(Drone drone, int removeNum){
-        
-        return null;
+    void removeUselessResupplyNode(Courier courier){
+        ArrayList<Node> route = courier.routeSeq;
+        for (int i = 0; i < route.size(); i++) {
+            Node n = route.get(i);
+            if (n.orderNum == -1 && !n.isMeet) {
+                route.remove(i);
+            }
+        }
+        return;
     }
 
     /*          repair operators            */
 
-    ArrayList<Order> randomFlightCreate(Drone drone, int removeNum){      
+    ArrayList<Order> randomSupplyFlightCreate(Drone drone){      
         /* generate p-randomly choose a flight, remove it and its following flights */
-
+        ArrayList
         return null;
     }
 
-    ArrayList<Order> randomSupplyCreate(Drone drone, int removeNum){
+    ArrayList<Order> randomTransferFlightCreate(Drone drone, int removeNum){
         
         return null;
     }

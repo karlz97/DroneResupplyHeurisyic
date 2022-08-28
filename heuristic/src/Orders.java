@@ -53,6 +53,8 @@ public class Orders {
 
 class Order {
     final int id;
+    Vehicle deliVehicle;
+    Vehicle pickVehicle;
     Node cstmNode;
     Node rstrNode; //这些都是指针，这不比用下标方便直接多了; 非也，调用距离矩阵的时候麻烦了
     double T_released;
@@ -133,15 +135,17 @@ class Order {
         }
     }
 
-    boolean update(double time){
+    boolean update(Vehicle vehicle, double time){
         // automatically update the status no matter it is a pickup or delivery
         if(isReleased == false){
             System.out.println("WARNING!!! Update to a [unrealeased] order");
             return false;   //没有release无法update
         }else if(isPicked == false && isDelivered == false){
+            pickVehicle = vehicle;
             isPicked = true;
             return true;
         }else if(isDelivered == false ){
+            deliVehicle = vehicle;
             isDelivered = true;
             T_delivered = time;
             return true;

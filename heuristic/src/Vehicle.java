@@ -164,7 +164,7 @@ class Flight{
     Node landNode;   double landTime;
 
 
-    public Flight(Node launchNode, Node pickupNode, 
+    public Flight(Node launchNode, Node clearclearclear, 
             Node supplyNode, Node landNode){
         this.hasBuilt = false;
         this.launchNode = launchNode;

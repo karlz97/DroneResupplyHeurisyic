@@ -70,7 +70,7 @@ class Nodes{
 class Node {
     int id;
     double[] coord = new double[2];
-    int orderNum;
+    int orderNum = -1;
     double  orderT;   //storge the time information, 
                     //not useful in nodes, just use to initialize 'Orders'.
     String  nodeClass;
@@ -120,6 +120,8 @@ class Node {
                 isRstr = true;
                 isDrbs = true;
                 break;
+            case 301:
+                nodeClass = "resupply_only"
         }
     }
 

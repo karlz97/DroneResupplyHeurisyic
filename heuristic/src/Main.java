@@ -42,7 +42,7 @@ public class Main {
         solution.printSolution();    
 
         /* call LNS1 to improve the solution */
-        solution.LNS1t(100); //finish in a acceptable time(less than 5 min) at 10,000,000 (千万次), 
+        solution.LNS1t(1000,3); //finish in a acceptable time(less than 5 min) at 10,000,000 (千万次), 
         System.out.println("---------------------   LNS1(100) Solution  ---------------------");
         solution.printSolution();  
 

@@ -11,6 +11,7 @@ class TrivalSolution extends Solution {
     Courier courier;
     Objfunction Objf; 
     Random rand = new Random();
+    ArrayList<Order> removedOrderList;
     ArrayList<Node> courierGlobalRouteSeq = new ArrayList<Node>();
 
     public TrivalSolution(Orders orders, Nodes nodes, Objfunction f, Courier courier, 
@@ -62,7 +63,7 @@ class TrivalSolution extends Solution {
             if(currNode.orderNum != -1){    //if it is an order node, update the order
                 currOrder = orders.OrderList[currNode.orderNum];
                 courier.time = earlistExecuteTime(currOrder, courier); //Because during a feasible solution route, it always pickup first.
-                currOrder.update(courier.time);  //For more structured progame and mode reuse, here is couples of overhead 
+                currOrder.update(courier, courier.time);  //For more structured progame and mode reuse, here is couples of overhead 
             }else{                          //if it is not an order node, don't need update the order
                 courier.time = earlistExecuteTime(currNode, courier);
             }
@@ -85,7 +86,7 @@ class TrivalSolution extends Solution {
      * no dynamic weight adjustment of different heuristics.
      * 
      */
-    public void LNS1t(int maxIteration){ 
+    public void LNS1t(int maxIteration, int sizeOfNeiborhood){ 
         
         /* 仅用于储存临时解，全局最优解在globalRouteSeq中 */
         ArrayList<Node> candidateRoute = new ArrayList<Node>(courier.routeSeq);   
@@ -94,9 +95,9 @@ class TrivalSolution extends Solution {
         int iter = 0;
         while (iter < maxIteration) {
             /* remove heuristic */
-            ArrayList<Order> removedOrderList = shawRemoval_fast(courier.routeSeq, 2, 2);
+            shawRemoval_fast(courier.routeSeq, sizeOfNeiborhood, 2);
             /* insert heuristic */
-            courier.routeSeq = regeretInsert(courier.routeSeq, removedOrderList, 2);
+            courier.routeSeq = regeretInsert(courier.routeSeq, removedOrderList, 3);
             /* decide whether accept new solution */
             instantiateSolution(courier.routeSeq);
             double tempObjValue = ObjfValue();
@@ -163,7 +164,7 @@ class TrivalSolution extends Solution {
             /* update order, courier status */
             courier.position = candidatNode;
             courier.time = eptArrivetime;
-            candidateOrder.update(courier.time);
+            candidateOrder.update(courier, courier.time);
         }
 
         /* update globalSolution(courierGlobalRouteSeq) */
@@ -175,39 +176,18 @@ class TrivalSolution extends Solution {
 
 
     /*          Herusitics operators           */
-    ArrayList<Order> shawRemoval_old(ArrayList<Node> routeSeq, int q, int p){  //a low efficiency implement, can be optimized a lot(the index of maxN problem)
-        Order order_in = orders.OrderList[rand.nextInt(orders.OrderList.length)];    //randomly choose an order
-        double[] relaArray = new double[orders.OrderList.length];
-        ArrayList<Order> removedOrderList = new ArrayList<Order>();
-
-        for (int i = 0; i < relaArray.length; i++) {
-            relaArray[i] = order_relatedness(order_in, orders.OrderList[i]);
-        }
-        /* get the remove list by randomness (index by relatedness), no duplicate */
-        ArrayList<Integer> removList = randomExpOneList(q, p, orders.OrderList.length);  
-        /* convert the relatedness-index to the Order index */
-
-        for (int i = 0; i < removList.size(); i++){          
-            //           
-            int index  = Functions.findMaxN(relaArray, removList.get(i));  // [Notice] Here also has probability get the same index
-            //
-            System.out.println("removeIndex: " + removList.get(i) + ","  + index);
-            Order order = orders.OrderList[index];
-            removedOrderList.add(order);
-            routeSeq.remove(order.cstmNode);
-            routeSeq.remove(order.rstrNode);
-        }
-        return removedOrderList;
-    }
-
-    ArrayList<Order> shawRemoval_fast(ArrayList<Node> routeSeq, int q, int p){  
+    void shawRemoval_fast(ArrayList<Node> routeSeq, int q, int p){  //q is the number of orders been removed
         int orderlistlen = orders.OrderList.length;
         Order order_in = orders.OrderList[rand.nextInt(orderlistlen)];    //randomly choose an order
-        ArrayList<Order> removedOrderList = new ArrayList<Order>();
+        //ArrayList<Order> removedOrderList = new ArrayList<Order>();
         OddPool orderPool = new OddPool(orderlistlen);
 
         for (int i = 0; i < orderlistlen; i++) {
-            double relatedness = order_relatedness(order_in, orders.OrderList[i]);
+            Order o = orders.OrderList[i];
+            if (o.pickVehicle != courier || o.deliVehicle != courier) {
+                continue;
+            }
+            double relatedness = order_relatedness(order_in, o);
             orderPool.inpool(relatedness, i);         //一趟循环下来，pool里面将所有relatedness排好序并带有对应的index
         }
         //System.out.println("orderlistlen:" + orderlistlen);
@@ -221,22 +201,26 @@ class TrivalSolution extends Solution {
             routeSeq.remove(order.cstmNode);
             routeSeq.remove(order.rstrNode);
         }
-        return removedOrderList;
+        //return removedOrderList;
     }
 
-    ArrayList<Order> randomRemoval(ArrayList<Node> routeSeq, int q){
-        ArrayList<Order> removedOrderList = new ArrayList<Order>();
+    void randomRemoval(ArrayList<Node> routeSeq, int q){
+        //ArrayList<Order> removedOrderList = new ArrayList<Order>();
         ArrayList<Order> toremoveOrderList = new ArrayList<Order>();
         toremoveOrderList.addAll(Arrays.asList(orders.OrderList));
 
         for (int i = 0; i < q; i++) {
-            Order order = toremoveOrderList.get(rand.nextInt(toremoveOrderList.size()));
-            toremoveOrderList.remove(order);
-            removedOrderList.add(order);
-            routeSeq.remove(order.cstmNode);
-            routeSeq.remove(order.rstrNode);
+            Order o = toremoveOrderList.get(rand.nextInt(toremoveOrderList.size()));
+            if (o.pickVehicle != courier || o.deliVehicle != courier) {
+                i--;
+                continue;
+            }
+            toremoveOrderList.remove(o);
+            removedOrderList.add(o);
+            routeSeq.remove(o.cstmNode);
+            routeSeq.remove(o.rstrNode);
         }
-        return removedOrderList;
+        //return removedOrderList;
     }
 
     ArrayList<Node> regeretInsert(ArrayList<Node> toInsertList, ArrayList<Order> removedOrdersList, int k){
@@ -275,7 +259,7 @@ class TrivalSolution extends Solution {
             /* inset delivery position */
             for (int j = i+1; j < Math.max(i + 2, length + 1); j++) {
                 ArrayList<Node> toInsert_cstm = new ArrayList<Node>(toInsert_rstr);
-                toInsert_cstm.add(j, order.cstmNode);   //TODO: a lot can be optimized, there is no need for create a new array
+                toInsert_cstm.add(j, order.cstmNode);   //TODO: a lot can be optimized, there is no need for create a new array?
                 /* rebuild the solution base on the tempRoute */
                 instantiateSolution(toInsert_cstm);
                 /* compute the ObjF & record the lowest k ObjF */
