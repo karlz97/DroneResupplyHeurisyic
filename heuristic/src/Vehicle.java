@@ -43,7 +43,7 @@ class Drone extends Vehicle{
     ArrayList<Flight> flights;
     int currFlight_id = 0;
     Double[][] distanceMatrix;
-    LinkedList<Node>[] feasibleDeliverSet;
+    LinkedList<Node>[] feasibleSupplySet;
     LinkedList<Node>[] feasibleTransferSet;
     LinkedList<Node>[][] feasibleLandSet;
 
@@ -57,18 +57,6 @@ class Drone extends Vehicle{
         this.currFlight_id = 0;
     }
 
-
-    List<Flight> findFeasiFlight(Drone drone) {
-        List<Flight> feasibleFlight = new ArrayList<>();
-        //Begin with the last flight meetNode, find the possible next flights
-        Node tempPosition;
-        Flight lastFlight = flights.get(flights.size());
-        if(lastFlight.supplyNode != null) {
-            tempPosition = lastFlight.pickupNode;
-            int reservedMileage = MAXFILGHT - callNodeDistance(lastFlight., node2)
-        }
-        return feasibleFlight;
-    }
     
     /* This will build all flights from currflight_id untill meet the meetnode 
         build launchTime...(etc)...landTime, set flag: hasBuilt. 
@@ -194,13 +182,13 @@ class Drone extends Vehicle{
                     if (!m.isDrbs || dist2 + dist1 > this.MAXFILGHT) {
                         continue;
                     }
-                    if (feasibleDeliverSet[n1.id] == null) {
-                        feasibleDeliverSet[n1.id] = new LinkedList<Node>();                
+                    if (feasibleSupplySet[n1.id] == null) {
+                        feasibleSupplySet[n1.id] = new LinkedList<Node>();                
                     }
                     if (feasibleLandSet[n1.id][n2.id] == null) {
                         feasibleLandSet[n1.id][n2.id] = new LinkedList<Node>();                
                     }
-                    feasibleDeliverSet[n1.id].add(n2);
+                    feasibleSupplySet[n1.id].add(n2);
                     feasibleLandSet[n1.id][n2.id].add(m);
                 }
             }
@@ -222,7 +210,7 @@ class Drone extends Vehicle{
 
 
     public void geteasibleFlight(Drone drone) {
-        this.feasibleDeliverSet = drone.feasibleDeliverSet;
+        this.feasibleSupplySet = drone.feasibleSupplySet;
         this.feasibleLandSet = drone.feasibleLandSet;
         this.feasibleTransferSet = drone.feasibleTransferSet;
     } 
@@ -240,16 +228,27 @@ class Flight{
     Node supplyNode;  double supplyTime;
     Node landNode;   double landTime;
 
+    public Flight() {
+    }
 
-    public Flight(Node launchNode, Node clearclearclear, 
+    public Flight(Node launchNode, Node landNode){
+        this.hasBuilt = false;
+        this.gapTime = 0;
+        this.launchNode = launchNode;
+        this.landNode = landNode;
+    }
+
+    public Flight(Node launchNode, Node pickupNode, 
             Node supplyNode, Node landNode){
         this.hasBuilt = false;
         this.launchNode = launchNode;
         this.pickupNode = pickupNode;
         this.supplyNode = supplyNode;
         this.landNode = landNode;
-        this.gapTime = 0;
+        
     }
+
+
 
     public void reset(Nodes nodes) {
         this.hasBuilt = false;

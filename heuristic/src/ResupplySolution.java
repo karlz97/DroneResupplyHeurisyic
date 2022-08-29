@@ -1,8 +1,13 @@
 import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+
+import javax.swing.text.Position;
 
 class ResupplySolution extends TrivalSolution{
-    Drone drone;    //drone and courier are per Solution resources use as memory to instantiate solution
+    Drone[] droneList;    //drone and courier are per Solution resources use as memory to instantiate solution
     Double[][] drone_distanceMatrix;
     public ResupplySolution(Orders orders, Nodes nodes, Objfunction f, Courier courier, Drone drone,
             Double[][] truckDistanceMatrix) {
@@ -24,11 +29,13 @@ class ResupplySolution extends TrivalSolution{
         for (Flight currflight : flights) {
             currflight.reset(nodes); 
         }
-        drone.reset();
+        for (Drone d : droneList) {
+            d.reset();
+        }
 
         /* try to instantiate solution by courier route untill the first meet node */
         Node currNode;      //temp variables to speedup the program
-        Order currOrder;    //temp variablesTODO 打电话联系保险TODO 打电话联系保险TODO 打电话联系保险
+        Order currOrder;    //temp variables
         courier.position  = routeSeq.get(0); //deal      with startnode
         courier.time = 0;
         int i = 1; 
@@ -46,6 +53,7 @@ class ResupplySolution extends TrivalSolution{
             
             /* currNode is a meetNode */
             if (currNode.isMeet) {  
+                Drone drone = currNode.meetDrone;
                 /*  compute the earlist time of drone arrive meetNode */
                 drone.meetTime = drone.buildFlight(currNode); 
 
@@ -146,15 +154,62 @@ class ResupplySolution extends TrivalSolution{
     /*          repair operators            */
 
 
-    ArrayList<Order> randomSupplyFlightCreate(Drone drone){      
-        /* generate p-randomly choose a flight, remove it and its following flights */
-        int r = rand.nextInt(drone.flights.size());
+    /* Randomly choose an removed & 1st order-drone-feasible order: and greedily insert to */
+    /* 1st order-drone-feasible means drone is at the restaurant, don't have to transfer */
+    ArrayList<Order> randomSupplyFlightCreate_order(){      
         
-        return null;
+        // find all removed & 1st order-drone-feasible orders 
+        ArrayList<Order> feasibleOrderList = new ArrayList<>();
+        for (Order o : removedOrderList) {
+            if (o.rstrNode.isDrbs) {
+                feasibleOrderList.add(o);
+            }
+        }
+        
+        // Randomly CHOOSE one order to resupply
+        int r = rand.nextInt(feasibleOrderList.size());
+        Order o = feasibleOrderList.get(r);
+        removedOrderList.remove(o);  //remove the oreder from <reinsert list>
+
+        Node pickupNode = o.rstrNode, supplyNode, landNode; //assume pickupNode == launchNode;
+        Drone drone;
+        for (Drone d : droneList) {
+            if (d.position == pickupNode) {
+                drone = d; //find the drone in that node
+                break;
+            }
+        }    
+        
+        //TODO -------Built the supply flight, resupply it p-randomly to the node with cloest time
+        
+        //randomly supply the a node and randomly land a node, built the flight
+        List<Node> feasibleSupplyList = drone.feasibleSupplySet[pickupNode.id];
+        r = rand.nextInt(feasibleSupplyList.size());
+        supplyNode = feasibleSupplyList.get(r);
+
+        List<Node> feasibleLandList = drone.feasibleLandSet[pickupNode.id][supplyNode.id]
+        r = rand.nextInt(feasibleLandList.size());
+        landNode = feasibleLandList.get(r);
+
+        Flight f = new Flight(pickupNode, pickupNode, supplyNode, landNode);
+        drone.flights.add(f);
+        //-----------------------------------------------------------
+        drone.position = f.landNode;
+        
     }
 
     ArrayList<Order> randomTransferFlightCreate(Drone drone, int removeNum){
+        // find all feasible transfer Node for the drone 
+        List<Node> feasibleTransferList = drone.feasibleTransferSet[drone.position];
         
+        // Randomly CHOOSE one and built the transfer flight
+        int r = rand.nextInt(feasibleTransferList.size());
+        Node transferNode = feasibleTransferList.get(r);
+        Flight f = new Flight(drone.position, transferNode);
+        drone.flights.add(f);
+        //----------------------------------------------------------
+        drone.position = f.landNode;
+
         return null;
     }
 

@@ -80,6 +80,9 @@ class Node {
     boolean isDrbs; //isDroneBase?
 
     boolean isMeet; //isDrone*Courier meet here
+    Drone meetDrone;
+    Courier meetCourier;
+    
     double  courierWaitTime = -1;
     double  T_courier = -1; //arrive time of courier
     double  T_drone = -1;   //arrive time of drone
