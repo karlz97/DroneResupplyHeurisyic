@@ -7,14 +7,14 @@ import java.util.Random;
 
 import javax.naming.InitialContext;
 
-class TrivalSolution extends Solution {
+class TrivalSolver extends Solver {
     Courier courier;
     Objfunction Objf; 
     Random rand = new Random();
     ArrayList<Order> removedOrderList;
     ArrayList<Node> courierGlobalRouteSeq = new ArrayList<Node>();
 
-    public TrivalSolution(Orders orders, Nodes nodes, Objfunction f, Courier courier, 
+    public TrivalSolver(Orders orders, Nodes nodes, Objfunction f, Courier courier, 
                        Double[][] truckDistanceMatrix){
         super(orders, nodes, truckDistanceMatrix);
         this.Objf = f;
@@ -40,9 +40,7 @@ class TrivalSolution extends Solution {
         System.out.println("ObjF: " + ObjfValue());
     } 
 
-
-    @Override
-    void instantiateSolution(ArrayList<Node> routeSeq){
+    void instantiateSolution_t(ArrayList<Node> routeSeq){
         /* reset all order, nodes to initial */
         for(int i = 0; i<orders.OrderList.length; i++) {
             orders.OrderList[i].reset_r();  //only reset the order but not the related node.
@@ -72,8 +70,9 @@ class TrivalSolution extends Solution {
         }
     }
 
+    @Override
     void instantiateSolution(){
-        instantiateSolution(courierGlobalRouteSeq);
+        instantiateSolution_t(courierGlobalRouteSeq);
     }
 
     /*              Heuristic               */
@@ -90,16 +89,17 @@ class TrivalSolution extends Solution {
         
         /* 仅用于储存临时解，全局最优解在globalRouteSeq中 */
         ArrayList<Node> candidateRoute = new ArrayList<Node>(courier.routeSeq);   
+        removedOrderList = new ArrayList<>();
         double minObjfValue = ObjfValue();
         /* Acceptance and Stopping Criteria */
         int iter = 0;
         while (iter < maxIteration) {
             /* remove heuristic */
-            shawRemoval_fast(courier.routeSeq, sizeOfNeiborhood, 2);
+            shawRemoval_fast(courier, sizeOfNeiborhood, 3);
             /* insert heuristic */
-            courier.routeSeq = regeretInsert(courier.routeSeq, removedOrderList, 3);
+            regeretInsert(courier, removedOrderList, 3);
             /* decide whether accept new solution */
-            instantiateSolution(courier.routeSeq);
+            instantiateSolution_t(courier.routeSeq);
             double tempObjValue = ObjfValue();
             if (tempObjValue < minObjfValue) {
                 minObjfValue = tempObjValue;
@@ -121,7 +121,7 @@ class TrivalSolution extends Solution {
     }
 
 
-    public void genGreedySolution(){ 
+    public void genGreedySolve(){ 
         /*  currently assume only one courier.
             [ known better approach exists. ]
         */
@@ -176,7 +176,8 @@ class TrivalSolution extends Solution {
 
 
     /*          Herusitics operators           */
-    void shawRemoval_fast(ArrayList<Node> routeSeq, int q, int p){  //q is the number of orders been removed
+    void shawRemoval_fast(Courier courier, int q, int p){  //q is the number of orders been removed
+        ArrayList<Node> routeSeq = courier.routeSeq;
         int orderlistlen = orders.OrderList.length;
         Order order_in = orders.OrderList[rand.nextInt(orderlistlen)];    //randomly choose an order
         //ArrayList<Order> removedOrderList = new ArrayList<Order>();
@@ -204,8 +205,8 @@ class TrivalSolution extends Solution {
         //return removedOrderList;
     }
 
-    void randomRemoval(ArrayList<Node> routeSeq, int q){
-        //ArrayList<Order> removedOrderList = new ArrayList<Order>();
+    void randomRemoval(Courier courier, int q){
+        ArrayList<Node> routeSeq = courier.routeSeq;
         ArrayList<Order> toremoveOrderList = new ArrayList<Order>();
         toremoveOrderList.addAll(Arrays.asList(orders.OrderList));
 
@@ -223,7 +224,7 @@ class TrivalSolution extends Solution {
         //return removedOrderList;
     }
 
-    ArrayList<Node> regeretInsert(ArrayList<Node> toInsertList, ArrayList<Order> removedOrdersList, int k){
+    void regeretInsert(Courier courier, ArrayList<Order> removedOrdersList, int k){
         int length = removedOrdersList.size();
         //OddPool maxRegret = new OddPool(1);  
         //alternative common approach exist, but I just want to unify this kind of operation as Oddpool
@@ -231,7 +232,7 @@ class TrivalSolution extends Solution {
             /* insert the i_th order */ 
             double maxRegret = 0; int index_maxRegret = 0; ArrayList<Node> tempInsertList = new ArrayList<Node>();
             for (int j = 0; j < removedOrdersList.size(); j++) {
-                PseudoSolution presudoSol = regeretInsertOne(toInsertList, removedOrdersList.get(j), k);
+                PseudoSolution presudoSol = regeretInsertOne(courier.routeSeq, removedOrdersList.get(j), k);
                 //maxRegret.inpool(presudoSol.objfValue, presudoSol.routeSeq); 
                 if (presudoSol.objValue > maxRegret) {
                     maxRegret = presudoSol.objValue;
@@ -241,27 +242,28 @@ class TrivalSolution extends Solution {
             }
             /* update the 'toInsertList' and 'removedOrdersList' */
             removedOrdersList.remove(index_maxRegret);
-            toInsertList = tempInsertList; 
+            courier.routeSeq = tempInsertList; 
         }
-        return toInsertList;
+        return;
     }
 
 
     PseudoSolution regeretInsertOne(ArrayList<Node> toInsertList, Order order, int k){
         int length = toInsertList.size();
+
         OddPool insertObjfPool = new OddPool(k + 1);
         /* test every insert position */
         /* insert pickup position  */
         
         for (int i = 1; i < length + 1; i++) { //插入pickup node 从1开始可以插入，可插到最后。
-            ArrayList<Node> toInsert_rstr = new ArrayList<Node>(toInsertList);
-            toInsert_rstr.add(i, order.rstrNode);
+            ArrayList<Node> toInsert_rstr = new ArrayList<Node>(toInsertList); // the route to be insert(in the rstr insert step)
+            toInsert_rstr.add(i, order.rstrNode); 
             /* inset delivery position */
-            for (int j = i+1; j < Math.max(i + 2, length + 1); j++) {
-                ArrayList<Node> toInsert_cstm = new ArrayList<Node>(toInsert_rstr);
+            for (int j = i + 1; j < Math.max(i + 2, length + 1); j++) {
+                ArrayList<Node> toInsert_cstm = new ArrayList<Node>(toInsert_rstr); // the route to be insert(in the cstm insert step)
                 toInsert_cstm.add(j, order.cstmNode);   //TODO: a lot can be optimized, there is no need for create a new array?
                 /* rebuild the solution base on the tempRoute */
-                instantiateSolution(toInsert_cstm);
+                instantiateSolution_t(toInsert_cstm);
                 /* compute the ObjF & record the lowest k ObjF */
                 insertObjfPool.inpool( - ObjfValue(), toInsert_cstm); 
                 //'- ObjfValue' inpool will save the max k, we need save the lowest k 

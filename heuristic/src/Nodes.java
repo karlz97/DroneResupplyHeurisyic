@@ -124,7 +124,7 @@ class Node {
                 isDrbs = true;
                 break;
             case 301:
-                nodeClass = "resupply_only"
+                nodeClass = "resupply_only";
         }
     }
 
@@ -132,9 +132,17 @@ class Node {
         return this.id;
     }
 
-    void reset(){
+    void reset_r(){
+        courierWaitTime = -1;
         T_courier = -1;
         T_drone = -1;
+    }
+
+    void reset(){
+        reset_r();
+        isMeet = false;
+        meetCourier = null;
+        meetDrone = null;
     }
 }
 

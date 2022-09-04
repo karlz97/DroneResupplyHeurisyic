@@ -38,10 +38,10 @@ class Courier extends Vehicle{
 }
 
 class Drone extends Vehicle{
-    final int MAXFILGHT = 10;
+    final int MAXFILGHT = 50;
     double meetTime;
     ArrayList<Flight> flights;
-    int currFlight_id = 0;
+    int currFlight_id = 0; //mainly used to buildFlight(determine the arrive time of each node)
     Double[][] distanceMatrix;
     LinkedList<Node>[] feasibleSupplySet;
     LinkedList<Node>[] feasibleTransferSet;
@@ -57,7 +57,6 @@ class Drone extends Vehicle{
         this.currFlight_id = 0;
     }
 
-    
     /* This will build all flights from currflight_id untill meet the meetnode 
         build launchTime...(etc)...landTime, set flag: hasBuilt. 
         >warning if the meetnode is not exist in flight.supplyNode
@@ -96,7 +95,6 @@ class Drone extends Vehicle{
         return currFlight.supplyTime;
     }
 
-
     /* reversely build the current flight, update the gap time */
     void retroBuildFlight(double meetTime){
         // assume
@@ -122,46 +120,16 @@ class Drone extends Vehicle{
         currFlight.gapTime = currFlight.launchTime - lastLandTime;
     }
 
-    // void buildFlight_reverse(Node meetNode, double meetTime){
-    //     int meetFlight_id = currFlight_id;
-    //     Flight tempFlight = flights.get(meetFlight_id);
-
-    //     /* find the meetNode_id */
-    //     while (tempFlight.supplyNode != meetNode) {
-    //         /* check */
-    //         if (tempFlight.launchNode != position) {
-    //             Functions.printAlert("in Drone.buildFlight: currFlight.launchNode != position");   
-    //         }
-    //         meetFlight_id++;
-    //         tempFlight = flights.get(meetFlight_id);
-    //     }
-
-    //     /* find the meetFlight_id, update the gapTime(waitTime) of flights  */
-    //     tempFlight.supplyTime = meetTime;
-    //     tempFlight.landTime = tempFlight.supplyTime
-    //         + callNodeDistance(tempFlight.supplyNode,tempFlight.landNode);
-    //     tempFlight.pickupTime = tempFlight.supplyTime
-    //         - callNodeDistance(tempFlight.pickupNode ,tempFlight.supplyNode);
-    //     tempFlight.launchTime = tempFlight.pickupTime
-    //         - callNodeDistance(tempFlight.launchNode, tempFlight.pickupNode);
-    //     tempFlight.hasBuilt = true;
-
-    //     double lastLandTime;
-    //     if (meetFlight_id != 0) {
-    //         Flight lastFlight = flights.get(meetFlight_id-1);
-    //         lastLandTime = lastFlight.landTime;
-    //     }else{
-    //         lastLandTime = 0;
-    //     }
-    //     tempFlight.gapTime = tempFlight.launchTime - lastLandTime;
-    // }
-
-
     public double callNodeDistance(Node node1 ,Node node2){
         return distanceMatrix[node1.id][node2.id];
     }
 
     public void computeFeasibleFlight(Nodes nodes) {
+        //unsafe way to use generic array
+        feasibleSupplySet = new LinkedList[nodes.numOfNodes];
+        feasibleTransferSet = new LinkedList[nodes.numOfNodes];
+        feasibleLandSet = new LinkedList[nodes.numOfNodes][nodes.numOfNodes];
+
         //cancel the seting of dummy node(drone base)
         Node[] nodeList = nodes.NodeList;
         for (int i1 = 0; i1 < nodeList.length; i1++) {
@@ -174,14 +142,17 @@ class Drone extends Vehicle{
                 Node n2 = nodeList[i2];
                 Double dist1 = callNodeDistance(n1, n2);
                 if (!n2.isSply || dist1 > this.MAXFILGHT) {
+                    //Functions.printDebug("[level 1] continued, n2.isSply:"+ n2.isSply + ", dist1:" + dist1); 
                     continue;
                 }
                 for (int j = 0; j < nodeList.length; j++) {
                     Node m = nodeList[j];
                     Double dist2 = callNodeDistance(n2, m) + dist1;
                     if (!m.isDrbs || dist2 + dist1 > this.MAXFILGHT) {
+                        //Functions.printDebug("[level 2] continued, n2.isSply:"+ n2.isSply + ", dist1+2:" + (dist1 + dist2)); //TODO
                         continue;
                     }
+                    //Functions.printAlert("Not continued, n2.isSply:"+ n2.isSply + ", dist1+2:" + (dist1 + dist2)); 
                     if (feasibleSupplySet[n1.id] == null) {
                         feasibleSupplySet[n1.id] = new LinkedList<Node>();                
                     }
@@ -208,6 +179,16 @@ class Drone extends Vehicle{
         }
     } 
 
+    public void showFeasibleFlight() {
+        System.out.println("feasibleSupplySet:");
+        for (int i = 0; i < feasibleSupplySet.length; i++) {
+            System.out.print("[" + i + "]:");
+            if (feasibleSupplySet[i] != null)
+                for (Node n : feasibleSupplySet[i])
+                    System.out.print(n.id + ",");
+            System.out.println();
+        }
+    }
 
     public void geteasibleFlight(Drone drone) {
         this.feasibleSupplySet = drone.feasibleSupplySet;
@@ -235,6 +216,8 @@ class Flight{
         this.hasBuilt = false;
         this.gapTime = 0;
         this.launchNode = launchNode;
+        this.pickupNode = null;
+        this.supplyNode = null;
         this.landNode = landNode;
     }
 
@@ -257,7 +240,9 @@ class Flight{
         this.supplyTime = -1;
         this.landTime = -1;
         this.gapTime = 0;
-        nodes.NodeList[supplyNode.id].isMeet =true;
+        if (supplyNode != null) {
+            nodes.NodeList[supplyNode.id].isMeet = false;
+        }
     }
 
 

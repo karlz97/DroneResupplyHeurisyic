@@ -1,6 +1,6 @@
 
 abstract class Objfunction {
-    abstract public double computeObjValue(Solution s);
+    abstract public double computeObjValue(Solver s);
 }
 
 class ObjF_latePunish extends Objfunction {
@@ -11,7 +11,7 @@ class ObjF_latePunish extends Objfunction {
     }
 
     @Override
-    public double computeObjValue(Solution s) {
+    public double computeObjValue(Solver s) {
         double ObjValue = 0;
         for ( Order ord : s.orders.OrderList){
             ObjValue += objfByOne(ord);

@@ -13,105 +13,110 @@ public class Main {
 
 
 
-    private static void main2() throws IOException{
+    private static void main3() throws IOException{
         Double[][] dataMatrix;
         Double[][] truckDistanceMatrix;
+        Double[][] droneDistanceMatrix;
         Nodes nodes;
         Orders orders;
         /* readData from csv */
         dataMatrix = ReadDataFromCSV.readDoubleToMatrix("../insgen/exNODES.csv");
         truckDistanceMatrix = ReadDataFromCSV.readDoubleToMatrix("../insgen/Tt.csv");
+        droneDistanceMatrix = ReadDataFromCSV.readDoubleToMatrix("../insgen/Tt.csv"); //TODO 暂时使用truck矩阵 
         
         /* initialize Nodes */
         nodes = new Nodes(dataMatrix);
-        Node startnode = new StartEndNode(12, 1, 1, 's'); //在这个测试例子中courier的startnode是第13个，对应distanceMatrix中第12
+        Node startnode = new StartEndNode(12, 1, 1, 's')    ; //在这个测试例子中courier的startnode是第13个，对应distanceMatrix中第12
     
         /* initialize Orders(by orderNodeList) */
         orders = new Orders(nodes.orderNodeList);  
         
         /* initialize vehicle */
         Courier courier = new Courier(0, 10, startnode /*nodes.NodeList[2]*/);
+        Drone[] droneList = new Drone[]{new Drone(0, 20, startnode, droneDistanceMatrix)};
+        droneList[0].computeFeasibleFlight(nodes);
+        droneList[0].showFeasibleFlight();
+
 
         /* initialize solution */
         ObjF_latePunish objF = new ObjF_latePunish(1);
-        TrivalSolution solution = new TrivalSolution(orders, nodes, objF, courier, truckDistanceMatrix); 
+        //TrivalSolver solver = new TrivalSolver(orders, nodes, objF, courier, truckDistanceMatrix); 
+        ResupplySolver solver = new ResupplySolver(orders, nodes, objF, courier, droneList, truckDistanceMatrix);
 
         /* call generate greedy solution */
-        solution.genGreedySolution();
-        System.out.println("---------------------   GreedySolution      ---------------------");
-        solution.printSolution();    
-
+        solver.genGreedySolve();
+        System.out.println("---------------------   GreedySolution finished     ---------------------");
+        solver.printSolution();    
+        System.out.println();
         /* call LNS1 to improve the solution */
-        solution.LNS1t(1000,3); //finish in a acceptable time(less than 5 min) at 10,000,000 (千万次), 
-        System.out.println("---------------------   LNS1(100) Solution  ---------------------");
-        solution.printSolution();  
+        solver.LNS1t(500,3); //finish in a acceptable time(less than 5 min) at 10,000,000 (千万次), 
+        System.out.println("---------------------   LNS1_truck (500) Solution  ---------------------");
+        solver.printSolution(); 
+        System.out.println();
+        solver.LNS1r(100,3);
+        System.out.println("---------------------   LNS1_drone (100) Solution  ---------------------");
+        solver.printSolution(); 
+        System.out.println();
 
         // System.out.println("---------------------   MILP Solution       ---------------------");
         // ArrayList<Node> MILP_Route = new ArrayList<Node>();
         // Integer[] routeArray = {0,1,4,6,9,2,7,5,3,8};
         // MILP_Route = Functions.buildFromArray(routeArray, startnode, nodes.NodeList);
         // Functions.printRouteSeq(MILP_Route);
-        // solution.instantiateSolution(MILP_Route);
-        // System.out.println("ObjF: " + solution.ObjfValue());
+        // solver.instantiateSolver(MILP_Route);
+        // System.out.println("ObjF: " + solver.ObjfValue());
     }    
 
-
-    private static void main1() throws IOException{
+    private static void main2() throws IOException{
         Double[][] dataMatrix;
         Double[][] truckDistanceMatrix;
+        Double[][] droneDistanceMatrix;
         Nodes nodes;
         Orders orders;
         /* readData from csv */
         dataMatrix = ReadDataFromCSV.readDoubleToMatrix("../insgen/exNODES.csv");
         truckDistanceMatrix = ReadDataFromCSV.readDoubleToMatrix("../insgen/Tt.csv");
-        Functions.printMatrix(dataMatrix);
-        Functions.printMatrix(truckDistanceMatrix);
+        droneDistanceMatrix = ReadDataFromCSV.readDoubleToMatrix("../insgen/Tt.csv"); //TODO 暂时使用truck矩阵 
         
         /* initialize Nodes */
         nodes = new Nodes(dataMatrix);
         Node startnode = new StartEndNode(12, 1, 1, 's'); //在这个测试例子中courier的startnode是第13个，对应distanceMatrix中第12
     
         /* initialize Orders(by orderNodeList) */
-        //System.out.println("foo" + nodes.NodeList[0].coord[1]);
         orders = new Orders(nodes.orderNodeList);  
-        //System.out.println(orders.OrderList[2].id);
-        //System.out.println(orders.OrderList[2].cstmNode.id);
-        //System.out.println(orders.OrderList[2].rstrNode.id);
-        //System.out.println(orders.OrderList[2].T_prepared);
-        //System.out.println(orders.OrderList[2].T_expected);
         
         /* initialize vehicle */
         Courier courier = new Courier(0, 10, startnode /*nodes.NodeList[2]*/);
+        Drone[] droneList = new Drone[]{new Drone(0, 20, startnode, droneDistanceMatrix)};
 
 
         /* initialize solution */
         ObjF_latePunish objF = new ObjF_latePunish(1);
-        TrivalSolution solution = new TrivalSolution(orders, nodes, objF, courier, truckDistanceMatrix); 
+        //TrivalSolver solver = new TrivalSolver(orders, nodes, objF, courier, truckDistanceMatrix); 
+        ResupplySolver solver = new ResupplySolver(orders, nodes, objF, courier, droneList, truckDistanceMatrix);
+
 
         /* call generate greedy solution */
-        solution.genGreedySolution();
-        solution.printSolution();
+        solver.genGreedySolve();
+        System.out.println("---------------------   GreedySolution finished     ---------------------");
+        solver.printSolution();    
+        System.out.println();
+        /* call LNS1 to improve the solution */
+        solver.LNS1t(1000,3); //finish in a acceptable time(less than 5 min) at 10,000,000 (千万次), 
+        System.out.println("---------------------   LNS1_truck (1000) Solution  ---------------------");
+        solver.printSolution(); 
+        System.out.println();
 
-        /* test on heuristics   */
-        ArrayList<Order> removedOrderList = solution.shawRemoval_fast(solution.courier.routeSeq, 4, 2);
-        //ArrayList<Order> removedOrderList = solution.randomRemoval(solution.courier.routeSeq, 2);
-        
-        Functions.printRouteSeq(courier.routeSeq);
-        Functions.printOrderList(removedOrderList);
+        // System.out.println("---------------------   MILP Solution       ---------------------");
+        // ArrayList<Node> MILP_Route = new ArrayList<Node>();
+        // Integer[] routeArray = {0,1,4,6,9,2,7,5,3,8};
+        // MILP_Route = Functions.buildFromArray(routeArray, startnode, nodes.NodeList);
+        // Functions.printRouteSeq(MILP_Route);
+        // solver.instantiateSolver(MILP_Route);
+        // System.out.println("ObjF: " + solver.ObjfValue());
+    }    
 
-        solution.courierGlobalRouteSeq = solution.regeretInsert(solution.courier.routeSeq, removedOrderList, 3);
-        solution.instantiateSolution(); 
-        solution.printSolution();
-        //System.out.println("ObjF: " + solution.ObjfValue());
 
-        /* print route of solution 
-        solution.printSolution();
-        System.out.println(solution.ObjfValue());*/
-
-        /*for (Order order : solution.orders.OrderList) {
-            System.out.println(order.T_delivered);
-        }*/
-    }
 
 
     private static void main0(){

@@ -1,23 +1,23 @@
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-abstract class Solution {
+
+
+abstract class Solver {
     Orders orders;
     Nodes nodes;
-    Double[][] distanceMatrix;
+    Double[][] distanceMatrix; //距离矩阵应该合并到courier中
     Objfunction Objf;
-    Vehicle[] vehicleList;
 
-    public Solution(Orders orders, Nodes nodes/*, Objfunction f*/){
+    public Solver(Orders orders, Nodes nodes/*, Objfunction f*/){
         this.orders = orders;
         this.nodes = nodes;
         /*this.Objf = f;*/
     }
 
-    public Solution(Orders orders, Nodes nodes, Double[][] distanceMatrix/*, Objfunction f*/){
+    public Solver(Orders orders, Nodes nodes, Double[][] distanceMatrix/*, Objfunction f*/){
         this.orders = orders;
         this.nodes = nodes;
         this.distanceMatrix = distanceMatrix;
@@ -28,7 +28,7 @@ abstract class Solution {
     
     abstract public void printSolution();
 
-    abstract void instantiateSolution(ArrayList<Node> routeSeq);  //instantiate the Solution including setup from route.
+    abstract void instantiateSolution();  //instantiate the Solution including setup from route.
 
     public double callNodeDistance(Node node1 ,Node node2){
         return distanceMatrix[node1.id][node2.id];
@@ -91,113 +91,7 @@ abstract class Solution {
 */
 
 
-class Functions{
-    //for static functions only
-    static boolean debug = true;
-    static public void printAlert(String s){
-        System.out.println("\033[31;1m" + "\t<Alert!>\t" + s + "\033[0m");
-    }
 
-    static public void printDebug(String s){
-        if (debug) {
-            System.out.println("\033[33m" + s + "\033[0m");
-        }
-    }
-
-
-    static public double computeNorm2Distance(double x1, double y1, double x2, double y2){
-        return ( Math.sqrt((x1-x2)*(x1-x2) + (y1-y2)*(y1-y2)) );
-    }
-
-    static public void printMatrix(Double[][] dataMatrix){
-        for (int i = 0; i < dataMatrix.length; i++) {
-            for (int j = 0; j <dataMatrix[i].length; j++) {  //testValue.get(0) 第一行元素的长度
-                System.out.print(dataMatrix[i][j]+"\t");
-            }
-            System.out.println();
-        }
-    }
-
-    static public ArrayList<Node> buildFromArray(Integer[] routeArray, Node startnode, Node[] NodeList){
-        ArrayList<Node> routeSeq = new ArrayList<>();
-        routeSeq.add(startnode);
-        for (int i = 0; i < routeArray.length; i++) {
-            routeSeq.add(NodeList[routeArray[i]]);
-        }
-        return routeSeq;
-    }
-
-    static public void printRouteSeq(List<Node> routeSeq){
-        System.out.println("Routes: ");
-        for (Iterator<Node> it = routeSeq.iterator(); it.hasNext();) {
-            System.out.print( it.next().id + " --> ");
-        }
-        System.out.print("over");
-        System.out.println();
-    }
-
-    static public void printOrderList(List<Order> orderList){
-        System.out.println("OrderList: ");
-        for (Iterator<Order> it = orderList.iterator(); it.hasNext();) {
-            System.out.print( it.next().id + ", " );
-        }
-        System.out.println();
-    }
-
-    static public int findMax(double[] matrix){
-        //only works for matrix has at least one positive numbers
-        //Find the first max number in a matrix
-        double max = -1;
-        int index = -1;
-        for(int i = 0; i < matrix.length; i++){
-            if(matrix[i] > max){
-                max = matrix[i];
-                index = i;
-            }
-        }
-        if(max == -1){
-            System.out.println("WARNING!!!! \t Did not find positive number in <FindMax>");
-            return -1;
-        }
-        return index;
-    }
-
-    static public int findMaxN(double[] matrix, int n){
-        /* count n begin with 0 (0 == the bigest)
-        only works for matrix has at least one positive numbers
-        Find the first max number in a matrix
-        !!! Assume There is No duplicate values !!! */
-        double[] temp = matrix.clone();  //For basic type array is deep copy
-        Arrays.sort(temp); 
-        /*  Check for duplicate values 
-        if(n == 0){
-            if(temp[n] == temp[n+1]){
-                System.out.println("WARNING!!!! \t duplicate values Trouble in <findMaxN>");
-                //return -1;
-            }
-        }else if(n == matrix.length-1){
-            if(temp[n] == temp[n-1]){
-                System.out.println("WARNING!!!! \t duplicate values Trouble in <findMaxN>");
-                //return -1;
-            }
-        }else{
-            if(temp[n] == temp[n+1] || temp[n] == temp[n-1]){
-                System.out.println("WARNING!!!! \t duplicate values Trouble in <findMaxN>");
-                //return -1;
-            }
-        }*/
-        for(int i = 0; i < matrix.length; i++){
-            if(matrix[i] == temp[n])
-                return i;
-        }
-        System.out.println("WARNING!!!! \t No match between matrix and temp in <findMaxN>");
-        return -1;
-    }
-
-
-
-
-}
 
 class OddPool {  //OddPool for 'ordered Pool'
     LinkedList<Double> list;
@@ -271,7 +165,7 @@ class OddPool {  //OddPool for 'ordered Pool'
 
 }
 
-class PseudoSolution {
+class PseudoSolution { 
     ArrayList<Node> routeSeq;
     double objValue;
 
@@ -279,4 +173,46 @@ class PseudoSolution {
         this.routeSeq = routeSeq;
         this.objValue = objValue;
     }
+}
+
+
+class Solution {
+    ArrayList<Node> courierRoute;
+    ArrayList<Node>[] flightSeqs;
+    public Solution(Courier courier, Drone[] drones) {
+        
+        courierRoute = courier.routeSeq;
+
+        flightSeqs = new ArrayList[drones.length];
+        for (int i = 0; i < drones.length; i++) {
+            flightSeqs[i] = serializeFlights(drones[i].flights);
+        }
+
+    }
+
+    private LinkedList<Node> serializeFlights(ArrayList<Flight> flights) {
+        LinkedList<Node> flightSeq = new LinkedList<>();
+        for (Flight flight : flights) {
+            flightSeq.add(flight.launchNode);
+            flightSeq.add(flight.pickupNode);
+            flightSeq.add(flight.supplyNode);
+            flightSeq.add(flight.landNode);
+        }
+        return flightSeq;
+    }
+
+    public ArrayList<Flight> deSerializeFlights(LinkedList<Node> flightSeq) {
+        ArrayList<Flight> flights = new ArrayList<>();
+        for (int i = 0; i < flightSeq.size(); i++) {
+            Node launchNode = flightSeq.pop();
+            Node pickupNode = flightSeq.pop();
+            Node supplyNode = flightSeq.pop();
+            Node landNode = flightSeq.pop();
+            flights.add( new Flight(launchNode, pickupNode, supplyNode, landNode) );
+        }
+        return flights;
+        
+    }
+
+    
 }
