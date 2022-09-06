@@ -98,6 +98,7 @@ class Drone extends Vehicle{
     /* reversely build the current flight, update the gap time */
     void retroBuildFlight(double meetTime){
         // assume
+        currFlight_id --;
         Flight currFlight = flights.get(currFlight_id);
         
         /* found the meetFlight_id, update the gapTime(waitTime) of flights  */
@@ -240,9 +241,9 @@ class Flight{
         this.supplyTime = -1;
         this.landTime = -1;
         this.gapTime = 0;
-        if (supplyNode != null) {
-            nodes.NodeList[supplyNode.id].isMeet = false;
-        }
+        // if (supplyNode != null) {
+        //     nodes.NodeList[supplyNode.id].isMeet = false;
+        // }
     }
 
 

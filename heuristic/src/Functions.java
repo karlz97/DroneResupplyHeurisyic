@@ -1,5 +1,6 @@
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 
@@ -107,4 +108,35 @@ class Functions{
         return -1;
     }
 
+    static boolean checkDuplicate(ArrayList<Order> orderslist) {
+
+
+        int size1 = orderslist.size();
+        int size2 = new HashSet<Order>(orderslist).size();
+
+        if (size1 != size2) {
+            printAlert("Duplicate orders in orderlist!!");
+            for (Order order : orderslist) {
+                System.out.print(order.id + ",");
+            }
+            System.out.println();
+            return true;
+        }
+        return false;
+    }
+
+    static boolean checkDuplicate(ArrayList<Order> orderslist, ArrayList<Node> routeseq) {
+        int size1 = orderslist.size();
+        int size2 = new HashSet<Order>(orderslist).size();
+
+        if (size1 != size2) {
+            printAlert("Duplicate orders in orderlist!!");
+            for (Order order : orderslist) {
+                System.out.print(order.id + ",");
+            }
+            System.out.println();
+            return true;
+        }
+        return false;
+    }
 }

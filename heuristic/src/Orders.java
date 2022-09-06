@@ -138,7 +138,7 @@ class Order {
     boolean update(Vehicle vehicle, double time){
         // automatically update the status no matter it is a pickup or delivery
         if(isReleased == false){
-            System.out.println("WARNING!!! Update to a [unrealeased] order");
+            Functions.printAlert("WARNING!!! Update to a [unrealeased] order");
             return false;   //没有release无法update
         }else if(isPicked == false && isDelivered == false){
             pickVehicle = vehicle;
@@ -150,7 +150,7 @@ class Order {
             T_delivered = time;
             return true;
         }else{
-            System.out.println("WARNING!!! Update to a [delivered] order");
+            Functions.printAlert("WARNING!!! Update to a [delivered] order. Order:" + this.id);
             return false;
         }
     }

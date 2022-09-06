@@ -8,7 +8,7 @@ import org.w3c.dom.css.Counter;
 
 public class Main {
     public static void main(String[] args) throws IOException {
-        main2();
+        main3();
     }
 
 
@@ -33,7 +33,7 @@ public class Main {
         
         /* initialize vehicle */
         Courier courier = new Courier(0, 10, startnode /*nodes.NodeList[2]*/);
-        Drone[] droneList = new Drone[]{new Drone(0, 20, startnode, droneDistanceMatrix)};
+        Drone[] droneList = new Drone[]{new Drone(0, 20, nodes.NodeList[0], droneDistanceMatrix)};
         droneList[0].computeFeasibleFlight(nodes);
         droneList[0].showFeasibleFlight();
 
@@ -53,6 +53,8 @@ public class Main {
         System.out.println("---------------------   LNS1_truck (500) Solution  ---------------------");
         solver.printSolution(); 
         System.out.println();
+        
+        //solver.LNS1r_test(3);
         solver.LNS1r(100,3);
         System.out.println("---------------------   LNS1_drone (100) Solution  ---------------------");
         solver.printSolution(); 
@@ -92,8 +94,8 @@ public class Main {
 
         /* initialize solution */
         ObjF_latePunish objF = new ObjF_latePunish(1);
-        //TrivalSolver solver = new TrivalSolver(orders, nodes, objF, courier, truckDistanceMatrix); 
-        ResupplySolver solver = new ResupplySolver(orders, nodes, objF, courier, droneList, truckDistanceMatrix);
+        TrivalSolver solver = new TrivalSolver(orders, nodes, objF, courier, truckDistanceMatrix); 
+        //ResupplySolver solver = new ResupplySolver(orders, nodes, objF, courier, droneList, truckDistanceMatrix);
 
 
         /* call generate greedy solution */
@@ -102,8 +104,8 @@ public class Main {
         solver.printSolution();    
         System.out.println();
         /* call LNS1 to improve the solution */
-        solver.LNS1t(1000,3); //finish in a acceptable time(less than 5 min) at 10,000,000 (千万次), 
-        System.out.println("---------------------   LNS1_truck (1000) Solution  ---------------------");
+        solver.LNS1t(500,3); //finish in a acceptable time(less than 5 min) at 10,000,000 (千万次), 
+        System.out.println("---------------------   LNS1_truck (500) Solution  ---------------------");
         solver.printSolution(); 
         System.out.println();
 

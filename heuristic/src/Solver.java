@@ -10,6 +10,7 @@ abstract class Solver {
     Nodes nodes;
     Double[][] distanceMatrix; //距离矩阵应该合并到courier中
     Objfunction Objf;
+    Solution globalOptSolution;
 
     public Solver(Orders orders, Nodes nodes/*, Objfunction f*/){
         this.orders = orders;
@@ -27,6 +28,8 @@ abstract class Solver {
     abstract public double ObjfValue();
     
     abstract public void printSolution();
+
+    abstract public void recoverFromSolution(Solution solution);
 
     abstract void instantiateSolution();  //instantiate the Solution including setup from route.
 
@@ -80,6 +83,8 @@ abstract class Solver {
         // score must always be a positive number
         return score; 
     }
+
+
 
 }
 
@@ -177,41 +182,62 @@ class PseudoSolution {
 
 
 class Solution {
+    double objfValue;
     ArrayList<Node> courierRoute;
-    ArrayList<Node>[] flightSeqs;
-    public Solution(Courier courier, Drone[] drones) {
-        
-        courierRoute = courier.routeSeq;
+    LinkedList<Node>[] flightSeqs;
+    public Solution(Solution s) {
+        this.objfValue = s.objfValue;
+        this.courierRoute = new ArrayList<>(s.courierRoute);
+        if (s.flightSeqs != null) {   
+            flightSeqs = new LinkedList[s.flightSeqs.length];
+            for (int i = 0; i < s.flightSeqs.length; i++) {
+                flightSeqs[i] = new LinkedList<>(s.flightSeqs[i]);
+            }   
+        }
+    }
 
-        flightSeqs = new ArrayList[drones.length];
+    public Solution(Courier courier) {
+        courierRoute = new ArrayList<Node>(courier.routeSeq);
+    }
+
+
+    public Solution(Courier courier, Drone[] drones) {
+        this(courier);
+        flightSeqs = new LinkedList[drones.length];
         for (int i = 0; i < drones.length; i++) {
             flightSeqs[i] = serializeFlights(drones[i].flights);
         }
-
     }
 
     private LinkedList<Node> serializeFlights(ArrayList<Flight> flights) {
         LinkedList<Node> flightSeq = new LinkedList<>();
         for (Flight flight : flights) {
-            flightSeq.add(flight.launchNode);
-            flightSeq.add(flight.pickupNode);
-            flightSeq.add(flight.supplyNode);
-            flightSeq.add(flight.landNode);
+            flightSeq.offer(flight.launchNode);
+            flightSeq.offer(flight.pickupNode);
+            flightSeq.offer(flight.supplyNode);
+            flightSeq.offer(flight.landNode);
         }
         return flightSeq;
     }
 
     public ArrayList<Flight> deSerializeFlights(LinkedList<Node> flightSeq) {
+        if (flightSeq == null) {
+            return new ArrayList<Flight>();
+        }
+        
         ArrayList<Flight> flights = new ArrayList<>();
         for (int i = 0; i < flightSeq.size(); i++) {
-            Node launchNode = flightSeq.pop();
-            Node pickupNode = flightSeq.pop();
-            Node supplyNode = flightSeq.pop();
-            Node landNode = flightSeq.pop();
+            Node launchNode = flightSeq.poll();
+            Node pickupNode = flightSeq.poll();
+            Node supplyNode = flightSeq.poll();
+            Node landNode = flightSeq.poll();
             flights.add( new Flight(launchNode, pickupNode, supplyNode, landNode) );
         }
         return flights;
-        
+    }
+
+    public ArrayList<Flight> deSerializeFlights(int droneId) {
+        return deSerializeFlights(flightSeqs[droneId]);
     }
 
     

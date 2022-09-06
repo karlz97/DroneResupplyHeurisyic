@@ -12,7 +12,7 @@ class TrivalSolver extends Solver {
     Objfunction Objf; 
     Random rand = new Random();
     ArrayList<Order> removedOrderList;
-    ArrayList<Node> courierGlobalRouteSeq = new ArrayList<Node>();
+    
 
     public TrivalSolver(Orders orders, Nodes nodes, Objfunction f, Courier courier, 
                        Double[][] truckDistanceMatrix){
@@ -29,7 +29,7 @@ class TrivalSolver extends Solver {
 
     public void printSolution(){
         System.out.println("Routes: ");
-        for (Iterator<Node> it = courierGlobalRouteSeq.iterator(); it.hasNext();) {
+        for (Iterator<Node> it = globalOptSolution.courierRoute.iterator(); it.hasNext();) {
             System.out.print( it.next().id + " --> ");
         }
         if (orders.allDone()) {
@@ -40,13 +40,22 @@ class TrivalSolver extends Solver {
         System.out.println("ObjF: " + ObjfValue());
     } 
 
-    void instantiateSolution_t(ArrayList<Node> routeSeq){
+    @Override
+    public void recoverFromSolution(Solution solution) {
+        courier.routeSeq = new ArrayList<>(solution.courierRoute);
+    }
+
+    void instantiateSolution_t(Courier courier){
+        instantiateSolution_t_routeSeq(courier.routeSeq);
+    }
+
+    private void instantiateSolution_t_routeSeq(ArrayList<Node> routeSeq){
         /* reset all order, nodes to initial */
         for(int i = 0; i<orders.OrderList.length; i++) {
             orders.OrderList[i].reset_r();  //only reset the order but not the related node.
         }
         for(int i = 0; i<nodes.NodeList.length; i++) {
-            nodes.NodeList[i].reset();
+            nodes.NodeList[i].reset_r();
         }
 
         /* set the status of courier, order, node by follow the routeSeq */
@@ -72,7 +81,8 @@ class TrivalSolver extends Solver {
 
     @Override
     void instantiateSolution(){
-        instantiateSolution_t(courierGlobalRouteSeq);
+        recoverFromSolution(globalOptSolution);
+        instantiateSolution_t(courier);
     }
 
     /*              Heuristic               */
@@ -87,39 +97,34 @@ class TrivalSolver extends Solver {
      */
     public void LNS1t(int maxIteration, int sizeOfNeiborhood){ 
         
-        /* 仅用于储存临时解，全局最优解在globalRouteSeq中 */
-        ArrayList<Node> candidateRoute = new ArrayList<Node>(courier.routeSeq);   
+        /* 仅用于储存临时解，全局最优解在globalOptSolution中 */
+        Solution candidateSolution = new Solution(globalOptSolution);
         removedOrderList = new ArrayList<>();
         double minObjfValue = ObjfValue();
         /* Acceptance and Stopping Criteria */
         int iter = 0;
         while (iter < maxIteration) {
+            /* resume the status to global optimal */
+            recoverFromSolution(candidateSolution);
+            
             /* remove heuristic */
             shawRemoval_fast(courier, sizeOfNeiborhood, 3);
             /* insert heuristic */
             regeretInsert(courier, removedOrderList, 3);
             /* decide whether accept new solution */
-            instantiateSolution_t(courier.routeSeq);
+            instantiateSolution_t(courier);
             double tempObjValue = ObjfValue();
             if (tempObjValue < minObjfValue) {
                 minObjfValue = tempObjValue;
-                //candidateRoute = courier.routeSeq; 这样写会有bug，因为在下一轮while循环中 同样的 courier.routeSeq 会被 shawRemoval_fast
-                candidateRoute.clear(); candidateRoute.addAll(courier.routeSeq);
+                candidateSolution = new Solution(courier);
                 //System.out.println("miniObjValue: " + minObjfValue);
-                Functions.printRouteSeq(candidateRoute);
+                Functions.printRouteSeq(candidateSolution.courierRoute);
             }
             iter++;
         }
-        courierGlobalRouteSeq = candidateRoute;
+        globalOptSolution = candidateSolution;
         instantiateSolution();
     }
-
-    
-
-    public void largeNeiborhoodSearch(){
-
-    }
-
 
     public void genGreedySolve(){ 
         /*  currently assume only one courier.
@@ -167,15 +172,15 @@ class TrivalSolver extends Solver {
             candidateOrder.update(courier, courier.time);
         }
 
-        /* update globalSolution(courierGlobalRouteSeq) */
-        courierGlobalRouteSeq.clear();
-        courierGlobalRouteSeq.addAll(courier.routeSeq);
+        /* update globalSolution */
+        this.globalOptSolution = new Solution(courier);
 
     }
     
 
 
     /*          Herusitics operators           */
+    // shawRemoval need to update alot before apply to resupply LNS
     void shawRemoval_fast(Courier courier, int q, int p){  //q is the number of orders been removed
         ArrayList<Node> routeSeq = courier.routeSeq;
         int orderlistlen = orders.OrderList.length;
@@ -206,20 +211,28 @@ class TrivalSolver extends Solver {
     }
 
     void randomRemoval(Courier courier, int q){
+        //constrain: 不能remove被由drone pickup的点（drone remove的时候会管），也不能remove meetNode
+        //TODO feasible removable order(order that delievry by courier)
         ArrayList<Node> routeSeq = courier.routeSeq;
-        ArrayList<Order> toremoveOrderList = new ArrayList<Order>();
-        toremoveOrderList.addAll(Arrays.asList(orders.OrderList));
-
+        ArrayList<Order> toremoveOrderList = new ArrayList<>();
+        for (Node n : routeSeq) {
+            if (n.isRstr) { //通过Rstr点来确定该点对应的订单是否由courier承运
+                Order o = orders.OrderList[n.orderNum];
+                if (!o.rstrNode.isMeet && !o.cstmNode.isMeet) { //确定被移除的order对应的node不是meetNode
+                    toremoveOrderList.add(o);    
+                }
+            }
+        }
         for (int i = 0; i < q; i++) {
             Order o = toremoveOrderList.get(rand.nextInt(toremoveOrderList.size()));
-            if (o.pickVehicle != courier || o.deliVehicle != courier) {
-                i--;
-                continue;
-            }
             toremoveOrderList.remove(o);
-            removedOrderList.add(o);
-            routeSeq.remove(o.cstmNode);
-            routeSeq.remove(o.rstrNode);
+            if (!removedOrderList.contains(o)) {
+                removedOrderList.add(o);
+                routeSeq.remove(o.cstmNode);
+                routeSeq.remove(o.rstrNode);
+            } else {
+                i--;
+            }
         }
         //return removedOrderList;
     }
@@ -247,7 +260,6 @@ class TrivalSolver extends Solver {
         return;
     }
 
-
     PseudoSolution regeretInsertOne(ArrayList<Node> toInsertList, Order order, int k){
         int length = toInsertList.size();
 
@@ -263,9 +275,13 @@ class TrivalSolver extends Solver {
                 ArrayList<Node> toInsert_cstm = new ArrayList<Node>(toInsert_rstr); // the route to be insert(in the cstm insert step)
                 toInsert_cstm.add(j, order.cstmNode);   //TODO: a lot can be optimized, there is no need for create a new array?
                 /* rebuild the solution base on the tempRoute */
-                instantiateSolution_t(toInsert_cstm);
+                instantiateSolution_t_routeSeq(toInsert_cstm);
                 /* compute the ObjF & record the lowest k ObjF */
                 insertObjfPool.inpool( - ObjfValue(), toInsert_cstm); 
+                
+                //TODO debug:: hotfix
+                //Functions.printRouteSeq(toInsert_cstm);
+                
                 //'- ObjfValue' inpool will save the max k, we need save the lowest k 
             }
         } 
@@ -277,7 +293,6 @@ class TrivalSolver extends Solver {
         return propInsertation;
     }
 
-
     private double regretK(OddPool insertObjfPool){
         double regretk = 0; 
         double minObjf =  - insertObjfPool.list.getFirst();
@@ -287,7 +302,6 @@ class TrivalSolver extends Solver {
         return regretk;
     }
     
-
     double order_relatedness(Order o1, Order o2){
         double p_dis = 1; 
         double p_time = 1;
