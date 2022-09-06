@@ -22,7 +22,7 @@ public class Main {
         /* readData from csv */
         dataMatrix = ReadDataFromCSV.readDoubleToMatrix("../insgen/exNODES.csv");
         truckDistanceMatrix = ReadDataFromCSV.readDoubleToMatrix("../insgen/Tt.csv");
-        droneDistanceMatrix = ReadDataFromCSV.readDoubleToMatrix("../insgen/Tt.csv"); //TODO 暂时使用truck矩阵 
+        droneDistanceMatrix = ReadDataFromCSV.readDoubleToMatrix("../insgen/Td.csv"); //TODO 暂时使用truck矩阵 
         
         /* initialize Nodes */
         nodes = new Nodes(dataMatrix);
@@ -32,8 +32,8 @@ public class Main {
         orders = new Orders(nodes.orderNodeList);  
         
         /* initialize vehicle */
-        Courier courier = new Courier(0, 10, startnode /*nodes.NodeList[2]*/);
-        Drone[] droneList = new Drone[]{new Drone(0, 20, nodes.NodeList[0], droneDistanceMatrix)};
+        Courier courier = new Courier(0, startnode, truckDistanceMatrix);
+        Drone[] droneList = new Drone[]{new Drone(0, nodes.NodeList[0], droneDistanceMatrix)};
         droneList[0].computeFeasibleFlight(nodes);
         droneList[0].showFeasibleFlight();
 
@@ -55,7 +55,7 @@ public class Main {
         System.out.println();
         
         //solver.LNS1r_test(3);
-        solver.LNS1r(100,3);
+        solver.LNS1r(50000,2);
         System.out.println("---------------------   LNS1_drone (100) Solution  ---------------------");
         solver.printSolution(); 
         System.out.println();
@@ -88,8 +88,8 @@ public class Main {
         orders = new Orders(nodes.orderNodeList);  
         
         /* initialize vehicle */
-        Courier courier = new Courier(0, 10, startnode /*nodes.NodeList[2]*/);
-        Drone[] droneList = new Drone[]{new Drone(0, 20, startnode, droneDistanceMatrix)};
+        Courier courier = new Courier(0, startnode, truckDistanceMatrix);
+        Drone[] droneList = new Drone[]{new Drone(0, startnode, droneDistanceMatrix)};
 
 
         /* initialize solution */

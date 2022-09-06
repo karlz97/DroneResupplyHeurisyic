@@ -11,15 +11,19 @@ abstract class Vehicle {
     double speed;
     Node position;
     double time;
+    Double[][] distanceMatrix;
 
     
-    public Vehicle(int id, double speed, Node startPosition){
+    public Vehicle(int id, Node startPosition){
         this.id = id;
-        this.speed = speed;
+        //this.speed = speed;
         this.time = 0;
         this.position = startPosition; 
     }
 
+    public double callNodeDistance(Node node1 ,Node node2){
+        return distanceMatrix[node1.id][node2.id];
+    }
 
     // ArrayList<Route> routeSeq //方便起见没有再创类，免得每次使用还得初始化
 }
@@ -29,8 +33,9 @@ abstract class Vehicle {
 class Courier extends Vehicle{
     ArrayList<Node> routeSeq; //直接引用NodeList里面的Node不用初始化
     ArrayList<Integer> timeSeq; 
-    public Courier(int id, double speed, Node startPosition){
-        super(id, speed, startPosition);
+    public Courier(int id, Node startPosition, Double[][] distanceMatrix){
+        super(id, startPosition);
+        this.distanceMatrix = distanceMatrix;
         routeSeq = new ArrayList<Node>();
         routeSeq.add(position); //将起始点加入
         timeSeq = new ArrayList<Integer>();
@@ -39,16 +44,14 @@ class Courier extends Vehicle{
 
 class Drone extends Vehicle{
     final int MAXFILGHT = 50;
-    double meetTime;
     ArrayList<Flight> flights;
     int currFlight_id = 0; //mainly used to buildFlight(determine the arrive time of each node)
-    Double[][] distanceMatrix;
     LinkedList<Node>[] feasibleSupplySet;
     LinkedList<Node>[] feasibleTransferSet;
     LinkedList<Node>[][] feasibleLandSet;
 
-    public Drone(int id, double speed, Node startPosition, Double[][] distanceMatrix){
-        super(id, speed, startPosition);
+    public Drone(int id, Node startPosition, Double[][] distanceMatrix){
+        super(id, startPosition);
         flights = new ArrayList<Flight>();
         this.distanceMatrix = distanceMatrix;
     }
@@ -97,8 +100,7 @@ class Drone extends Vehicle{
 
     /* reversely build the current flight, update the gap time */
     void retroBuildFlight(double meetTime){
-        // assume
-        currFlight_id --;
+        currFlight_id--;
         Flight currFlight = flights.get(currFlight_id);
         
         /* found the meetFlight_id, update the gapTime(waitTime) of flights  */
@@ -119,10 +121,7 @@ class Drone extends Vehicle{
             lastLandTime = 0;
         }
         currFlight.gapTime = currFlight.launchTime - lastLandTime;
-    }
-
-    public double callNodeDistance(Node node1 ,Node node2){
-        return distanceMatrix[node1.id][node2.id];
+        currFlight_id++;
     }
 
     public void computeFeasibleFlight(Nodes nodes) {

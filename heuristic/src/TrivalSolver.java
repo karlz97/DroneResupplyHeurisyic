@@ -193,7 +193,7 @@ class TrivalSolver extends Solver {
             if (o.pickVehicle != courier || o.deliVehicle != courier) {
                 continue;
             }
-            double relatedness = order_relatedness(order_in, o);
+            double relatedness = order_relatedness(courier, order_in, o);
             orderPool.inpool(relatedness, i);         //一趟循环下来，pool里面将所有relatedness排好序并带有对应的index
         }
         //System.out.println("orderlistlen:" + orderlistlen);
@@ -302,12 +302,12 @@ class TrivalSolver extends Solver {
         return regretk;
     }
     
-    double order_relatedness(Order o1, Order o2){
+    double order_relatedness(Vehicle vehicle, Order o1, Order o2){
         double p_dis = 1; 
         double p_time = 1;
         //float p_nodetype = 5;
-        double relatedness = p_dis * ( callNodeDistance(o1.cstmNode, o2.cstmNode) + 
-                                        callNodeDistance(o1.rstrNode, o2.rstrNode) ) + 
+        double relatedness = p_dis * ( vehicle.callNodeDistance(o1.cstmNode, o2.cstmNode) + 
+                                        vehicle.callNodeDistance(o1.rstrNode, o2.rstrNode) ) + 
                              p_time * ( ( o1.T_prepared - o2.T_prepared ) + 
                                          ( o1.T_expected - o2.T_expected ) );
         return relatedness;                         

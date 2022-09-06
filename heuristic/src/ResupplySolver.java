@@ -21,34 +21,6 @@ class ResupplySolver extends TrivalSolver{
 
     void instantiateSolution_d(Courier courier){
         ArrayList<Node> routeSeq = courier.routeSeq;
-        
-        // //--------------  debug::::
-        // Functions.printRouteSeq(routeSeq);
-        // Drone dd = drones[0];
-        // LinkedList<Node> flightSeq = new LinkedList<>();
-        // for (Flight flight : dd.flights) {
-        //     flightSeq.add(flight.launchNode);
-        //     flightSeq.add(flight.pickupNode);
-        //     flightSeq.add(flight.supplyNode);
-        //     flightSeq.add(flight.landNode);
-        // }
-        // System.out.print("Flights[0]:");
-        // int c = 0;
-        // for (Node node : flightSeq) {
-        //     c ++;
-        //     if( node != null)
-        //         System.out.print( node.id + " --> ");
-        //     else
-        //         System.out.print("* --> ");
-        //     if (c == 4) {
-        //         System.out.print("||");
-        //         c = 0;
-        //     }
-        // }
-        // System.out.println("end");
-        // System.out.println("--------------------------------------------------------------------------------");
-
-
         /* reset all order, nodes to initial */
         for(int i = 0; i<orders.OrderList.length; i++) {
             orders.OrderList[i].reset_r();  //only reset the order but not the related node.
@@ -68,7 +40,10 @@ class ResupplySolver extends TrivalSolver{
         Node currNode;      //temp variables to speedup the program
         Order currOrder = null;    //temp variables
         courier.position  = routeSeq.get(0); //deal      with startnode
-        courier.time = 0;
+        courier.time = 0; 
+        for (Drone d : drones) {
+            d.time = 0;
+        }
         for(int i = 1; i<routeSeq.size(); i++) {  //start after the startnode
             currNode = routeSeq.get(i);
 
@@ -76,7 +51,6 @@ class ResupplySolver extends TrivalSolver{
             if(currNode.orderNum != -1){    //if it is an order node, update the order
                 currOrder = orders.OrderList[currNode.orderNum];
                 courier.time = earlistExecuteTime(currOrder, courier); //Because during a feasible solution route, it always pickup first.
-                //currOrder.update(courier.time);  //For more structured progame and mode reuse, here is couples of overhead 
             }else{                          //if it is not an order node, don't need update the order
                 courier.time = earlistExecuteTime(currNode, courier);
             }
@@ -88,12 +62,13 @@ class ResupplySolver extends TrivalSolver{
 
                 Drone drone = currNode.meetDrone;
                 /*  compute the earlist time of drone arrive meetNode */
-                drone.meetTime = drone.buildFlight(currNode); 
+                drone.time = drone.buildFlight(currNode); 
 
                 /* determine the meet time of meetNode */
                 if (courier.time > drone.time) {    //courier arrive later
                     //reversely build Flight by supplyTime and determine the gap time;
                     drone.retroBuildFlight(courier.time);
+                    drone.time = courier.time;
                     currNode.courierWaitTime = 0; 
                 }else{      //drone arrive later
                     //add wait time at last node
@@ -103,6 +78,14 @@ class ResupplySolver extends TrivalSolver{
                 //update the node
                 courier.position = currNode;
                 currNode.T_drone = drone.time;
+                
+                /*  update the order status.... tell the order it has been picked up;
+                Not exactly the right place and right time (should be in 'buildFlight' & 'retroBuildFlight')
+                but update here will not hurt because the pickup time is not important. 
+                */
+                orders.OrderList[drone.flights.get(drone.currFlight_id - 1).pickupNode.orderNum].update(drone, -1);
+
+
             }else{  /* currNode is not a meetNode */
                 currNode.courierWaitTime = 0;
                 courier.position = currNode;
@@ -215,107 +198,108 @@ class ResupplySolver extends TrivalSolver{
             //randomly choose one drone
             r = rand.nextInt(this.drones.length);
             d = drones[r];
-            //this.randomFlightRemovalOne(d);
-
-            Functions.checkDuplicate(removedOrderList); //TODO debug
-
-            int check_size1 = removedOrderList.size(); //TODO debug
+            //this.randomFlightRemovalOne(d); ///////////////////////////////
 
             /* remove the courier node if necessary */
             if(removedOrderList.size() < sizeOfNeiborhood) {
                 this.randomRemoval(courier, sizeOfNeiborhood - removedOrderList.size());
-            }
-
-            int check_size2 = removedOrderList.size(); //TODO debug
-            Functions.checkDuplicate(removedOrderList);
-            
+            }           
             
             /* Print Removed Status */
-            Functions.printDebug("--------------++ After Removal ++-------------");
-            System.out.print("removedOrder's NodeList: ");
-            for (Order o1 : removedOrderList) {
-                System.out.print(o1.cstmNode.id + ", ");
-                System.out.print(o1.rstrNode.id + ", ");
-            }System.out.println();
-            System.out.println("Drone position: "+ drones[0].position.id);   
-            System.out.println();
-            Functions.printRouteSeq(courier.routeSeq);
-            
-            //print flight
-            Drone dd = drones[0];
-            LinkedList<Node> flightSeq = new LinkedList<>();
-            for (Flight flight : dd.flights) {
-                flightSeq.add(flight.launchNode);
-                flightSeq.add(flight.pickupNode);
-                flightSeq.add(flight.supplyNode);
-                flightSeq.add(flight.landNode);
+            if (true) {
+            //     Functions.printDebug("--------------++ After Removal ++-------------");
+            //     System.out.print("removedOrder's NodeList: ");
+            //     for (Order o1 : removedOrderList) {
+            //         System.out.print(o1.cstmNode.id + ", ");
+            //         System.out.print(o1.rstrNode.id + ", ");
+            //     }System.out.println();
+            //     System.out.println("Drone position: "+ drones[0].position.id);   
+            //     System.out.println();
+            //     Functions.printRouteSeq(courier.routeSeq);
+                
+            //     //print flight
+            //     Drone dd = drones[0];
+            //     LinkedList<Node> flightSeq = new LinkedList<>();
+            //     for (Flight flight : dd.flights) {
+            //         flightSeq.add(flight.launchNode);
+            //         flightSeq.add(flight.pickupNode);
+            //         flightSeq.add(flight.supplyNode);
+            //         flightSeq.add(flight.landNode);
+            //     }
+            //     System.out.print("Flights[0]:");
+            //     int c = 0;
+            //     for (Node node : flightSeq) {
+            //         c ++;
+            //         if( node != null)
+            //             System.out.print( node.id + " --> ");
+            //         else
+            //             System.out.print("* --> ");
+            //         if (c == 4) {
+            //             System.out.print("||");
+            //             c = 0;
+            //         }
+            //     }
+            //     System.out.println("end");
+            //     Functions.printDebug("---------------------------------------------");
             }
-            System.out.print("Flights[0]:");
-            int c = 0;
-            for (Node node : flightSeq) {
-                c ++;
-                if( node != null)
-                    System.out.print( node.id + " --> ");
-                else
-                    System.out.print("* --> ");
-                if (c == 4) {
-                    System.out.print("||");
-                    c = 0;
-                }
-            }
-            System.out.println("end");
-            Functions.printDebug("---------------------------------------------");
 
             /* ------------ insert heuristic -------------- */
             /* insert flight */
             this.randomSupplyFlightCreate_order();
             r = rand.nextInt(this.drones.length);
             // this.randomTransferFlightCreate(d);
-            Functions.checkDuplicate(removedOrderList);
 
             /* insert courier */
             this.regeretInsert(courier, removedOrderList, 3);
-            Functions.checkDuplicate(removedOrderList);
+
+
+            /* Print Insert Status*/
+            if (true) {
+                // Functions.printDebug("--------------++ After Insertaion ++-------------");
+                // System.out.print("removedOrderList: ");
+                // for (Order o1 : removedOrderList) {
+                //     System.out.print(o1.cstmNode.id + ", ");
+                //     System.out.print(o1.rstrNode.id + ", ");
+                // }System.out.println();
+
+                // //print courier route
+                // Functions.printRouteSeq(courier.routeSeq);
+                
+                // //print flight route
+                // flightSeq = new LinkedList<>();
+                // for (Flight flight : dd.flights) {
+                //     flightSeq.add(flight.launchNode);
+                //     flightSeq.add(flight.pickupNode);
+                //     flightSeq.add(flight.supplyNode);
+                //     flightSeq.add(flight.landNode);
+                // }
+                // System.out.print("Flights[0]:");
+                // c = 0;
+                // for (Node node : flightSeq) {
+                //     c ++;
+                //     if( node != null)
+                //         System.out.print( node.id + " --> ");
+                //     else
+                //         System.out.print("* --> ");
+                //     if (c == 4) {
+                //         System.out.print("||");
+                //         c = 0;
+                //     }
+                // }
+                // System.out.println("end");
+
+                // /* instantiateSolution */
+                // this.instantiateSolution_d(courier);
+                // double tempObjValue = this.ObjfValue();
+                
+                // Functions.printAlert("ObjValue: " + tempObjValue);
+                // Functions.printDebug("-------------------------------------------------");
+            }
 
             /* instantiateSolution */
             this.instantiateSolution_d(courier);
             double tempObjValue = this.ObjfValue();
-            Functions.checkDuplicate(removedOrderList);
 
-
-            /* Print Insert */
-            Functions.printDebug("--------------++ After Insertaion ++-------------");
-            System.out.print("removedOrderList: ");
-            for (Order o1 : removedOrderList) {
-                System.out.print(o1.cstmNode.id + ", ");
-                System.out.print(o1.rstrNode.id + ", ");
-            }System.out.println();
-
-            Functions.printRouteSeq(courier.routeSeq);
-            
-            //print flight
-            flightSeq = new LinkedList<>();
-            for (Flight flight : dd.flights) {
-                flightSeq.add(flight.launchNode);
-                flightSeq.add(flight.pickupNode);
-                flightSeq.add(flight.supplyNode);
-                flightSeq.add(flight.landNode);
-            }
-            System.out.print("Flights[0]:");
-            c = 0;
-            for (Node node : flightSeq) {
-                c ++;
-                if( node != null)
-                    System.out.print( node.id + " --> ");
-                else
-                    System.out.print("* --> ");
-                if (c == 4) {
-                    System.out.print("||");
-                    c = 0;
-                }
-            }
-            System.out.println("end");
-            Functions.printDebug("-------------------------------------------------");
 
             /*  TODO accept solution with probability */
             if (tempObjValue < minObjfValue) {
@@ -446,15 +430,15 @@ class ResupplySolver extends TrivalSolver{
         
         // Randomly CHOOSE one order to resupply
         if (feasibleOrderList.size() == 0) {
-            Functions.printAlert("can't find feasible order");
+            // Functions.printAlert("can't find feasible order");
             return;
         }
 
         int r = rand.nextInt(feasibleOrderList.size());
-        Order o = feasibleOrderList.get(r);
-        removedOrderList.remove(o);  //remove the oreder from <reinsert list>
+        Order theInsertOrder = feasibleOrderList.get(r);
+        removedOrderList.remove(theInsertOrder);  //remove the oreder from <reinsert list>
 
-        Node pickupNode = o.rstrNode, supplyNode, landNode; //assume pickupNode == launchNode;
+        Node pickupNode = theInsertOrder.rstrNode, supplyNode, landNode; //assume pickupNode == launchNode;
         Drone drone = null; 
         for (Drone d : drones) {
             if (d.position == pickupNode) {
@@ -474,34 +458,37 @@ class ResupplySolver extends TrivalSolver{
         List<Node> feasibleSupplyList = new ArrayList<Node>();
         LinkedList<Node> Set1 = drone.feasibleSupplySet[pickupNode.id];
         Courier courier1 = this.courier;  //以后有多个courier时需要其他方法来确定
+        ArrayList<Node> courier1RouteSeq = courier1.routeSeq;
         int lastMeetNodePosition = 0;
-        for (int i = courier1.routeSeq.size() - 1; i >= 0; i--) {
-            if (courier1.routeSeq.get(i).isMeet) 
+        for (int i = courier1RouteSeq.size() - 1; i >= 0; i--) {
+            if (courier1RouteSeq.get(i).isMeet) 
                 lastMeetNodePosition = i; //找到lastMeetNode
         } 
-        for (int i = lastMeetNodePosition; i < courier1.routeSeq.size(); i ++) {
-            Node n = courier1.routeSeq.get(i);
+        for (int i = lastMeetNodePosition; i < courier1RouteSeq.size(); i ++) {
+            Node n = courier1RouteSeq.get(i);
             if (Set1.contains(n))
                 feasibleSupplyList.add(n);
         }
 
-        System.out.print("LastMeetNode:" + courier1.routeSeq.get(lastMeetNodePosition).id + " ,feasibleSupplyList: ");
-        for (Node n1 : feasibleSupplyList) {
-            System.out.print(n1.id + ", ");
-        }System.out.println();
-        System.out.print("Courier routeSeq: ");
-        for (Node n1 : courier1.routeSeq) {
-            System.out.print(n1.id + " --> ");
-        }System.out.println("end");
+        if (true) {   // debug prints
+            // System.out.print("LastMeetNode:" + courier1RouteSeq.get(lastMeetNodePosition).id + " ,feasibleSupplyList: ");
+            // for (Node n1 : feasibleSupplyList) {
+            //     System.out.print(n1.id + ", ");
+            // }System.out.println();
+            // System.out.print("Courier routeSeq: ");
+            // for (Node n1 : courier1RouteSeq) {
+            //     System.out.print(n1.id + " --> ");
+            // }System.out.println("end");
+        }
 
         if (feasibleSupplyList.isEmpty()) {
             Functions.printAlert("can't find feasibleSupplyList");
+            removedOrderList.add(theInsertOrder);
             return;
         }
-
-        //find the last supply node in the courier's routeseq
-        
-
+           
+        /* find the last supply node in the courier's routeseq */
+    
         r = rand.nextInt(feasibleSupplyList.size());
         supplyNode = feasibleSupplyList.get(r);
         
@@ -513,7 +500,6 @@ class ResupplySolver extends TrivalSolver{
         Flight f = new Flight(pickupNode, pickupNode, supplyNode, landNode);
         // update supply node (note the meet information)
         supplyNode.reset();
-        Functions.printDebug("set isMeet! for node:" + supplyNode.id); //TODO debug
         supplyNode.isMeet = true;
         supplyNode.meetCourier = courier;
         supplyNode.meetDrone = drone;
@@ -523,6 +509,14 @@ class ResupplySolver extends TrivalSolver{
         // update the status of drone
         drone.position = f.landNode;
         
+        /* greedily insert the delivery (cstm) node to courier */        
+        for (int i = lastMeetNodePosition; i < courier1RouteSeq.size(); i++) { //find the position of drone supplynode
+            if(courier1RouteSeq.get(i) == supplyNode) {
+                r = rand.nextInt(courier1RouteSeq.size() - i);
+                courier1RouteSeq.add(i + r + 1, theInsertOrder.cstmNode);
+            }
+        }
+
     }
 
     void randomTransferFlightCreate(Drone drone){

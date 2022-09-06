@@ -33,10 +33,6 @@ abstract class Solver {
 
     abstract void instantiateSolution();  //instantiate the Solution including setup from route.
 
-    public double callNodeDistance(Node node1 ,Node node2){
-        return distanceMatrix[node1.id][node2.id];
-    }
-
     public double earlistExecuteTime_lfn(Order order, Vehicle vehicle){
         Node orderNode;
         double prepared_lfn; //prepared time left from now
@@ -51,14 +47,7 @@ abstract class Solver {
         if (order.isDelivered){
             return -1;
         }
-        // Get the distance between the order corresbonding nodes and current vehicle position
-        /*// Norm2 approach 
-        double x_order = orderNode.coord[0];
-        double y_order = orderNode.coord[1];
-        double x_vhcle  = vehiclePosition.coord[0];
-        double y_vhcle  = vehiclePosition.coord[1];
-        double distance = Functions.computeNorm2Distance(x_order, y_order, x_vhcle, y_vhcle); */
-        return Math.max(prepared_lfn, callNodeDistance(orderNode, vehicle.position));
+        return Math.max(prepared_lfn, vehicle.callNodeDistance(orderNode, vehicle.position));
     }
 
     public double earlistExecuteTime(Order order, Vehicle vehicle){
@@ -66,7 +55,7 @@ abstract class Solver {
     }
 
     public double earlistExecuteTime(Node node, Vehicle vehicle){
-        return vehicle.time + callNodeDistance(node, vehicle.position);
+        return vehicle.time + vehicle.callNodeDistance(node, vehicle.position);
     }
 
     public double computeOrderPrioScore(Order order, Vehicle vehicle){

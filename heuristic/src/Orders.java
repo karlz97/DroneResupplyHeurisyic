@@ -150,7 +150,7 @@ class Order {
             T_delivered = time;
             return true;
         }else{
-            Functions.printAlert("WARNING!!! Update to a [delivered] order. Order:" + this.id);
+            Functions.printAlert("WARNING!!! Update to a [delivered] order. Order:" + this.id + "; Vehicle:" + vehicle.id);
             return false;
         }
     }
