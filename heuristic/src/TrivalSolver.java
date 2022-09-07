@@ -117,7 +117,6 @@ class TrivalSolver extends Solver {
             if (tempObjValue < minObjfValue) {
                 minObjfValue = tempObjValue;
                 candidateSolution = new Solution(courier);
-                //System.out.println("miniObjValue: " + minObjfValue);
                 Functions.printRouteSeq(candidateSolution.courierRoute);
             }
             iter++;

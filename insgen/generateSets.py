@@ -36,7 +36,7 @@ Lse = L|{ds,de}
 
 #Generate drone and truck object, calucate lenthMatrix
 de1 = gf.drone(2,15)
-tk1 = gf.truck(1, M)
+tk1 = gf.truck(1,M)
 
 Td = gf.calVehicleMatrix(de1,exNODES)    
 Tt = gf.calVehicleMatrix(tk1,exNODES)

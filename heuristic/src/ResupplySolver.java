@@ -103,14 +103,18 @@ class ResupplySolver extends TrivalSolver{
     void instantiateSolution(){
         recoverFromSolution(globalOptSolution);
         instantiateSolution_d(courier);
+        System.out.println("miniObjValue: " + this.ObjfValue()); //debug
     }
     
     @Override
     public void printSolution(){
-        //instantiateSolution_t(courierGlobalRouteSeq);
-        printSolution_Courier(globalOptSolution);
-        printSolution_Flight(globalOptSolution);
-        recoverFromSolution(globalOptSolution);
+        printSolution(globalOptSolution);
+    } 
+
+    public void printSolution(Solution s){
+        printSolution_Courier(s);
+        printSolution_Flight(s);
+        recoverFromSolution(s);
         instantiateSolution_d(courier);
         System.out.println("ObjF: " + ObjfValue());  
     } 
@@ -182,63 +186,29 @@ class ResupplySolver extends TrivalSolver{
     public void LNS1r(int maxIteration, int sizeOfNeiborhood){  //TODO
         
         /* 仅用于储存临时解，全局最优解在globalOptSolution中 */
-        Solution candidateSolution = null;
+        Solution candidateSolution = new Solution(globalOptSolution);
+        removedOrderList = new ArrayList<>();
         double minObjfValue = ObjfValue();
         /* Acceptance and Stopping Criteria */
-        int iter = 0;
-        int r; Drone d;
+        int iter = 0; int r;
         while (iter < maxIteration) {
             /* resume the status from global optimal */
-            recoverFromSolution(globalOptSolution);
+            recoverFromSolution(candidateSolution);
             Functions.checkDuplicate(removedOrderList);
 
             /* ------------ remove heuristic -------------- */
             /* remove the flight first; 1.remove the whole flight, 2.only canceled the fly task + remove useless transfer */
             //randomly choose one drone
             r = rand.nextInt(this.drones.length);
-            d = drones[r];
-            //this.randomFlightRemovalOne(d); ///////////////////////////////
+            Drone d = drones[r];
+            this.randomFlightRemovalOne(d);
 
             /* remove the courier node if necessary */
             if(removedOrderList.size() < sizeOfNeiborhood) {
                 this.randomRemoval(courier, sizeOfNeiborhood - removedOrderList.size());
             }           
             
-            /* Print Removed Status */
-            Functions.printDebug("--------------++ After Removal ++-------------");
-            System.out.print("removedOrder's NodeList: ");
-            for (Order o1 : removedOrderList) {
-                System.out.print(o1.cstmNode.id + ", ");
-                System.out.print(o1.rstrNode.id + ", ");
-            }System.out.println();
-            System.out.println("Drone position: "+ drones[0].position.id);   
-            System.out.println();
-            Functions.printRouteSeq(courier.routeSeq);
-            
-            //print flight
-            Drone dd = drones[0];
-            LinkedList<Node> flightSeq = new LinkedList<>();
-            for (Flight flight : dd.flights) {
-                flightSeq.add(flight.launchNode);
-                flightSeq.add(flight.pickupNode);
-                flightSeq.add(flight.supplyNode);
-                flightSeq.add(flight.landNode);
-            }
-            System.out.print("Flights[0]:");
-            int c = 0;
-            for (Node node : flightSeq) {
-                c ++;
-                if( node != null)
-                    System.out.print( node.id + " --> ");
-                else
-                    System.out.print("* --> ");
-                if (c == 4) {
-                    System.out.print("||");
-                    c = 0;
-                }
-            }
-            System.out.println("end");
-            Functions.printDebug("---------------------------------------------");
+            /* Print Removed Status --------------*/
 
             /* ------------ insert heuristic -------------- */
             /* insert flight */
@@ -249,68 +219,24 @@ class ResupplySolver extends TrivalSolver{
             /* insert courier */
             this.regeretInsert(courier, removedOrderList, 3);
 
-
-            /* Print Insert Status*/
-            Functions.printDebug("--------------++ After Insertaion ++-------------");
-            System.out.print("removedOrderList: ");
-            for (Order o1 : removedOrderList) {
-                System.out.print(o1.cstmNode.id + ", ");
-                System.out.print(o1.rstrNode.id + ", ");
-            }System.out.println();
-
-
-            //print courier route
-            Functions.printRouteSeq(courier.routeSeq);
-            
-            //print flight route
-            flightSeq = new LinkedList<>();
-            for (Flight flight : dd.flights) {
-                flightSeq.add(flight.launchNode);
-                flightSeq.add(flight.pickupNode);
-                flightSeq.add(flight.supplyNode);
-                flightSeq.add(flight.landNode);
-            }
-            System.out.print("Flights[0]:");
-            c = 0;
-            for (Node node : flightSeq) {
-                c ++;
-                if( node != null)
-                    System.out.print( node.id + " --> ");
-                else
-                    System.out.print("* --> ");
-                if (c == 4) {
-                    System.out.print("||");
-                    c = 0;
-                }
-            }
-            System.out.println("end");
+            /* Print Insert Status---------*/
 
             /* instantiateSolution */
             this.instantiateSolution_d(courier);
             double tempObjValue = this.ObjfValue();
-            
-            Functions.printAlert("ObjValue: " + tempObjValue);
-            if(!orders.allDone())
-                Functions.printAlert("some orders is not done.");
-            Functions.printDebug("-------------------------------------------------");
-
-            // /* instantiateSolution */
-            // this.instantiateSolution_d(courier);
-            // double tempObjValue = this.ObjfValue();
-
+        
 
             /*  TODO accept solution with probability */
             if (tempObjValue < minObjfValue) {
                 minObjfValue = tempObjValue;
                 candidateSolution = new Solution(courier,drones);
-                System.out.println("miniObjValue: " + minObjfValue);
-                Functions.printRouteSeq(candidateSolution.courierRoute);
+                printSolution(candidateSolution);
+                iter = 0;
             }
             iter++;
             /*  */
         }
-        if (candidateSolution != null)
-            globalOptSolution = candidateSolution;
+        globalOptSolution = candidateSolution;
         instantiateSolution();
     } 
 
@@ -364,8 +290,6 @@ class ResupplySolver extends TrivalSolver{
                 courier.routeSeq.remove(deliveryNode);
             }
         }
-
-        Functions.printDebug("r:"+ r + "  flights.size():" + drone.flights.size()); //TODO  debug:::
 
         //Remove the picked node and the subsequence nodes from flights & update the status of drone
         if (r == 0) {

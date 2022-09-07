@@ -222,11 +222,11 @@ class Solution {
         }
         
         ArrayList<Flight> flights = new ArrayList<>();
-        for (int i = 0; i < flightSeq.size(); i++) {
-            Node launchNode = flightSeq.poll();
-            Node pickupNode = flightSeq.poll();
-            Node supplyNode = flightSeq.poll();
-            Node landNode = flightSeq.poll();
+        for (int i = 0; i < flightSeq.size();) {
+            Node launchNode = flightSeq.get(i++);
+            Node pickupNode = flightSeq.get(i++);
+            Node supplyNode = flightSeq.get(i++);
+            Node landNode = flightSeq.get(i++);
             flights.add( new Flight(launchNode, pickupNode, supplyNode, landNode) );
         }
         return flights;

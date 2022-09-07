@@ -1,0 +1,79 @@
+    /* Print Removed Status */
+    Functions.printDebug("--------------++ After Removal ++-------------");
+    System.out.print("removedOrder's NodeList: ");
+    for (Order o1 : removedOrderList) {
+        System.out.print(o1.cstmNode.id + ", ");
+        System.out.print(o1.rstrNode.id + ", ");
+    }System.out.println();
+    System.out.println("Drone position: "+ drones[0].position.id);   
+    System.out.println();
+    Functions.printRouteSeq(courier.routeSeq);
+    
+    //print flight
+    Drone dd = drones[0];
+    LinkedList<Node> flightSeq = new LinkedList<>();
+    for (Flight flight : dd.flights) {
+        flightSeq.add(flight.launchNode);
+        flightSeq.add(flight.pickupNode);
+        flightSeq.add(flight.supplyNode);
+        flightSeq.add(flight.landNode);
+    }
+    System.out.print("Flights[0]:");
+    int c = 0;
+    for (Node node : flightSeq) {
+        c ++;
+        if( node != null)
+            System.out.print( node.id + " --> ");
+        else
+            System.out.print("* --> ");
+        if (c == 4) {
+            System.out.print("||");
+            c = 0;
+        }
+    }
+    System.out.println("end");
+    Functions.printDebug("---------------------------------------------");
+    
+    /* Print Insert Status*/
+    Functions.printDebug("--------------++ After Insertaion ++-------------");
+    System.out.print("removedOrderList: ");
+    for (Order o1 : removedOrderList) {
+        System.out.print(o1.cstmNode.id + ", ");
+        System.out.print(o1.rstrNode.id + ", ");
+    }System.out.println();
+
+
+    //print courier route
+    Functions.printRouteSeq(courier.routeSeq);
+    
+    //print flight route
+    flightSeq = new LinkedList<>();
+    for (Flight flight : dd.flights) {
+        flightSeq.add(flight.launchNode);
+        flightSeq.add(flight.pickupNode);
+        flightSeq.add(flight.supplyNode);
+        flightSeq.add(flight.landNode);
+    }
+    System.out.print("Flights[0]:");
+    c = 0;
+    for (Node node : flightSeq) {
+        c ++;
+        if( node != null)
+            System.out.print( node.id + " --> ");
+        else
+            System.out.print("* --> ");
+        if (c == 4) {
+            System.out.print("||");
+            c = 0;
+        }
+    }
+    System.out.println("end");
+
+    /* instantiateSolution */
+    this.instantiateSolution_d(courier);
+    double tempObjValue = this.ObjfValue();
+    
+    Functions.printAlert("ObjValue: " + tempObjValue);
+    if(!orders.allDone())
+        Functions.printAlert("some orders is not done.");
+    Functions.printDebug("-------------------------------------------------");

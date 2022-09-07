@@ -224,7 +224,8 @@ class drone(vehicle):
         
             
 class truck(vehicle):
-    def calNorm(self,position1,position2):       
+    def calNorm(self,position1,position2): 
+        ##return calNorm1(position1,position2)
         return calNorm1(position1,position2)
 
 

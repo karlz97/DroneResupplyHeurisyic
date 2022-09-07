@@ -1,5 +1,6 @@
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -35,7 +36,7 @@ public class Main {
         
         /* initialize vehicle */
         Courier courier = new Courier(0, startnode, truckDistanceMatrix);
-        Drone[] droneList = new Drone[]{new Drone(0, nodes.NodeList[2], droneDistanceMatrix)};
+        Drone[] droneList = new Drone[]{new Drone(0, nodes.NodeList[4], droneDistanceMatrix)};
         droneList[0].computeFeasibleFlight(nodes);
         droneList[0].showFeasibleFlight();
 
@@ -57,17 +58,23 @@ public class Main {
         System.out.println();
         
         //solver.LNS1r_test(3);
-        solver.LNS1r(5,1);
+        solver.LNS1r(5000,3);
         System.out.println("---------------------   LNS1_drone (100) Solution  ---------------------");
         solver.printSolution(); 
+        System.out.println("Routes: ");
+        for (Iterator<Node> it = solver.globalOptSolution.courierRoute.iterator(); it.hasNext();) {
+            System.out.print( it.next().id + ",");
+            // debug::: System.out.print( it.next().id + "(" +  + ")" + " --> ");
+        }
+
         System.out.println();
 
-        System.out.println("---------------------   Manually Solution       ---------------------");
+        System.out.println("---------------------   Manually Solution 1      ---------------------");
         /* mannally built a solution */ 
         ArrayList<Node> MRoute = null;
         ArrayList<Node> MFlight = null;
-        Integer[] routeArray = {0,3,5,8,1,6,7,4,9};
-        Integer[] flightArray = {2,2,5,2};
+        Integer[] routeArray = {0,1,2,6,5,3,7,8,9};
+        Integer[] flightArray = {4,4,8,4};
         Drone drone = droneList[0];
         MRoute = Functions.buildNodeSeqFromArray(routeArray, startnode, nodes.NodeList);
         MFlight = Functions.buildNodeSeqFromArray(flightArray, null, nodes.NodeList);
@@ -78,6 +85,23 @@ public class Main {
         /* recover the solution and instantiate it */
         solver.globalOptSolution = MSolution;
         solver.printSolution();
+
+        // System.out.println("---------------------   Manually Solution 2     ---------------------");
+        // /* mannally built a solution */ 
+        // MRoute = null;
+        // MFlight = null;
+        // routeArray = new Integer[]{0,1,2,6,5,3,7,8,9};
+        // flightArray = new Integer[]{4,4,8,4};
+        // drone = droneList[0];
+        // MRoute = Functions.buildNodeSeqFromArray(routeArray, startnode, nodes.NodeList);
+        // MFlight = Functions.buildNodeSeqFromArray(flightArray, null, nodes.NodeList);
+        // Mflights = new List[1];
+        // Mflights[0] = MFlight;
+        // MSolution = new Solution(MRoute, Mflights); 
+
+        // /* recover the solution and instantiate it */
+        // solver.globalOptSolution = MSolution;
+        // solver.printSolution();
     }    
 
     private static void main2() throws IOException{
