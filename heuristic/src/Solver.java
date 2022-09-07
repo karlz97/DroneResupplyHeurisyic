@@ -189,6 +189,13 @@ class Solution {
         courierRoute = new ArrayList<Node>(courier.routeSeq);
     }
 
+    public Solution(List<Node> courierRoute, List<Node>[] flightSeqs) {
+        this.courierRoute = new ArrayList<Node>(courierRoute);
+        this.flightSeqs = new LinkedList[flightSeqs.length];
+        for (int i = 0; i < flightSeqs.length; i++) {
+            this.flightSeqs[i] = new LinkedList<Node>(flightSeqs[i]);
+        }
+    }
 
     public Solution(Courier courier, Drone[] drones) {
         this(courier);
@@ -198,7 +205,7 @@ class Solution {
         }
     }
 
-    private LinkedList<Node> serializeFlights(ArrayList<Flight> flights) {
+    public static LinkedList<Node> serializeFlights(ArrayList<Flight> flights) {
         LinkedList<Node> flightSeq = new LinkedList<>();
         for (Flight flight : flights) {
             flightSeq.offer(flight.launchNode);
@@ -209,7 +216,7 @@ class Solution {
         return flightSeq;
     }
 
-    public ArrayList<Flight> deSerializeFlights(LinkedList<Node> flightSeq) {
+    public static ArrayList<Flight> deSerializeFlights(LinkedList<Node> flightSeq) {
         if (flightSeq == null) {
             return new ArrayList<Flight>();
         }

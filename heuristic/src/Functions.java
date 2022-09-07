@@ -2,6 +2,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 
 
@@ -32,14 +33,17 @@ class Functions{
         }
     }
 
-    static public ArrayList<Node> buildFromArray(Integer[] routeArray, Node startnode, Node[] NodeList){
+    static public ArrayList<Node> buildNodeSeqFromArray(Integer[] routeArray, Node startnode, Node[] NodeList){
         ArrayList<Node> routeSeq = new ArrayList<>();
-        routeSeq.add(startnode);
+        if (startnode != null)
+            routeSeq.add(startnode);
         for (int i = 0; i < routeArray.length; i++) {
             routeSeq.add(NodeList[routeArray[i]]);
         }
+        
         return routeSeq;
     }
+
 
     static public void printRouteSeq(List<Node> routeSeq){
         System.out.println("Routes: ");

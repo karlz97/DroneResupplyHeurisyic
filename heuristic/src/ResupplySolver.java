@@ -110,8 +110,9 @@ class ResupplySolver extends TrivalSolver{
         //instantiateSolution_t(courierGlobalRouteSeq);
         printSolution_Courier(globalOptSolution);
         printSolution_Flight(globalOptSolution);
+        recoverFromSolution(globalOptSolution);
+        instantiateSolution_d(courier);
         System.out.println("ObjF: " + ObjfValue());  
-        //TODO solution.obj_value; ObjfValue实际上是对当前的Order状态计算得到的，如果没有initialization solution正确的话，结果可能有错
     } 
 
     
@@ -149,9 +150,7 @@ class ResupplySolver extends TrivalSolver{
             但注意 Nodes中的 isMeet 和 meetCourier, meetDrone 是与解相关的信息，理想的话应该与Node解耦合，但是现在还没空做
             */
     
-        for (Node n : nodes.NodeList) { 
-            n.reset();
-        }
+        nodes.reset();
         courier.routeSeq = new ArrayList<>(solution.courierRoute);
         if (solution.flightSeqs == null) {
             for (int i = 0; i < drones.length; i ++) {
@@ -259,6 +258,7 @@ class ResupplySolver extends TrivalSolver{
                 System.out.print(o1.rstrNode.id + ", ");
             }System.out.println();
 
+
             //print courier route
             Functions.printRouteSeq(courier.routeSeq);
             
@@ -290,6 +290,8 @@ class ResupplySolver extends TrivalSolver{
             double tempObjValue = this.ObjfValue();
             
             Functions.printAlert("ObjValue: " + tempObjValue);
+            if(!orders.allDone())
+                Functions.printAlert("some orders is not done.");
             Functions.printDebug("-------------------------------------------------");
 
             // /* instantiateSolution */

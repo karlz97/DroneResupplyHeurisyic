@@ -15,7 +15,6 @@ class Nodes{
 
 
     public Nodes(Double[][] nodeData){
-
         /*count Numbers... 数组长度只能静态声明很烦,只能暂时记个数 */
         for (int i = 0; i < nodeData.length; i++) {
             Double[] temp = nodeData[i];
@@ -63,6 +62,21 @@ class Nodes{
             numOfNodes++;
         }
     }
+
+    
+    public void reset_r(){
+        for (Node n : NodeList) { 
+            n.reset_r();
+        }
+    }
+    
+    public void reset(){
+        for (Node n : NodeList) { 
+            n.reset();
+        }
+    }
+
+
 }
 
 
