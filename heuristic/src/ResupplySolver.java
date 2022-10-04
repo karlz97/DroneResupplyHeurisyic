@@ -226,13 +226,16 @@ class ResupplySolver extends TrivalSolver{
             double tempObjValue = this.ObjfValue();
         
 
-            /*  TODO accept solution with probability */
+            
+        
             if (tempObjValue < minObjfValue) {
                 minObjfValue = tempObjValue;
                 candidateSolution = new Solution(courier,drones);
                 printSolution(candidateSolution);
                 iter = 0;
-            }
+            } else { /*  TODO accept solution with probability */
+                
+            }   
             iter++;
             /*  */
         }
