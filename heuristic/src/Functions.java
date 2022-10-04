@@ -143,4 +143,33 @@ class Functions{
         }
         return false;
     }
+
+    static public void printSolution_Flight(Solution s) {
+        if (s.flightSeqs != null) {
+            for (int i = 0; i < s.flightSeqs.length; i++) {
+                System.out.println("Flights[" + i + "]:");
+                LinkedList<Node> flightSeq =  s.flightSeqs[i];
+                for (Node node : flightSeq) {
+                    System.out.print( node.id + " --> ");
+                }
+                System.out.println();
+            }
+        } else {
+            System.out.println("flightseq is empty");  
+        }
+    }
+    
+    static public void printSolution_Courier(Solution s) {
+        System.out.println("Routes: ");
+        for (Iterator<Node> it = s.courierRoute.iterator(); it.hasNext();) {
+            System.out.print( it.next().id + " --> ");
+            // debug::: System.out.print( it.next().id + "(" +  + ")" + " --> ");
+        }
+        if (orders.allDone()) {
+            System.out.println("finished.");   
+        }else{
+            System.out.println("unfinieshed.");
+        }
+    }
 }
+

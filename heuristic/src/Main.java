@@ -12,8 +12,7 @@ import org.w3c.dom.css.Counter;
 public class Main {
     public static void main(String[] args) throws IOException {
         main3();
-    }
-
+    }   
 
 
     private static void main3() throws IOException{

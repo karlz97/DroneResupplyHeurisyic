@@ -18,7 +18,6 @@ class ResupplySolver extends TrivalSolver{
         this.drones = droneList;
     }
 
-
     void instantiateSolution_d(Courier courier){
         ArrayList<Node> routeSeq = courier.routeSeq;
         /* reset all order, nodes to initial */
@@ -112,48 +111,18 @@ class ResupplySolver extends TrivalSolver{
     } 
 
     public void printSolution(Solution s){
-        printSolution_Courier(s);
-        printSolution_Flight(s);
+        Functions.printSolution_Courier(s);
+        Functions.printSolution_Flight(s);
         recoverFromSolution(s);
         instantiateSolution_d(courier);
         System.out.println("ObjF: " + ObjfValue());  
     } 
-
-    
-    private void printSolution_Flight(Solution s) {
-        if (s.flightSeqs != null) {
-            for (int i = 0; i < s.flightSeqs.length; i++) {
-                System.out.println("Flights[" + i + "]:");
-                LinkedList<Node> flightSeq =  s.flightSeqs[i];
-                for (Node node : flightSeq) {
-                    System.out.print( node.id + " --> ");
-                }
-                System.out.println();
-            }
-        } else {
-            System.out.println("flightseq is empty");  
-        }
-    }
-
-    private void printSolution_Courier(Solution s) {
-        System.out.println("Routes: ");
-        for (Iterator<Node> it = s.courierRoute.iterator(); it.hasNext();) {
-            System.out.print( it.next().id + " --> ");
-            // debug::: System.out.print( it.next().id + "(" +  + ")" + " --> ");
-        }
-        if (orders.allDone()) {
-            System.out.println("finished.");   
-        }else{
-            System.out.println("unfinieshed.");
-        }
-    }
 
     @Override
     public void recoverFromSolution(Solution solution) {
         /* Nodes和Orders 中大部分信息可分为两类，一类时固定不变的元信息，另一类是用来initial solution的信息。
             但注意 Nodes中的 isMeet 和 meetCourier, meetDrone 是与解相关的信息，理想的话应该与Node解耦合，但是现在还没空做
             */
-    
         nodes.reset();
         courier.routeSeq = new ArrayList<>(solution.courierRoute);
         if (solution.flightSeqs == null) {
@@ -173,6 +142,7 @@ class ResupplySolver extends TrivalSolver{
         }
 
     }
+    
     /*              Heuristic               */    
     /* LNS1
      * optimize the solution *after* genGreedySolution
@@ -182,8 +152,60 @@ class ResupplySolver extends TrivalSolver{
      * no dynamic weight adjustment of different heuristics.
      * 
      */
+    public void LNS1r(int maxIteration, int sizeOfNeiborhood){  
+        /* 仅用于储存临时解，全局最优解在globalOptSolution中 */
+        Solution candidateSolution = new Solution(globalOptSolution);
+        removedOrderList = new ArrayList<>();
+        double minObjfValue = ObjfValue();
+        /* Acceptance and Stopping Criteria */
+        int iter = 0; int r;
+        while (iter < maxIteration) {
+            /* resume the status from global optimal */
+            recoverFromSolution(candidateSolution);
+            Functions.checkDuplicate(removedOrderList);
+            /* ------------ remove heuristic -------------- */
+            /* remove the flight first; 1.remove the whole flight, 2.only canceled the fly task + remove useless transfer */
+            //randomly choose one drone
+            r = rand.nextInt(this.drones.length);
+            Drone d = drones[r];
+            this.randomFlightRemovalOne(d);
+            /* remove the courier node if necessary */
+            if(removedOrderList.size() < sizeOfNeiborhood) {
+                this.randomRemoval(courier, sizeOfNeiborhood - removedOrderList.size());
+            }           
+            /* ------------ insert heuristic -------------- */
+            /* insert flight */
+            this.randomSupplyFlightCreate_order();
+            r = rand.nextInt(this.drones.length);
+            /* insert courier */
+            this.regeretInsert(courier, removedOrderList, 3);
+            /* instantiateSolution */
+            this.instantiateSolution_d(courier);
+            double tempObjValue = this.ObjfValue();
+        
+            if (tempObjValue < minObjfValue) {
+                minObjfValue = tempObjValue;
+                candidateSolution = new Solution(courier,drones);
+                printSolution(candidateSolution);
+                iter = 0;
+            }
+            iter++;
+        }
+        globalOptSolution = candidateSolution;
+        instantiateSolution();
+    } 
 
-    public void LNS1r(int maxIteration, int sizeOfNeiborhood){  //TODO
+    /*              Heuristic               */    
+    /* LNS2
+     * optimize the solution *after* genGreedySolution
+     * --------------------- operator ---------------------
+     * remove heuristic: Shaw removal //& Random removal  
+     * insert heuristic: Regret heuristic & Random insertation 
+     * no dynamic weight adjustment of different heuristics.
+     * 
+     */
+
+    public void LNS2r(int maxIteration, int sizeOfNeiborhood){  //TODO
         
         /* 仅用于储存临时解，全局最优解在globalOptSolution中 */
         Solution candidateSolution = new Solution(globalOptSolution);
@@ -242,7 +264,6 @@ class ResupplySolver extends TrivalSolver{
         globalOptSolution = candidateSolution;
         instantiateSolution();
     } 
-
 
     /*          optimize the flights           */
     /* find the better drone base between two flights */
