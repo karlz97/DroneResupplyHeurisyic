@@ -21,7 +21,7 @@ TD = {}
 w = {}
 wd = {}
 n = len(A)
-Targettime1 = {}
+Targettime1 = {}    
 Targettime2 = {}
 
 
@@ -54,6 +54,15 @@ model.addConstr(quicksum(x[(ts,j)] for j in A) == 1)
 model.addConstr(quicksum(x[(j,te)] for j in N|Su) == 1)
 model.addConstr(quicksum(x[(te,j)] for j in A) == 0)
 model.addConstr(quicksum(x[(j,te)] for j in A) == 1)
+
+# # ONLY FOR DEBUG, Specify a route
+# Xseq = []
+# routeSeq = [12,0,1,4,6,9,2,7,5,3,8,13]
+# routeSeq = [12,2,7,1,4,6,3,9,8,0,5,13]
+# for i in range(len(routeSeq)-1):
+#     Xseq.append((routeSeq[i],routeSeq[i+1]))
+# model.addConstrs(x[(i,j)] == 1 for (i,j) in Xseq)
+
 
 # 不成环的约束
 p = len(Su)

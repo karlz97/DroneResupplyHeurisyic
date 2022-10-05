@@ -8,7 +8,7 @@ Created on Sat Nov 27 14:16:32 2021
 ## to `runcell`, use rightclick of mouse and select `runcell` (instead of `runfile`)
 """
 import insGenerateFunctions as gf
-## import dill
+import dill
 
 # FILENAME_INSTANCES = 'test1_5.csv'
 MAXLAUNCH = 2
@@ -36,7 +36,7 @@ Lse = L|{ds,de}
 
 #Generate drone and truck object, calucate lenthMatrix
 de1 = gf.drone(2,15)
-tk1 = gf.truck(1,M)
+tk1 = gf.truck(1, M)
 
 Td = gf.calVehicleMatrix(de1,exNODES)    
 Tt = gf.calVehicleMatrix(tk1,exNODES)

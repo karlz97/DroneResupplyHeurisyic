@@ -15,12 +15,12 @@ Created on Tue Nov 30 23:02:33 2021
 #         if u[(i,j)].X==1:
 #             print(u[(i,j)])
             
-# Round version
-for i in A:
-    for j in A:
-        if abs(x[(i,j)].X-1)<1e-5:
-            #print('x:',i,'to:',j,':',round(x[(i,j)].X))
-            print('x:',i,'to:',j)
+# # Round version
+# for i in A:
+#     for j in A:
+#         if abs(x[(i,j)].X-1)<1e-5:
+#             #print('x:',i,'to:',j,':',round(x[(i,j)].X))
+#             print('x:',i,'to:',j)
 
 print('=====================')
 for i in A:
@@ -28,6 +28,17 @@ for i in A:
         if abs(u[(i,j)].X-1)<1e-5:
             #print('u:',i,'to:',j,':',round(u[(i,j)].X))
             print('u:',i,'to:',j)
+
+# Sequential
+cn = ts #current node: cn
+s_r = 'route: '
+while cn != te:
+    for j in A:
+        if abs(x[(cn,j)].X-1)<1e-5:
+            s_r += (str(cn) + '[' + str(round(T[(cn)].X, 1)) + '] -> ')
+            cn = j
+s_r += str(cn) + '[' + str(round(T[(cn)].X, 1)) + ']'
+print(s_r)
 
 
 

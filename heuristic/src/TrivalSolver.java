@@ -27,9 +27,14 @@ class TrivalSolver extends _Solver_ {
     }
 
     public void printSolution(){
+        ArrayList<Node> route = globalOptSolution.courierRoute;
+        instantiateSolution_t_routeSeq(route);
         System.out.println("Routes: ");
-        for (Iterator<Node> it = globalOptSolution.courierRoute.iterator(); it.hasNext();) {
-            System.out.print( it.next().id + " --> ");
+        for (Iterator<Node> it = route.iterator(); it.hasNext();) {
+            Node n = it.next();
+            //Order o = orders.OrderList[n.orderNum];
+            System.out.print( n.id + "[" + n.T_courier + "] --> ");  
+
         }
         if (orders.allDone()) {
             System.out.println("finished.");   

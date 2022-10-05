@@ -182,6 +182,10 @@ class Solution {
         courierRoute = new ArrayList<Node>(courier.routeSeq);
     }
 
+    public Solution(List<Node> courierRoute) {
+        this.courierRoute = new ArrayList<Node>(courierRoute);
+    }
+
     public Solution(List<Node> courierRoute, List<Node>[] flightSeqs) {
         this.courierRoute = new ArrayList<Node>(courierRoute);
         this.flightSeqs = new LinkedList[flightSeqs.length];

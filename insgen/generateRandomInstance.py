@@ -10,7 +10,7 @@ import shutil
 import time
 import numpy as np
 import random
-import pandas as pd5
+import pandas as pd
 import xlwings as xw 
 
 droneNumber = 1

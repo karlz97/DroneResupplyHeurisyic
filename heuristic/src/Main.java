@@ -11,8 +11,9 @@ import org.w3c.dom.css.Counter;
 
 public class Main {
     public static void main(String[] args) throws IOException {
-        main3();
-    }   
+        main2();
+    }
+
 
     private static void main3() throws IOException{
         Double[][] dataMatrix;
@@ -57,7 +58,7 @@ public class Main {
         
         //solver.LNS1r_test(3);
         solver.LNS1r(5000,3);
-        System.out.println("---------------------   LNS1_drone (100) Solution  ---------------------");
+        System.out.println("---------------------   LNS1_drone (5000) Solution  ---------------------");
         solver.printSolution(); 
         System.out.println("Routes: ");
         for (Iterator<Node> it = solver.globalOptSolution.courierRoute.iterator(); it.hasNext();) {
@@ -67,22 +68,22 @@ public class Main {
 
         System.out.println();
 
-        // System.out.println("---------------------   Manually Solution 1      ---------------------");
-        // /* mannally built a solution */ 
-        // ArrayList<Node> MRoute = null;
-        // ArrayList<Node> MFlight = null;
-        // Integer[] routeArray = {2,7,0,6,4,5,9,3,8};
-        // Integer[] flightArray = {4,4,8,4};
-        // Drone drone = droneList[0];
-        // MRoute = Functions.buildNodeSeqFromArray(routeArray, startnode, nodes.NodeList);
-        // MFlight = Functions.buildNodeSeqFromArray(flightArray, null, nodes.NodeList);
-        // List<Node>[] Mflights = new List[1];
-        // Mflights[0] = MFlight;
-        // Solution MSolution = new Solution(MRoute, Mflights); 
+        System.out.println("---------------------   Manually Solution 1      ---------------------");
+        /* mannally built a solution */ 
+        ArrayList<Node> MRoute = null;
+        ArrayList<Node> MFlight = null;
+        Integer[] routeArray = {1,2,7,6,4,9,3,8,0,5};
+        Integer[] flightArray = {};
+        Drone drone = droneList[0];
+        MRoute = Functions.buildNodeSeqFromArray(routeArray, startnode, nodes.NodeList);
+        MFlight = Functions.buildNodeSeqFromArray(flightArray, null, nodes.NodeList);
+        List<Node>[] Mflights = new List[1];
+        Mflights[0] = MFlight;
+        Solution MSolution = new Solution(MRoute, Mflights); 
 
-        // /* recover the solution and instantiate it */
-        // solver.globalOptSolution = MSolution;
-        // solver.printSolution();
+        /* recover the solution and instantiate it */
+        solver.globalOptSolution = MSolution;
+        solver.printSolution();
 
         // System.out.println("---------------------   Manually Solution 2     ---------------------");
         // /* mannally built a solution */ 
@@ -153,10 +154,15 @@ public class Main {
         // Functions.printRouteSeq(MILP_Route);
         // solver.instantiateSolver(MILP_Route);
         // System.out.println("ObjF: " + solver.ObjfValue());
+
+        ArrayList<Node> MRoute = null;
+        Integer[] routeArray = {0,1,4,6,9,2,7,5,3,8};
+        MRoute = Functions.buildNodeSeqFromArray(routeArray, startnode, nodes.NodeList);
+        Solution MSolution = new Solution(MRoute); 
+        /* recover the solution and instantiate it */
+        solver.globalOptSolution = MSolution;
+        solver.printSolution();
     }    
-
-
-
 
     private static void main0(){
         ArrayList<Double[]> dataInList = new ArrayList<Double[]>();
