@@ -138,16 +138,16 @@ public class Main {
         solver.printSolution();    
         System.out.println();
         /* call LNS1 to improve the solution */
-        solver.LNS2t(50,3); //finish in a acceptable time(less than 5 min) at 10,000,000 (千万次), 
-        System.out.println("---------------------   LNS2_truck (500) Solution  ---------------------");
-        solver.printSolution(); 
-        System.out.println();
-        solver.LNS1t(50,3); //finish in a acceptable time(less than 5 min) at 10,000,000 (千万次), 
+        // solver.LNS2t(500,3); //finish in a acceptable time(less than 5 min) at 10,000,000 (千万次), 
+        // System.out.println("---------------------   LNS2_truck (500) Solution  ---------------------");
+        // solver.printSolution(); 
+        // System.out.println();
+        solver.LNS1t(500,2); //finish in a acceptable time(less than 5 min) at 10,000,000 (千万次), 
         System.out.println("---------------------   LNS1_truck (500) Solution  ---------------------");
         solver.printSolution(); 
         System.out.println();
 
-        // System.out.println("---------------------   MILP Solution       ---------------------");
+        System.out.println("---------------------   Manual Solution       ---------------------");
         // ArrayList<Node> MILP_Route = new ArrayList<Node>();
         // Integer[] routeArray = {0,1,4,6,9,2,7,5,3,8};
         // MILP_Route = Functions.buildFromArray(routeArray, startnode, nodes.NodeList);

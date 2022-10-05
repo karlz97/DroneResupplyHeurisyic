@@ -17,12 +17,12 @@ u = {}
 al_x = {}
 al_u = {}
 T = {}
-TD = {}
+#TD = {}
 w = {}
 wd = {}
 n = len(A)
-Targettime1 = {}    
-Targettime2 = {}
+timeDifference = {}    
+lateTime = {}
 
 
 
@@ -33,8 +33,8 @@ model = gp.Model("IE561Project")
 for i in range(n):
     T[i] = model.addVar(vtype = GRB.CONTINUOUS, name = "T%f"%i)
     # TD[i] = model.addVar(vtype = GRB.CONTINUOUS, name = "TD%f"%i)
-    Targettime1[i] = model.addVar(vtype = GRB.CONTINUOUS, name = "TT1%f"%i)
-    Targettime2[i] = model.addVar(vtype = GRB.CONTINUOUS, name = "TT2%f"%i)
+    timeDifference[i] = model.addVar(lb = -float('inf'), vtype = GRB.CONTINUOUS, name = "timeDifference%f"%i)
+    lateTime[i] = model.addVar(vtype = GRB.CONTINUOUS, name = "lateTime%f"%i)
     w[i] = model.addVar(vtype = GRB.CONTINUOUS, name = "w%d"%i)
     # wd[i] = model.addVar(vtype = GRB.CONTINUOUS, name = "wd%d"%i)
     al_x[i] = model.addVar(vtype = GRB.INTEGER, name = "al_x%i"%i )
@@ -55,14 +55,14 @@ model.addConstr(quicksum(x[(j,te)] for j in N|Su) == 1)
 model.addConstr(quicksum(x[(te,j)] for j in A) == 0)
 model.addConstr(quicksum(x[(j,te)] for j in A) == 1)
 
-# # ONLY FOR DEBUG, Specify a route
-# Xseq = []
-# routeSeq = [12,0,1,4,6,9,2,7,5,3,8,13]
-# routeSeq = [12,2,7,1,4,6,3,9,8,0,5,13]
-# for i in range(len(routeSeq)-1):
-#     Xseq.append((routeSeq[i],routeSeq[i+1]))
-# model.addConstrs(x[(i,j)] == 1 for (i,j) in Xseq)
-
+# ONLY FOR DEBUG, Specify a route
+Xseq = []
+routeSeq = [12,0,1,4,6,9,2,7,5,3,8,13]
+routeSeq = [12,2,7,1,4,6,3,9,8,0,5,13]
+for i in range(len(routeSeq)-1):
+    Xseq.append((routeSeq[i],routeSeq[i+1]))
+model.addConstrs(x[(i,j)] == 1 for (i,j) in Xseq)
+# model.addConstr(T[(7)] == 38,name = 'prone')
 
 # 不成环的约束
 p = len(Su)
@@ -174,12 +174,11 @@ B = 1e4
 #########################################
 
 # time for j to reach 
-#计算truck到达j点的时间:
-##v1
-for i in Nse:
-    for j in Nse:
-        model.addConstr(T[i]+w[i]+Tt[i,j]-B*(1-x[(i,j)]) <= T[j])
-        model.addConstr(T[i]+w[i]+Tt[i,j]+B*(1-x[(i,j)]) >= T[j])
+#计算truck到达j点的时间:        
+model.addConstrs((T[i]+w[i]+Tt[i,j]-B*(1-x[(i,j)]) <= T[j] for i in Nse
+                                                          for j in Nse),name = 'cal arrive time-')
+model.addConstrs((T[i]+w[i]+Tt[i,j]+B*(1-x[(i,j)]) >= T[j] for i in Nse
+                                                          for j in Nse),name = 'cal arrive time+')
 for i in A:
     model.addConstr(w[i] >= 0)
     
@@ -216,27 +215,29 @@ for j in N:
     model.addConstr(quicksum(x[(i,j)] for i in Nse|Su) == 1)
 
 # Truck在delivery之前必须先pick up 
-for i in R:
-    model.addConstr(T[i] <= T[fd[i]])
+model.addConstrs((T[i] <= T[fd[i]] for i in R), name = 'pickup before deliver')
 
 for j in A-{ds,de}:
     model.addConstr(B*quicksum(x[(i,j)] for i in A) >= T[j])
 
 
 # 在必须备餐完毕才可取餐    
-for i in R:
-    model.addConstr(B-B*quicksum(x[(j,i)] for j in (Nse|Su)) + T[i] >= aa[i])
+model.addConstrs((B-B*quicksum(x[(j,i)] for j in (Nse|Su)) + T[i] >= aa[i] for i in R), 
+                 name = 'pickup after prepare')
 
 
 # add constraints to form the objective function
 
 ### 构造目标函数并求解
+# for i in range(n):
+#     model.addConstr(timeDifference[i] == (T[i]-bb[i]),name = 'dummy1')
+#     model.addGenConstrMax(lateTime[i],[timeDifference[i]], 0 , name = "dummy2")
+model.addConstrs((T[i] - bb[i] - timeDifference[i] == 0 for i in range(n)),name = 'dummy1')
 for i in range(n):
-    model.addConstr(Targettime1[i] == (T[i]-bb[i]))
-    model.addGenConstrMax(Targettime2[i],[Targettime1[i],0])
+     model.addGenConstrMax(lateTime[i],[timeDifference[i]], 0 , name = "dummy2")
 
 alpha = 1
-model.setObjective(alpha*quicksum(Targettime2[i] for i in Nc)+quicksum(T[i] for i in Nc),GRB.MINIMIZE)
+model.setObjective(alpha*quicksum(lateTime[i] for i in Nc)+quicksum(T[i] for i in Nc),GRB.MINIMIZE)
 model.update()
 model.optimize()
 

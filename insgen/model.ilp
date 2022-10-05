@@ -1,0 +1,10 @@
+\ Model IE561Project_copy
+\ LP format - for model browsing. Use MPS format to capture full model detail.
+Minimize
+ 
+Subject To
+ prone: T7.000000 = 38
+ dummy1[7]: T7.000000 - timeDifference7.000000 = 45
+Bounds
+ T7.000000 free
+End

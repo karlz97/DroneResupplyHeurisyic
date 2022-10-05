@@ -67,7 +67,7 @@ class TrivalSolver extends _Solver_ {
         Order currOrder;    //temp variables
         courier.position  = routeSeq.get(0); //deal with startnode
         courier.time = 0;
-        for(int i = 1; i<routeSeq.size(); i++) {  //start after the startnode
+        for(int i = 0; i<routeSeq.size(); i++) {  //start at the startnode //start after the startnode
             currNode = routeSeq.get(i);
             
             /*  courier, order  &  node */

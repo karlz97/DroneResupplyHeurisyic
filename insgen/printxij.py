@@ -41,7 +41,8 @@ s_r += str(cn) + '[' + str(round(T[(cn)].X, 1)) + ']'
 print(s_r)
 
 
-
+# model.computeIIS()
+# model.write("model.ilp")
 
 # for j in A:
 #     if abs(x[(ts,j)].X-1)<1e-5:

@@ -22,6 +22,8 @@ abstract class Vehicle {
     }
 
     public double callNodeDistance(Node node1 ,Node node2){
+        if(node1 == node2)
+            return 0;
         return distanceMatrix[node1.id][node2.id];
     }
 
