@@ -88,6 +88,7 @@ abstract class Solver {
 
 
 class OddPool {  //OddPool for 'ordered Pool'
+    //Since this.length will not be large, it should be enough to use this implementation instead of Max Heap implementation
     LinkedList<Double> list;
     LinkedList<Object> indexlist;
     int currlen;
