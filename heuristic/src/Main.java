@@ -11,7 +11,7 @@ import org.w3c.dom.css.Counter;
 
 public class Main {
     public static void main(String[] args) throws IOException {
-        main2();
+        main3();
     }
 
 
@@ -51,7 +51,7 @@ public class Main {
         solver.printSolution();    
         System.out.println();
         /* call LNS1 to improve the solution */
-        solver.LNS1t(500,3); //finish in a acceptable time(less than 5 min) at 10,000,000 (千万次), 
+        solver.LNS1t(500,2); //finish in a acceptable time(less than 5 min) at 10,000,000 (千万次), 
         System.out.println("---------------------   LNS1_truck (500) Solution  ---------------------");
         solver.printSolution(); 
         System.out.println();
@@ -72,8 +72,8 @@ public class Main {
         /* mannally built a solution */ 
         ArrayList<Node> MRoute = null;
         ArrayList<Node> MFlight = null;
-        Integer[] routeArray = {1,2,7,6,4,9,3,8,0,5};
-        Integer[] flightArray = {};
+        Integer[] routeArray = {0,1,4,6,8,9,2,7,5};
+        Integer[] flightArray = {1,-1,-1,3,3,3,4,1};
         Drone drone = droneList[0];
         MRoute = Functions.buildNodeSeqFromArray(routeArray, startnode, nodes.NodeList);
         MFlight = Functions.buildNodeSeqFromArray(flightArray, null, nodes.NodeList);

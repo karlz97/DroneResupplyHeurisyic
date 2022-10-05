@@ -4,7 +4,7 @@ Minimize
  
 Subject To
  prone: T7.000000 = 38
- dummy1[7]: T7.000000 - timeDifference7.000000 = 45
+ dummy1[7]: - T7.000000 + TT17.000000 = -45
 Bounds
  T7.000000 free
 End

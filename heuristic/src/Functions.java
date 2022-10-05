@@ -38,7 +38,10 @@ class Functions{
         if (startnode != null)
             routeSeq.add(startnode);
         for (int i = 0; i < routeArray.length; i++) {
-            routeSeq.add(NodeList[routeArray[i]]);
+            if (routeArray[i] == -1)
+                routeSeq.add(null);
+            else
+                routeSeq.add(NodeList[routeArray[i]]);
         }
         
         return routeSeq;
