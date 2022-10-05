@@ -7,16 +7,15 @@ import java.util.Random;
 
 import javax.naming.InitialContext;
 
-class TrivalSolver extends Solver {
+class TrivalSolver extends _Solver_ {
     Courier courier;
     Objfunction Objf; 
     Random rand = new Random();
     ArrayList<Order> removedOrderList;
     
 
-    public TrivalSolver(Orders orders, Nodes nodes, Objfunction f, Courier courier, 
-                       Double[][] truckDistanceMatrix){
-        super(orders, nodes, truckDistanceMatrix);
+    public TrivalSolver(Orders orders, Nodes nodes, Objfunction f, Courier courier){
+        super(orders, nodes);
         this.Objf = f;
         this.courier = courier;
         // vehicleList = new Vehicle[1];
@@ -109,6 +108,34 @@ class TrivalSolver extends Solver {
             
             /* remove heuristic */
             shawRemoval_fast(courier, sizeOfNeiborhood, 3);
+            /* insert heuristic */
+            regeretInsert(courier, removedOrderList, 3);
+            /* decide whether accept new solution */
+            instantiateSolution_t(courier);
+            double tempObjValue = ObjfValue();
+            if (tempObjValue < minObjfValue) {
+                minObjfValue = tempObjValue;
+                candidateSolution = new Solution(courier);
+                Functions.printRouteSeq(candidateSolution.courierRoute);
+            }
+            iter++;
+        }
+        globalOptSolution = candidateSolution;
+        instantiateSolution();
+    }
+
+    public void LNS2t(int maxIteration, int sizeOfNeiborhood){ 
+        Solution candidateSolution = new Solution(globalOptSolution);
+        removedOrderList = new ArrayList<>();
+        double minObjfValue = ObjfValue();
+        /* Acceptance and Stopping Criteria */
+        int iter = 0;
+        while (iter < maxIteration) {
+            /* resume the status to global optimal */
+            recoverFromSolution(candidateSolution);
+            
+            /* remove heuristic */
+            randomRemoval(courier, sizeOfNeiborhood);
             /* insert heuristic */
             regeretInsert(courier, removedOrderList, 3);
             /* decide whether accept new solution */

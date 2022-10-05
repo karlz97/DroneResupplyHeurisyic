@@ -9,138 +9,10 @@ import java.util.List;
 
 import javax.swing.text.Position;
 
-class ResupplySolver extends TrivalSolver{
-    Drone[] drones;    //drone and courier are per Solution resources use as memory to instantiate solution
-
-    public ResupplySolver(Orders orders, Nodes nodes, Objfunction f, Courier courier, Drone[] droneList,
-            Double[][] truckDistanceMatrix) {
-        super(orders, nodes, f, courier, truckDistanceMatrix);
-        this.drones = droneList;
-    }
-
-    void instantiateSolution_d(Courier courier){
-        ArrayList<Node> routeSeq = courier.routeSeq;
-        /* reset all order, nodes to initial */
-        for(int i = 0; i<orders.OrderList.length; i++) {
-            orders.OrderList[i].reset_r();  //only reset the order but not the related node.
-        }
-        for(int i = 0; i<nodes.NodeList.length; i++) {
-            nodes.NodeList[i].reset_r(); 
-        }
-        for (Drone d : drones) {
-            for (Flight f : d.flights) {
-                f.reset(nodes); 
-            }
-            d.reset();
-        }
-
-
-        /* try to instantiate solution by courier route untill the first meet node */
-        Node currNode;      //temp variables to speedup the program
-        Order currOrder = null;    //temp variables
-        courier.position  = routeSeq.get(0); //deal      with startnode
-        courier.time = 0; 
-        for (Drone d : drones) {
-            d.time = 0;
-        }
-        for(int i = 1; i<routeSeq.size(); i++) {  //start after the startnode
-            currNode = routeSeq.get(i);
-
-            /*  compute the earlist time of courier arrive meetNode */
-            if(currNode.orderNum != -1){    //if it is an order node, update the order
-                currOrder = orders.OrderList[currNode.orderNum];
-                courier.time = earlistExecuteTime(currOrder, courier); //Because during a feasible solution route, it always pickup first.
-            }else{                          //if it is not an order node, don't need update the order
-                courier.time = earlistExecuteTime(currNode, courier);
-            }
-            currNode.T_courier = courier.time;
-            
-            /* currNode is a meetNode */
-            if (currNode.isMeet) {  
-                //debug:: //Functions.printDebug("meetNode! Node:" + currNode.id);
-
-                Drone drone = currNode.meetDrone;
-                /*  compute the earlist time of drone arrive meetNode */
-                drone.time = drone.buildFlight(currNode); 
-
-                /* determine the meet time of meetNode */
-                if (courier.time > drone.time) {    //courier arrive later
-                    //reversely build Flight by supplyTime and determine the gap time;
-                    drone.retroBuildFlight(courier.time);
-                    drone.time = courier.time;
-                    currNode.courierWaitTime = 0; 
-                }else{      //drone arrive later
-                    //add wait time at last node
-                    currNode.courierWaitTime = drone.time - courier.time;  
-                    courier.time = drone.time;
-                }
-                //update the node
-                courier.position = currNode;
-                currNode.T_drone = drone.time;
-                
-                /*  update the order status.... tell the order it has been picked up;
-                Not exactly the right place and right time (should be in 'buildFlight' & 'retroBuildFlight')
-                but update here will not hurt because the pickup time is not important. 
-                */
-                orders.OrderList[drone.flights.get(drone.currFlight_id - 1).pickupNode.orderNum].update(drone, -1);
-
-
-            }else{  /* currNode is not a meetNode */
-                currNode.courierWaitTime = 0;
-                courier.position = currNode;
-                currNode.T_courier = courier.time;
-            }      
-            //update the order
-            if(currNode.orderNum != -1){ 
-                //System.out.println("a"); //debug::
-                currOrder.update(courier, courier.time); 
-            }
-        }
-    }
-
-    @Override
-    void instantiateSolution(){
-        recoverFromSolution(globalOptSolution);
-        instantiateSolution_d(courier);
-        System.out.println("miniObjValue: " + this.ObjfValue()); //debug
-    }
-    
-    @Override
-    public void printSolution(){
-        printSolution(globalOptSolution);
-    } 
-
-    public void printSolution(Solution s){
-        Functions.printSolution_Courier(s);
-        Functions.printSolution_Flight(s);
-        recoverFromSolution(s);
-        instantiateSolution_d(courier);
-        System.out.println("ObjF: " + ObjfValue());  
-    } 
-
-    @Override
-    public void recoverFromSolution(Solution solution) {
-        /* Nodes和Orders 中大部分信息可分为两类，一类时固定不变的元信息，另一类是用来initial solution的信息。
-            但注意 Nodes中的 isMeet 和 meetCourier, meetDrone 是与解相关的信息，理想的话应该与Node解耦合，但是现在还没空做
-            */
-        nodes.reset();
-        courier.routeSeq = new ArrayList<>(solution.courierRoute);
-        if (solution.flightSeqs == null) {
-            for (int i = 0; i < drones.length; i ++) {
-                drones[i].flights.clear();;
-            }
-            return;
-        }
-
-        for (int i = 0; i < drones.length; i ++) {
-            drones[i].flights = solution.deSerializeFlights(i);
-            for (Flight f : drones[i].flights) {
-                f.supplyNode.isMeet = true;
-                f.supplyNode.meetCourier = this.courier;
-                f.supplyNode.meetDrone = drones[i];
-            }
-        }
-
+class ResupplySolver extends DroneSupporting_Solver_{
+  
+    public ResupplySolver(Orders orders, Nodes nodes, Objfunction f, Courier courier, Drone[] droneList) {
+        super(orders, nodes, f, courier, droneList);
     }
     
     /*              Heuristic               */    
@@ -164,7 +36,8 @@ class ResupplySolver extends TrivalSolver{
             recoverFromSolution(candidateSolution);
             Functions.checkDuplicate(removedOrderList);
             /* ------------ remove heuristic -------------- */
-            /* remove the flight first; 1.remove the whole flight, 2.only canceled the fly task + remove useless transfer */
+            /* remove the flight first; 1.remove the whole flight, 2.only canceled 
+                the fly task + remove useless transfer */
             //randomly choose one drone
             r = rand.nextInt(this.drones.length);
             Drone d = drones[r];
@@ -204,7 +77,6 @@ class ResupplySolver extends TrivalSolver{
      * no dynamic weight adjustment of different heuristics.
      * 
      */
-
     public void LNS2r(int maxIteration, int sizeOfNeiborhood){  //TODO
         
         /* 仅用于储存临时解，全局最优解在globalOptSolution中 */
@@ -219,7 +91,8 @@ class ResupplySolver extends TrivalSolver{
             Functions.checkDuplicate(removedOrderList);
 
             /* ------------ remove heuristic -------------- */
-            /* remove the flight first; 1.remove the whole flight, 2.only canceled the fly task + remove useless transfer */
+            /* remove the flight first; 1.remove the whole flight, 
+                2.only canceled the fly task + remove useless transfer */
             //randomly choose one drone
             r = rand.nextInt(this.drones.length);
             Drone d = drones[r];
@@ -246,10 +119,6 @@ class ResupplySolver extends TrivalSolver{
             /* instantiateSolution */
             this.instantiateSolution_d(courier);
             double tempObjValue = this.ObjfValue();
-        
-
-            
-        
             if (tempObjValue < minObjfValue) {
                 minObjfValue = tempObjValue;
                 candidateSolution = new Solution(courier,drones);
@@ -286,9 +155,6 @@ class ResupplySolver extends TrivalSolver{
 
 
     /*          Herusitics operators           */
-
-    
-
     /*          destory operators               */
     /* Randomly remove a Flight and its following flights from a drone */
     void randomFlightRemovalOne(Drone drone){
@@ -352,8 +218,7 @@ class ResupplySolver extends TrivalSolver{
         return;
     }
 
-
-
+    
     /*          repair operators            */
 
 
@@ -361,7 +226,6 @@ class ResupplySolver extends TrivalSolver{
     /* 1st order-drone-feasible means drone is at the restaurant, don't have to transfer */
     /* [constraints]: the next supply node must after the last supply node in the order of courier route seq*/
     void randomSupplyFlightCreate_order(){      
-        
         // find all removed & 1st order-drone-feasible orders 
         ArrayList<Order> feasibleOrderList = new ArrayList<>();
         for (Order o : removedOrderList) {

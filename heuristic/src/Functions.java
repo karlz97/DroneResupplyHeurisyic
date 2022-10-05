@@ -159,7 +159,7 @@ class Functions{
         }
     }
     
-    static public void printSolution_Courier(Solution s) {
+    static public void printSolution_Courier(Solution s, Orders orders) {
         System.out.println("Routes: ");
         for (Iterator<Node> it = s.courierRoute.iterator(); it.hasNext();) {
             System.out.print( it.next().id + " --> ");

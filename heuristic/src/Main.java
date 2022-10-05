@@ -14,7 +14,6 @@ public class Main {
         main3();
     }   
 
-
     private static void main3() throws IOException{
         Double[][] dataMatrix;
         Double[][] truckDistanceMatrix;
@@ -35,7 +34,7 @@ public class Main {
         
         /* initialize vehicle */
         Courier courier = new Courier(0, startnode, truckDistanceMatrix);
-        Drone[] droneList = new Drone[]{new Drone(0, nodes.NodeList[4], droneDistanceMatrix)};
+        Drone[] droneList = new Drone[]{new Drone(0, nodes.NodeList[1], droneDistanceMatrix)};
         droneList[0].computeFeasibleFlight(nodes);
         droneList[0].showFeasibleFlight();
 
@@ -43,7 +42,7 @@ public class Main {
         /* initialize solution */
         ObjF_latePunish objF = new ObjF_latePunish(1);
         //TrivalSolver solver = new TrivalSolver(orders, nodes, objF, courier, truckDistanceMatrix); 
-        ResupplySolver solver = new ResupplySolver(orders, nodes, objF, courier, droneList, truckDistanceMatrix);
+        ResupplySolver solver = new ResupplySolver(orders, nodes, objF, courier, droneList);
 
         /* call generate greedy solution */
         solver.genGreedySolve();
@@ -68,22 +67,22 @@ public class Main {
 
         System.out.println();
 
-        System.out.println("---------------------   Manually Solution 1      ---------------------");
-        /* mannally built a solution */ 
-        ArrayList<Node> MRoute = null;
-        ArrayList<Node> MFlight = null;
-        Integer[] routeArray = {0,1,2,6,5,3,7,8,9};
-        Integer[] flightArray = {4,4,8,4};
-        Drone drone = droneList[0];
-        MRoute = Functions.buildNodeSeqFromArray(routeArray, startnode, nodes.NodeList);
-        MFlight = Functions.buildNodeSeqFromArray(flightArray, null, nodes.NodeList);
-        List<Node>[] Mflights = new List[1];
-        Mflights[0] = MFlight;
-        Solution MSolution = new Solution(MRoute, Mflights); 
+        // System.out.println("---------------------   Manually Solution 1      ---------------------");
+        // /* mannally built a solution */ 
+        // ArrayList<Node> MRoute = null;
+        // ArrayList<Node> MFlight = null;
+        // Integer[] routeArray = {2,7,0,6,4,5,9,3,8};
+        // Integer[] flightArray = {4,4,8,4};
+        // Drone drone = droneList[0];
+        // MRoute = Functions.buildNodeSeqFromArray(routeArray, startnode, nodes.NodeList);
+        // MFlight = Functions.buildNodeSeqFromArray(flightArray, null, nodes.NodeList);
+        // List<Node>[] Mflights = new List[1];
+        // Mflights[0] = MFlight;
+        // Solution MSolution = new Solution(MRoute, Mflights); 
 
-        /* recover the solution and instantiate it */
-        solver.globalOptSolution = MSolution;
-        solver.printSolution();
+        // /* recover the solution and instantiate it */
+        // solver.globalOptSolution = MSolution;
+        // solver.printSolution();
 
         // System.out.println("---------------------   Manually Solution 2     ---------------------");
         // /* mannally built a solution */ 
@@ -128,7 +127,7 @@ public class Main {
 
         /* initialize solution */
         ObjF_latePunish objF = new ObjF_latePunish(1);
-        TrivalSolver solver = new TrivalSolver(orders, nodes, objF, courier, truckDistanceMatrix); 
+        TrivalSolver solver = new TrivalSolver(orders, nodes, objF, courier); 
         //ResupplySolver solver = new ResupplySolver(orders, nodes, objF, courier, droneList, truckDistanceMatrix);
 
 
@@ -138,7 +137,11 @@ public class Main {
         solver.printSolution();    
         System.out.println();
         /* call LNS1 to improve the solution */
-        solver.LNS1t(500,3); //finish in a acceptable time(less than 5 min) at 10,000,000 (千万次), 
+        solver.LNS2t(50,3); //finish in a acceptable time(less than 5 min) at 10,000,000 (千万次), 
+        System.out.println("---------------------   LNS2_truck (500) Solution  ---------------------");
+        solver.printSolution(); 
+        System.out.println();
+        solver.LNS1t(50,3); //finish in a acceptable time(less than 5 min) at 10,000,000 (千万次), 
         System.out.println("---------------------   LNS1_truck (500) Solution  ---------------------");
         solver.printSolution(); 
         System.out.println();

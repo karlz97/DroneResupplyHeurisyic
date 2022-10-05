@@ -5,23 +5,15 @@ import java.util.LinkedList;
 import java.util.List;
 
 
-abstract class Solver {
+abstract class _Solver_ {
     Orders orders;
     Nodes nodes;
-    Double[][] distanceMatrix; //距离矩阵应该合并到courier中
     Objfunction Objf;
     Solution globalOptSolution;
 
-    public Solver(Orders orders, Nodes nodes/*, Objfunction f*/){
+    public _Solver_(Orders orders, Nodes nodes/*, Objfunction f*/){
         this.orders = orders;
         this.nodes = nodes;
-        /*this.Objf = f;*/
-    }
-
-    public Solver(Orders orders, Nodes nodes, Double[][] distanceMatrix/*, Objfunction f*/){
-        this.orders = orders;
-        this.nodes = nodes;
-        this.distanceMatrix = distanceMatrix;
         /*this.Objf = f;*/
     }
 
