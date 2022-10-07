@@ -150,10 +150,17 @@ class Functions{
     static public void printSolution_Flight(Solution s) {
         if (s.flightSeqs != null) {
             for (int i = 0; i < s.flightSeqs.length; i++) {
-                System.out.println("Flights[" + i + "]:");
-                LinkedList<Node> flightSeq =  s.flightSeqs[i];
-                for (Node node : flightSeq) {
-                    System.out.print( node.id + " --> ");
+                System.out.print("Flight of Drone <" + i + ">: ");
+                LinkedList<Node> flightSeq =  s.flightSeqs[i]; int counter = 0;
+                for (Node n : flightSeq) {  
+                    if ((++counter - 1)% 4 == 0 && counter != 1) 
+                        System.out.print( " | ");  
+                    if (n == null)
+                        continue;
+                    if (n.isMeet) 
+                        System.out.print( n.id + "[" + n.T_drone + "] --> ");  
+                    else
+                        System.out.print( n.id + " --> ");
                 }
                 System.out.println();
             }
@@ -165,7 +172,9 @@ class Functions{
     static public void printSolution_Courier(Solution s, Orders orders) {
         System.out.println("Routes: ");
         for (Iterator<Node> it = s.courierRoute.iterator(); it.hasNext();) {
-            System.out.print( it.next().id + " --> ");
+            Node n = it.next();
+            // System.out.print( n.next().id + " --> ");
+            System.out.print( n.id + "[" + n.T_courier + "] --> ");  
             // debug::: System.out.print( it.next().id + "(" +  + ")" + " --> ");
         }
         if (orders.allDone()) {

@@ -103,6 +103,15 @@ class Node {
 
     public Node(){}
 
+    // public Node(Object object){
+    //     if (object == null) {
+    //         this.id = -1;
+    //         this.isMeet = false;
+    //     } else {
+    //         Functions.printAlert("Wrong input in creating null Node, expected to be null");
+    //     }
+    // }
+
     public Node(int id, double x, double y, int n, int o, double orderT /*, int idn*/){
         this.id = id;
         coord[0] = (double)x;

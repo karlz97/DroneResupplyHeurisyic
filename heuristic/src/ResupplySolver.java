@@ -68,7 +68,6 @@ class ResupplySolver extends DroneSupporting_Solver_{
         instantiateSolution();
     } 
 
-    /*              Heuristic               */    
     /* LNS2
      * optimize the solution *after* genGreedySolution
      * --------------------- operator ---------------------
@@ -78,7 +77,6 @@ class ResupplySolver extends DroneSupporting_Solver_{
      * 
      */
     public void LNS2r(int maxIteration, int sizeOfNeiborhood){  //TODO
-        
         /* 仅用于储存临时解，全局最优解在globalOptSolution中 */
         Solution candidateSolution = new Solution(globalOptSolution);
         removedOrderList = new ArrayList<>();
@@ -155,6 +153,7 @@ class ResupplySolver extends DroneSupporting_Solver_{
 
 
     /*          Herusitics operators           */
+
     /*          destory operators               */
     /* Randomly remove a Flight and its following flights from a drone */
     void randomFlightRemovalOne(Drone drone){
@@ -170,17 +169,14 @@ class ResupplySolver extends DroneSupporting_Solver_{
             if (pickupNode != null) {
                 // empty the meet related information of node
                 f.supplyNode.reset();
-
                 // remove the corresponding order
                 Order o = orders.OrderList[pickupNode.orderNum];
                 this.removedOrderList.add(o);
-
                 // remove the corresbounding delivery node
                 Node deliveryNode = o.cstmNode;
                 courier.routeSeq.remove(deliveryNode);
             }
         }
-
         //Remove the picked node and the subsequence nodes from flights & update the status of drone
         if (r == 0) {
             drone.position = drone.flights.get(0).launchNode;
@@ -220,11 +216,21 @@ class ResupplySolver extends DroneSupporting_Solver_{
 
     
     /*          repair operators            */
-
-
     /* Randomly choose an removed & 1st order-drone-feasible order: and greedily insert to */
     /* 1st order-drone-feasible means drone is at the restaurant, don't have to transfer */
     /* [constraints]: the next supply node must after the last supply node in the order of courier route seq*/
+
+    //repair are always done one by one. repair one will always be a building block
+    void regretIntegrationRepairOne(int speci_size){  
+        //Get regretion value from every order, then choose one to repair
+        int size = Math.min(speci_size, removedOrderList.size());
+        OddPool regretPool = new OddPool(size);
+            //for every order get the loss of every possible insertation
+
+
+    }
+
+
     void randomSupplyFlightCreate_order(){      
         // find all removed & 1st order-drone-feasible orders 
         ArrayList<Order> feasibleOrderList = new ArrayList<>();
@@ -237,7 +243,6 @@ class ResupplySolver extends DroneSupporting_Solver_{
                 } 
             }
         }
-        
         // Randomly CHOOSE one order to resupply
         if (feasibleOrderList.size() == 0) {
             // Functions.printAlert("can't find feasible order");
@@ -278,17 +283,6 @@ class ResupplySolver extends DroneSupporting_Solver_{
             Node n = courier1RouteSeq.get(i);
             if (Set1.contains(n))
                 feasibleSupplyList.add(n);
-        }
-
-        if (true) {   // debug prints
-            // System.out.print("LastMeetNode:" + courier1RouteSeq.get(lastMeetNodePosition).id + " ,feasibleSupplyList: ");
-            // for (Node n1 : feasibleSupplyList) {
-            //     System.out.print(n1.id + ", ");
-            // }System.out.println();
-            // System.out.print("Courier routeSeq: ");
-            // for (Node n1 : courier1RouteSeq) {
-            //     System.out.print(n1.id + " --> ");
-            // }System.out.println("end");
         }
 
         if (feasibleSupplyList.isEmpty()) {

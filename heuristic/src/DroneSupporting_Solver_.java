@@ -102,10 +102,10 @@ public class DroneSupporting_Solver_ extends TrivalSolver{
     } 
 
     public void printSolution(Solution s){
-        Functions.printSolution_Courier(s, orders);
-        Functions.printSolution_Flight(s);
         recoverFromSolution(s);
         instantiateSolution_d(courier);
+        Functions.printSolution_Courier(s, orders);
+        Functions.printSolution_Flight(s);
         System.out.println("ObjF: " + ObjfValue());  
     } 
 
@@ -126,9 +126,12 @@ public class DroneSupporting_Solver_ extends TrivalSolver{
         for (int i = 0; i < drones.length; i ++) {
             drones[i].flights = solution.deSerializeFlights(i);
             for (Flight f : drones[i].flights) {
-                f.supplyNode.isMeet = true;
-                f.supplyNode.meetCourier = this.courier;
-                f.supplyNode.meetDrone = drones[i];
+                if (f.supplyNode != null) {
+                    f.supplyNode.isMeet = true;
+                    f.supplyNode.meetCourier = this.courier; 
+                    //meetCourier need search to findout, or another data structure to log all meet nodes
+                    f.supplyNode.meetDrone = drones[i];   
+                }
             }
         }
 
