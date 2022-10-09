@@ -69,34 +69,42 @@ class Drone extends Vehicle{
         return the earlist drone arriveTime of supplyNode */
     double buildFlight(Node meetNode){
         Flight currFlight = flights.get(currFlight_id);
-        while (currFlight.supplyNode != meetNode) {
+        boolean doneMeetNode = false;
+        while (!doneMeetNode) {
             // /* check */
             // if (currFlight.launchNode != position) {
             //     Functions.printAlert("in Drone.buildFlight: currFlight.launchNode != position");   
             //     return -1;
             // }
-
+            if (currFlight.supplyNode == meetNode) {
+                doneMeetNode = true;
+            }
             currFlight.launchTime = this.time;
-            currFlight.pickupTime = currFlight.launchTime 
-                + callNodeDistance(currFlight.launchNode,currFlight.pickupNode);
-            currFlight.supplyTime = currFlight.pickupTime 
-                + callNodeDistance(currFlight.pickupNode,currFlight.supplyNode);
-            currFlight.landTime = currFlight.supplyTime 
-                + callNodeDistance(currFlight.supplyNode,currFlight.landNode);
+            if (currFlight.pickupNode == null) { //this is a transfer flight
+                currFlight.pickupTime = currFlight.launchTime;
+                currFlight.supplyTime = currFlight.pickupTime;
+                currFlight.landTime = currFlight.supplyTime 
+                    + callNodeDistance(currFlight.launchNode,currFlight.landNode);
+            } else {
+                currFlight.pickupTime = currFlight.launchTime 
+                    + callNodeDistance(currFlight.launchNode,currFlight.pickupNode);
+                currFlight.supplyTime = currFlight.pickupTime 
+                    + callNodeDistance(currFlight.pickupNode,currFlight.supplyNode);
+                currFlight.landTime = currFlight.supplyTime 
+                    + callNodeDistance(currFlight.supplyNode,currFlight.landNode);
+            }
+
             currFlight.hasBuilt = true;                
             currFlight_id++;
-            currFlight = flights.get(currFlight_id);
+            if (currFlight_id < flights.size()) {
+                currFlight = flights.get(currFlight_id);
+            } else {
+                if (!doneMeetNode) 
+                    Functions.printAlert("No meet node in <buildFlight>");
+                break;
+            }
+            
         }
-
-        currFlight.launchTime = this.time;
-        currFlight.pickupTime = currFlight.launchTime 
-            + callNodeDistance(currFlight.launchNode,currFlight.pickupNode);
-        currFlight.supplyTime = currFlight.pickupTime 
-            + callNodeDistance(currFlight.pickupNode,currFlight.supplyNode);
-        currFlight.landTime = currFlight.supplyTime 
-            + callNodeDistance(currFlight.supplyNode,currFlight.landNode);
-        currFlight.hasBuilt = true;    
-        currFlight_id++;
         return currFlight.supplyTime;
     }
 
