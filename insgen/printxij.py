@@ -31,15 +31,38 @@ for i in A:
 
 # Sequential
 cn = ts #current node: cn
-s_r = 'route: '
+s_r = 'courier route: '
+s_r2 = 's_r2: '
 while cn != te:
     for j in A:
         if abs(x[(cn,j)].X-1)<1e-5:
             s_r += (str(cn) + '[' + str(round(T[(cn)].X, 1)) + '] -> ')
+            s_r2 += (str(cn) + ',')
             cn = j
 s_r += str(cn) + '[' + str(round(T[(cn)].X, 1)) + ']'
-print(s_r)
+s_r2 += str(cn)
 
+# for drone
+dn = ds #current node: cn
+d_r = 'drone route: '
+d_r2 = 'd_r2: '
+while dn != de:
+    old_dn = dn
+    for j in A:
+        if abs(u[(dn,j)].X-1)<1e-5:
+            d_r += (str(dn) + ' -> ')
+            d_r2 += (str(dn) + ',')
+            dn = j
+    if dn == old_dn:
+        break
+d_r += str(dn)
+d_r2 += str(dn)
+
+
+print(s_r)
+print(s_r2)
+print(d_r)
+print(d_r2)
 
 # model.computeIIS()
 # model.write("model.ilp")

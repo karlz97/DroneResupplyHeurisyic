@@ -44,6 +44,22 @@ for i in range(n):
         u[i, j] = model.addVar(vtype = GRB.BINARY, name = "u(%d,%d)" % (i, j))
 model.update()
 
+# ONLY FOR DEBUG, Specify a route
+Xseq = []
+routeSeq = [12,2,7,1,4,6,3,9,8,0,5,13] #truck only optimal
+routeSeq = [12,0,1,4,6,8,9,2,7,5,13]
+for i in range(len(routeSeq)-1):
+    Xseq.append((routeSeq[i],routeSeq[i+1]))
+model.addConstrs(x[(i,j)] == 1 for (i,j) in Xseq)
+
+Useq = []
+droneSeq = [10,17,3,4,14,11]
+for i in range(len(droneSeq)-1):
+    Useq.append((droneSeq[i],droneSeq[i+1]))
+model.addConstrs(u[(i,j)] == 1 for (i,j) in Useq)
+model.addConstr(T[(6)] == 51,name = 'prone')
+
+
 
 ### add constraints for the courier
 
@@ -189,12 +205,12 @@ for i in A:
 
 
 # Resupply时human courier必须比drone先到达，且需等待drone到达后才能离开去下一个节点
-## v1
+# v1
 for j in Su:
     #model.addConstr(T[j]+B*quicksum(u[(i,j)] for i in R) - TD[j] + 1 <= B)
-    model.addConstr(T[j]+B*quicksum(u[(i,j)] for i in R) - TD[j] + 1 <= B)
+    model.addConstr(T[j]+B*quicksum(u[(i,j)] for i in R) - TD[j] <= B)
     model.addConstr(T[j]-B*quicksum(u[(i,j)] for i in R) - TD[j] + w[j] >= -B)
-## v2
+# v2
 # for j in Su:
 #     model.addConstr(T[j]+B*quicksum(u[(i,j)] for i in R) - TD[j] == B)
 #     model.addConstr(T[j]-B*quicksum(u[(i,j)] for i in R) - TD[j] + w[j] == -B) 
@@ -239,8 +255,9 @@ model.setObjective(alpha*quicksum(lateTime[i] for i in Nc)+quicksum(T[i] for i i
 model.update()
 model.optimize()
 
-# model.computeIIS()
-# model.write("model.ilp")
+if model.status == 3:
+    model.computeIIS()
+    model.write("model.ilp")
 
     
     
