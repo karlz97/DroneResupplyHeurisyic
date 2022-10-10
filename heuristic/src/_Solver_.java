@@ -25,6 +25,8 @@ abstract class _Solver_ {
 
     abstract void instantiateSolution();  //instantiate the Solution including setup from route.
 
+    abstract void removeOrderFromCurrentStates(Order order);
+
     public double earlistExecuteTime_lfn(Order order, Vehicle vehicle){
         Node orderNode;
         double prepared_lfn; //prepared time left from now
@@ -65,173 +67,45 @@ abstract class _Solver_ {
         return score; 
     }
 
-
-
-}
-
-
-
-/*class ResupplySolution extends TrivalSolution {
-
-}
-*/
-
-
-
-
-class OddPool {  //OddPool for 'ordered Pool'
-    //Since this.length will not be large, it should be enough to use this implementation instead of Max Heap implementation
-    LinkedList<Double> list;
-    LinkedList<Object> indexlist;
-    int currlen;
-    final int length;
-    public OddPool(int length) {
-        list = new LinkedList<Double>(); 
-        indexlist = new LinkedList<Object>(); 
-        this.currlen = 0;
-        this.length = length;
-    }
-
-    public Object getitem(int i) {     // remove i and return indexlist[i]
-        Object item;
-        item = indexlist.get(i);
-        indexlist.remove(i);
-        list.remove(i);
-        currlen -- ;
-        return item;
-    }
-
-    public void inpool(double value, Object index) {
-        //System.out.println("currlen:" + currlen + "truelen" + list.size());
-        if (currlen > 0 ) {
-            if (value > list.getFirst() ){   //smaller than the last 
-                inhead(value, index);
-            } else if (value > list.getLast() || currlen < length ) {
-                inbody(value, index);
-            } 
+    public void printSolution_Flight(Solution s) {
+        if (s.flightSeqs != null) {
+            for (int i = 0; i < s.flightSeqs.length; i++) {
+                System.out.print("Flight of Drone <" + i + ">: ");
+                LinkedList<Node> flightSeq =  s.flightSeqs[i]; int counter = 0;
+                for (Node n : flightSeq) {  
+                    if ((++counter - 1)% 4 == 0 && counter != 1) 
+                        System.out.print( " | ");  
+                    if (n == null)
+                        continue;
+                    if (n.isMeet) 
+                        System.out.print( n.id + "[" + n.T_drone + "] --> ");  
+                    else
+                        System.out.print( n.id + " --> ");
+                }
+                System.out.println();
+            }
         } else {
-            list.add(value);
-            indexlist.add(index);
-            currlen ++;
+            System.out.println("flightseq is empty");  
         }
     }
-
-
-    private void inhead(double value, Object index) {
-        list.addFirst(value);
-        indexlist.addFirst(index);
-        if (currlen == length) {
-            list.removeLast();
-            indexlist.removeLast();
-        } else {
-            currlen ++;
-        }
-    }
-
-    private void inbody(double value, Object index){
-        for (int i = 0; i < currlen; i ++) {
-            if ( value > list.get(i) ) {
-                list.add(i, value);
-                indexlist.add(i,index);
-                break;
-            } else {
-                list.addLast(value);
-                indexlist.addLast(index);
-                break;
+    
+    public void printSolution_Courier(Solution s) {
+        System.out.println("Routes: ");
+        for (int i = 0; i < s.courierRoutes.length; i++) {
+            System.out.print( "Routes of Courier <" + i + ">:");  
+            for (Iterator<Node> it = s.courierRoutes[i].iterator(); it.hasNext();) {
+                Node n = it.next();
+                // System.out.print( n.next().id + " --> ");
+                System.out.print( n.id + "[" + n.T_courier + "] --> ");  
+                // debug::: System.out.print( it.next().id + "(" +  + ")" + " --> ");
+            }
+            if (orders.allDone()) {
+                System.out.println("finished.");   
+            }else{
+                System.out.println("unfinieshed.");
             }
         }
-        if (currlen == length) {
-            list.removeLast();
-            indexlist.removeLast();
-        } else {
-            currlen ++;
-        }
     }
 
 
-
-}
-
-class PseudoSolution { 
-    ArrayList<Node> routeSeq;
-    double objValue;
-
-    public PseudoSolution(ArrayList<Node> routeSeq, double objValue){
-        this.routeSeq = routeSeq;
-        this.objValue = objValue;
-    }
-}
-
-
-class Solution {
-    double objfValue;
-    ArrayList<Node> courierRoute;
-    LinkedList<Node>[] flightSeqs;
-    public Solution(Solution s) {
-        this.objfValue = s.objfValue;
-        this.courierRoute = new ArrayList<>(s.courierRoute);
-        if (s.flightSeqs != null) {   
-            flightSeqs = new LinkedList[s.flightSeqs.length];
-            for (int i = 0; i < s.flightSeqs.length; i++) {
-                flightSeqs[i] = new LinkedList<>(s.flightSeqs[i]);
-            }   
-        }
-    }
-
-    public Solution(Courier courier) {
-        courierRoute = new ArrayList<Node>(courier.routeSeq);
-    }
-
-    public Solution(List<Node> courierRoute) {
-        this.courierRoute = new ArrayList<Node>(courierRoute);
-    }
-
-    public Solution(List<Node> courierRoute, List<Node>[] flightSeqs) {
-        this.courierRoute = new ArrayList<Node>(courierRoute);
-        this.flightSeqs = new LinkedList[flightSeqs.length];
-        for (int i = 0; i < flightSeqs.length; i++) {
-            this.flightSeqs[i] = new LinkedList<Node>(flightSeqs[i]);
-        }
-    }
-
-    public Solution(Courier courier, Drone[] drones) {
-        this(courier);
-        flightSeqs = new LinkedList[drones.length];
-        for (int i = 0; i < drones.length; i++) {
-            flightSeqs[i] = serializeFlights(drones[i].flights);
-        }
-    }
-
-    public static LinkedList<Node> serializeFlights(ArrayList<Flight> flights) {
-        LinkedList<Node> flightSeq = new LinkedList<>();
-        for (Flight flight : flights) {
-            flightSeq.offer(flight.launchNode);
-            flightSeq.offer(flight.pickupNode);
-            flightSeq.offer(flight.supplyNode);
-            flightSeq.offer(flight.landNode);
-        }
-        return flightSeq;
-    }
-
-    public static ArrayList<Flight> deSerializeFlights(LinkedList<Node> flightSeq) {
-        if (flightSeq == null) {
-            return new ArrayList<Flight>();
-        }
-        
-        ArrayList<Flight> flights = new ArrayList<>();
-        for (int i = 0; i < flightSeq.size();) {
-            Node launchNode = flightSeq.get(i++);
-            Node pickupNode = flightSeq.get(i++);
-            Node supplyNode = flightSeq.get(i++);
-            Node landNode = flightSeq.get(i++);
-            flights.add( new Flight(launchNode, pickupNode, supplyNode, landNode) );
-        }
-        return flights;
-    }
-
-    public ArrayList<Flight> deSerializeFlights(int droneId) {
-        return deSerializeFlights(flightSeqs[droneId]);
-    }
-
-    
 }

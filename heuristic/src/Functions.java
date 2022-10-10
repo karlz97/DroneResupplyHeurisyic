@@ -90,23 +90,6 @@ class Functions{
         !!! Assume There is No duplicate values !!! */
         double[] temp = matrix.clone();  //For basic type array is deep copy
         Arrays.sort(temp); 
-        /*  Check for duplicate values 
-        if(n == 0){
-            if(temp[n] == temp[n+1]){
-                System.out.println("WARNING!!!! \t duplicate values Trouble in <findMaxN>");
-                //return -1;
-            }
-        }else if(n == matrix.length-1){
-            if(temp[n] == temp[n-1]){
-                System.out.println("WARNING!!!! \t duplicate values Trouble in <findMaxN>");
-                //return -1;
-            }
-        }else{
-            if(temp[n] == temp[n+1] || temp[n] == temp[n-1]){
-                System.out.println("WARNING!!!! \t duplicate values Trouble in <findMaxN>");
-                //return -1;
-            }
-        }*/
         for(int i = 0; i < matrix.length; i++){
             if(matrix[i] == temp[n])
                 return i;
@@ -147,41 +130,79 @@ class Functions{
         return false;
     }
 
-    static public void printSolution_Flight(Solution s) {
-        if (s.flightSeqs != null) {
-            for (int i = 0; i < s.flightSeqs.length; i++) {
-                System.out.print("Flight of Drone <" + i + ">: ");
-                LinkedList<Node> flightSeq =  s.flightSeqs[i]; int counter = 0;
-                for (Node n : flightSeq) {  
-                    if ((++counter - 1)% 4 == 0 && counter != 1) 
-                        System.out.print( " | ");  
-                    if (n == null)
-                        continue;
-                    if (n.isMeet) 
-                        System.out.print( n.id + "[" + n.T_drone + "] --> ");  
-                    else
-                        System.out.print( n.id + " --> ");
-                }
-                System.out.println();
-            }
+}
+
+//TODO 没搞懂，list和indexlist是不是搞反了？？
+class OddPool {  //OddPool for 'ordered Pool'
+    // A map: valuelist --> indexlist
+    // ordered by valuelist from big to small
+
+    //Since this.length will not be large, it should be enough to use this implementation instead of Max Heap implementation
+    // This is a low effeciency naive implementation of PriorityQueue
+    LinkedList<Double> valuelist;
+    LinkedList<Object> indexlist;
+    int currlen;
+    final int length;
+    public OddPool(int length) {
+        valuelist = new LinkedList<Double>(); 
+        indexlist = new LinkedList<Object>(); 
+        this.currlen = 0;
+        this.length = length;
+    }
+
+    public Object takeitem(int i) {     // remove i and return indexlist[i]
+        Object item;
+        item = indexlist.get(i);
+        indexlist.remove(i);
+        valuelist.remove(i);
+        currlen -- ;
+        return item;
+    }
+
+    public void inpool(double value, Object index) {
+        //System.out.println("currlen:" + currlen + "truelen" + list.size());
+        if (currlen > 0 ) {
+            if (value > valuelist.getFirst() ){   //smaller than the last 
+                inhead(value, index);
+            } else if (value > valuelist.getLast() || currlen < length ) {
+                inbody(value, index);
+            } 
         } else {
-            System.out.println("flightseq is empty");  
+            valuelist.add(value);
+            indexlist.add(index);
+            currlen ++;
         }
     }
-    
-    static public void printSolution_Courier(Solution s, Orders orders) {
-        System.out.println("Routes: ");
-        for (Iterator<Node> it = s.courierRoute.iterator(); it.hasNext();) {
-            Node n = it.next();
-            // System.out.print( n.next().id + " --> ");
-            System.out.print( n.id + "[" + n.T_courier + "] --> ");  
-            // debug::: System.out.print( it.next().id + "(" +  + ")" + " --> ");
+
+
+    private void inhead(double value, Object index) {
+        valuelist.addFirst(value);
+        indexlist.addFirst(index);
+        if (currlen == length) {
+            valuelist.removeLast();
+            indexlist.removeLast();
+        } else {
+            currlen ++;
         }
-        if (orders.allDone()) {
-            System.out.println("finished.");   
-        }else{
-            System.out.println("unfinieshed.");
+    }
+
+    private void inbody(double value, Object index){
+        for (int i = 0; i < currlen; i ++) {
+            if ( value > valuelist.get(i) ) {
+                valuelist.add(i, value);
+                indexlist.add(i,index);
+                break;
+            } else {
+                valuelist.addLast(value);
+                indexlist.addLast(index);
+                break;
+            }
+        }
+        if (currlen == length) {
+            valuelist.removeLast();
+            indexlist.removeLast();
+        } else {
+            currlen ++;
         }
     }
 }
-

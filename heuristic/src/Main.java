@@ -77,13 +77,19 @@ public class Main {
         Drone drone = droneList[0];
         MRoute = Functions.buildNodeSeqFromArray(routeArray, startnode, nodes.NodeList);
         MFlight = Functions.buildNodeSeqFromArray(flightArray, null, nodes.NodeList);
-        List<Node>[] Mflights = new List[1];
+        List<Node>[] Mflights = new List[1]; //for now only 1 drone.
         Mflights[0] = MFlight;
-        Solution MSolution = new Solution(MRoute, Mflights); 
 
+        ArrayList<Node>[] MRoutes = new ArrayList[solver.couriers.length];
+        for (int i = 0; i < MRoutes.length; i++) {
+            MRoutes[i] = new ArrayList<Node>();
+        }
+        MRoutes[0] = MRoute;
+        Solution MSolution = new Solution(MRoutes, Mflights); 
         /* recover the solution and instantiate it */
         solver.globalOptSolution = MSolution;
         solver.printSolution();
+
 
         // System.out.println("---------------------   Manually Solution 2     ---------------------");
         // /* mannally built a solution */ 
@@ -112,23 +118,26 @@ public class Main {
         /* readData from csv */
         dataMatrix = ReadDataFromCSV.readDoubleToMatrix("../insgen/exNODES.csv");
         truckDistanceMatrix = ReadDataFromCSV.readDoubleToMatrix("../insgen/Tt.csv");
-        droneDistanceMatrix = ReadDataFromCSV.readDoubleToMatrix("../insgen/Tt.csv"); //TODO 暂时使用truck矩阵 
+            //TODO 暂时使用truck矩阵 
+        droneDistanceMatrix = ReadDataFromCSV.readDoubleToMatrix("../insgen/Tt.csv"); 
         
         /* initialize Nodes */
         nodes = new Nodes(dataMatrix);
-        Node startnode = new StartEndNode(12, 1, 1, 's'); //在这个测试例子中courier的startnode是第13个，对应distanceMatrix中第12
+        Node startnode = new StartEndNode(12, 1, 1, 's'); 
+        //在这个测试例子中courier的startnode是第13个，对应distanceMatrix中第12
     
         /* initialize Orders(by orderNodeList) */
         orders = new Orders(nodes.orderNodeList);  
         
         /* initialize vehicle */
-        Courier courier = new Courier(0, startnode, truckDistanceMatrix);
+        //Courier courier = new Courier(0, startnode, truckDistanceMatrix);
+        Courier[] courierList = new Courier[]{new Courier(0, startnode, truckDistanceMatrix)};
         Drone[] droneList = new Drone[]{new Drone(0, startnode, droneDistanceMatrix)};
 
 
         /* initialize solution */
         ObjF_latePunish objF = new ObjF_latePunish(1);
-        TrivalSolver solver = new TrivalSolver(orders, nodes, objF, courier); 
+        TrivalSolver solver = new TrivalSolver(orders, nodes, objF, courierList); 
         //ResupplySolver solver = new ResupplySolver(orders, nodes, objF, courier, droneList, truckDistanceMatrix);
 
 
@@ -158,33 +167,16 @@ public class Main {
         ArrayList<Node> MRoute = null;
         Integer[] routeArray = {0,1,4,6,9,2,7,5,3,8};
         MRoute = Functions.buildNodeSeqFromArray(routeArray, startnode, nodes.NodeList);
-        Solution MSolution = new Solution(MRoute); 
+        ArrayList<Node>[] MRoutes = new ArrayList[solver.couriers.length];
+        for (int i = 0; i < MRoutes.length; i++) {
+            MRoutes[i] = new ArrayList<Node>();
+        }
+        MRoutes[0] = MRoute;
+        Solution MSolution = new Solution(MRoutes); 
         /* recover the solution and instantiate it */
         solver.globalOptSolution = MSolution;
         solver.printSolution();
     }    
-
-    private static void main0(){
-        ArrayList<Double[]> dataInList = new ArrayList<Double[]>();
-        try {
-            ReadDataFromCSV csvReader = new ReadDataFromCSV("exNODES.csv");
-            csvReader.readDoubleValues(dataInList);
-            csvReader.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        System.out.println("watchout!");
-        Double[][] testMatrix = ReadDataFromCSV.trun2Matirx(dataInList);
-        //just to test:
-        for (int i = 0; i < testMatrix.length; i++) {
-            for (int j = 0; j <testMatrix[i].length; j++) {  //testValue.get(0) 第一行元素的长度
-                System.out.print(testMatrix[i][j]+"\t");
-            }
-            System.out.println();
-        }
-    }
-
 
 
 }

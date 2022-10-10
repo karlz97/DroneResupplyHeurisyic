@@ -11,8 +11,8 @@ import javax.swing.text.Position;
 
 class ResupplySolver extends DroneSupporting_Solver_{
   
-    public ResupplySolver(Orders orders, Nodes nodes, Objfunction f, Courier courier, Drone[] droneList) {
-        super(orders, nodes, f, courier, droneList);
+    public ResupplySolver(Orders orders, Nodes nodes, Objfunction f, Courier[] courierList, Drone[] droneList) {
+        super(orders, nodes, f, courierList, droneList);
     }
     
     /*              Heuristic               */    
@@ -44,14 +44,14 @@ class ResupplySolver extends DroneSupporting_Solver_{
             this.randomFlightRemovalOne(d);
             /* remove the courier node if necessary */
             if(removedOrderList.size() < sizeOfNeiborhood) {
-                this.randomRemoval(courier, sizeOfNeiborhood - removedOrderList.size());
+                this.randomRemoval_from_1c(courier, sizeOfNeiborhood - removedOrderList.size());
             }           
             /* ------------ insert heuristic -------------- */
             /* insert flight */
             this.randomSupplyFlightCreate_order();
             r = rand.nextInt(this.drones.length);
             /* insert courier */
-            this.regeretInsert(courier, removedOrderList, 3);
+            this.regeretInsert_to_1c(courier, removedOrderList, 3);
             /* instantiateSolution */
             this.instantiateSolution_d(courier);
             double tempObjValue = this.ObjfValue();
@@ -98,7 +98,7 @@ class ResupplySolver extends DroneSupporting_Solver_{
 
             /* remove the courier node if necessary */
             if(removedOrderList.size() < sizeOfNeiborhood) {
-                this.randomRemoval(courier, sizeOfNeiborhood - removedOrderList.size());
+                this.randomRemoval_from_1c(courier, sizeOfNeiborhood - removedOrderList.size());
             }           
             
             /* Print Removed Status --------------*/
@@ -110,7 +110,7 @@ class ResupplySolver extends DroneSupporting_Solver_{
             // this.randomTransferFlightCreate(d);
 
             /* insert courier */
-            this.regeretInsert(courier, removedOrderList, 3);
+            this.regeretInsert_to_1c(courier, removedOrderList, 3);
 
             /* Print Insert Status---------*/
 

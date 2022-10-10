@@ -5,77 +5,13 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 
+import javax.crypto.spec.PBEKeySpec;
 import javax.naming.InitialContext;
 
-class TrivalSolver extends _Solver_ {
-    Courier courier;
-    Objfunction Objf; 
-    Random rand = new Random();
-    ArrayList<Order> removedOrderList;
-    
+class TrivalSolver extends TruckOnly_Solver_ {
 
-    public TrivalSolver(Orders orders, Nodes nodes, Objfunction f, Courier courier){
-        super(orders, nodes);
-        this.Objf = f;
-        this.courier = courier;
-        // vehicleList = new Vehicle[1];
-        // vehicleList[0] = courier;
-    }
-
-    public double ObjfValue(){
-        return Objf.computeObjValue(this);
-    }
-
-    public void printSolution(){
-        ArrayList<Node> route = globalOptSolution.courierRoute;
-        instantiateSolution_t_routeSeq(route);
-        Functions.printSolution_Courier(globalOptSolution, orders);
-        System.out.println("ObjF: " + ObjfValue());
-    } 
-
-    @Override
-    public void recoverFromSolution(Solution solution) {
-        courier.routeSeq = new ArrayList<>(solution.courierRoute);
-    }
-
-    void instantiateSolution_t(Courier courier){
-        instantiateSolution_t_routeSeq(courier.routeSeq);
-    }
-
-    private void instantiateSolution_t_routeSeq(ArrayList<Node> routeSeq){
-        /* reset all order, nodes to initial */
-        for(int i = 0; i<orders.OrderList.length; i++) {
-            orders.OrderList[i].reset_r();  //only reset the order but not the related node.
-        }
-        for(int i = 0; i<nodes.NodeList.length; i++) {
-            nodes.NodeList[i].reset_r();
-        }
-
-        /* set the status of courier, order, node by follow the routeSeq */
-        Node currNode;      //temp variables to speedup the program
-        Order currOrder;    //temp variables
-        courier.position  = routeSeq.get(0); //deal with startnode
-        courier.time = 0;
-        for(int i = 0; i<routeSeq.size(); i++) {  //start at the startnode //start after the startnode
-            currNode = routeSeq.get(i);
-            
-            /*  courier, order  &  node */
-            if(currNode.orderNum != -1){    //if it is an order node, update the order
-                currOrder = orders.OrderList[currNode.orderNum];
-                courier.time = earlistExecuteTime(currOrder, courier); //Because during a feasible solution route, it always pickup first.
-                currOrder.update(courier, courier.time);  //For more structured progame and mode reuse, here is couples of overhead 
-            }else{                          //if it is not an order node, don't need update the order
-                courier.time = earlistExecuteTime(currNode, courier);
-            }
-            courier.position = currNode;
-            currNode.T_courier = courier.time;  //update the node
-        }
-    }
-
-    @Override
-    void instantiateSolution(){
-        recoverFromSolution(globalOptSolution);
-        instantiateSolution_t(courier);
+    public TrivalSolver(Orders orders, Nodes nodes, Objfunction f, Courier[] courierList){
+        super(orders, nodes, f, courierList);
     }
 
     /*              Heuristic               */
@@ -101,24 +37,24 @@ class TrivalSolver extends _Solver_ {
             recoverFromSolution(candidateSolution);
             
             /* remove heuristic */
-            shawRemoval_fast(courier, sizeOfNeiborhood, 3);
+            shawRemoval_Courier(sizeOfNeiborhood, 3);
             /* insert heuristic */
-            regeretInsert(courier, removedOrderList, 3);
+            regeretInsert_Courier(removedOrderList, 3);
             /* decide whether accept new solution */
-            instantiateSolution_t(courier);
+            instantiateSolution_t(couriers);
             double tempObjValue = ObjfValue();
             if (tempObjValue < minObjfValue) {
                 minObjfValue = tempObjValue;
-                candidateSolution = new Solution(courier);
-                Functions.printRouteSeq(candidateSolution.courierRoute);
+                candidateSolution = new Solution(couriers);
+                printSolution_Courier(candidateSolution);
             }
             iter++;
         }
         globalOptSolution = candidateSolution;
         instantiateSolution();
-    }
+    } 
 
-    public void LNS2t(int maxIteration, int sizeOfNeiborhood){ 
+    public void LNS2t_base(int maxIteration, int sizeOfNeiborhood){ 
         Solution candidateSolution = new Solution(globalOptSolution);
         removedOrderList = new ArrayList<>();
         double minObjfValue = ObjfValue();
@@ -129,16 +65,16 @@ class TrivalSolver extends _Solver_ {
             recoverFromSolution(candidateSolution);
             
             /* remove heuristic */
-            randomRemoval(courier, sizeOfNeiborhood);
+            randomRemoval(sizeOfNeiborhood);
             /* insert heuristic */
-            regeretInsert(courier, removedOrderList, 3);
+            regeretInsert_Courier(removedOrderList, 3);
             /* decide whether accept new solution */
-            instantiateSolution_t(courier);
+            instantiateSolution_t(couriers);
             double tempObjValue = ObjfValue();
             if (tempObjValue < minObjfValue) {
                 minObjfValue = tempObjValue;
-                candidateSolution = new Solution(courier);
-                Functions.printRouteSeq(candidateSolution.courierRoute);
+                candidateSolution = new Solution(couriers);
+                printSolution_Courier(candidateSolution);
             }
             iter++;
         }
@@ -147,36 +83,31 @@ class TrivalSolver extends _Solver_ {
     }
 
     public void genGreedySolve(){ 
-        /*  currently assume only one courier.
-            [ known better approach exists. ]
-        */
-        //initial the vehicle time = 0;
-        //double couriertime = 0;
-        Order candidateOrder;
         Node candidatNode;
         double eptArrivetime;
-        double[] scoreList = new double[orders.numOfOrders];
-
         // Until: All orders has been done.
         while (!orders.allDone()){
-            //double max = 0;
+            double max = 0;
             double tempPrio = 0;
-            int index = 0;
+            int courierIndex = 0;
+            int orderIndex = 0;
             /* Compute the prioScore for every orders */
-            for(int i = 0; i < orders.numOfOrders; i++){
-                tempPrio = computeOrderPrioScore(orders.OrderList[i],courier);
-                /*if (tempPrio >= max){
-                    max = tempPrio;
-                    index = i;
-                }*/
-                scoreList[i] = tempPrio;
+            for (int i = 0; i < couriers.length; i++) {      
+                Courier courier = couriers[i];          
+                for(int j = 0; j < orders.numOfOrders; j++){
+                    tempPrio = computeOrderPrioScore(orders.OrderList[j], courier);
+                    if (tempPrio >= max){
+                        max = tempPrio;
+                        orderIndex = j;
+                        courierIndex = i;
+                    }
+                }
             }
-
             /* choose one with highest order with priority score*/
-            index = Functions.findMax(scoreList);
-            candidateOrder = orders.OrderList[index];
+            Courier courier = couriers[courierIndex];
+            Order candidateOrder = orders.OrderList[orderIndex];
             candidatNode = candidateOrder.getNode();
-            
+
             /* add route to the route ArrayList */
             courier.routeSeq.add(candidatNode);
 
@@ -193,15 +124,15 @@ class TrivalSolver extends _Solver_ {
         }
 
         /* update globalSolution */
-        this.globalOptSolution = new Solution(courier);
-
+        this.globalOptSolution = new Solution(couriers);
     }
     
 
 
     /*          Herusitics operators           */
     // shawRemoval need to update alot before apply to resupply LNS
-    void shawRemoval_fast(Courier courier, int q, int p){  //q is the number of orders been removed
+    void shawRemoval_from_1c(Courier courier, int q, int p){  //q is the number of orders been removed
+        //perform shawRemoval to one courier
         ArrayList<Node> routeSeq = courier.routeSeq;
         int orderlistlen = orders.OrderList.length;
         Order order_in = orders.OrderList[rand.nextInt(orderlistlen)];    //randomly choose an order
@@ -220,7 +151,7 @@ class TrivalSolver extends _Solver_ {
         for (int i = 0; i < q; i++) {
             int index = randomExpOne(p, orderlistlen - i);
             //index = (int) orderPool.indexlist.get(index);  //convert the relatedness-index to the Order index 
-            index = (int) orderPool.getitem(index);
+            index = (int) orderPool.takeitem(index);
             //System.out.println("index2:" + index);
             Order order = orders.OrderList[index];
             removedOrderList.add(order);
@@ -230,9 +161,56 @@ class TrivalSolver extends _Solver_ {
         //return removedOrderList;
     }
 
-    void randomRemoval(Courier courier, int q){
+    void shawRemoval_Courier(int q, int p){
+        int poolSize = Math.max(orders.OrderList.length/2 + 1, q);
+        shawRemoval_Courier(q, p, poolSize);
+    }
+
+    /* q is the number of remove. p is the power of randomness */
+    void shawRemoval_Courier(int q, int p, int poolSize){ 
+        assert poolSize > q;
+        int len = orders.OrderList.length;
+
+        ArrayList <Order> toRemoveOrderList = new ArrayList<>(len);
+        Collections.addAll(toRemoveOrderList, orders.OrderList);
+
+        OddPool orderPool = new OddPool(poolSize);
+        int r = rand.nextInt(len);
+        Order order_in = toRemoveOrderList.get(r);
+
+        for (Order o : toRemoveOrderList) {
+            double relatedness = order_relatedness(couriers[0], order_in, o);
+            orderPool.inpool(relatedness, o);         
+            //一趟循环下来，pool里面将所有relatedness排好序并带有对应的index
+        }
+
+        int count = 0;
+        while (count < q) {
+            int index = randomExpOne(p, poolSize);
+            Order o = (Order) orderPool.takeitem(index); 
+            toRemoveOrderList.remove(o);
+            removedOrderList.add(o);
+            super.removeOrderFromCurrentStates(o);
+            count ++;
+        }
+    }
+
+    void randomRemoval(int q){   //q is the number of remove.
+        int count = 0;
+        int len = orders.OrderList.length;
+        ArrayList <Order> toRemoveOrderList = new ArrayList<>(len);
+        Collections.addAll(toRemoveOrderList, orders.OrderList);
+        while (count < q) {
+            Order o = toRemoveOrderList.get(rand.nextInt(toRemoveOrderList.size()));
+            toRemoveOrderList.remove(o);
+            removedOrderList.add(o);
+            super.removeOrderFromCurrentStates(o);
+            count ++;
+        }
+    }
+
+    void randomRemoval_from_1c(Courier courier, int q){
         //constrain: 不能remove被由drone pickup的点（drone remove的时候会管），也不能remove meetNode
-        //TODO feasible removable order(order that delievry by courier)
         ArrayList<Node> routeSeq = courier.routeSeq;
         ArrayList<Order> toremoveOrderList = new ArrayList<>();
         for (Node n : routeSeq) {
@@ -257,32 +235,54 @@ class TrivalSolver extends _Solver_ {
         //return removedOrderList;
     }
 
-    void regeretInsert(Courier courier, ArrayList<Order> removedOrdersList, int k){
-        int length = removedOrdersList.size();
-        //OddPool maxRegret = new OddPool(1);  
-        //alternative common approach exist, but I just want to unify this kind of operation as Oddpool
-        for (int i = 0; i < length; i++) {
+    void regeretInsert_Courier(ArrayList<Order> removedOrdersList, int k){
+        oneInsertOfCourier mostRegretInsertation = new oneInsertOfCourier();
+        while (!removedOrdersList.isEmpty()) {
+            Order insertOrder = null;
             /* insert the i_th order */ 
-            double maxRegret = 0; int index_maxRegret = 0; ArrayList<Node> tempInsertList = new ArrayList<Node>();
-            for (int j = 0; j < removedOrdersList.size(); j++) {
-                PseudoSolution presudoSol = regeretInsertOne(courier.routeSeq, removedOrdersList.get(j), k);
-                //maxRegret.inpool(presudoSol.objfValue, presudoSol.routeSeq); 
-                if (presudoSol.objValue > maxRegret) {
-                    maxRegret = presudoSol.objValue;
-                    tempInsertList = presudoSol.routeSeq;
-                    index_maxRegret = j;
+            for (Order o : removedOrdersList) {
+                for (Courier c : couriers) {
+                    oneInsertOfCourier candInsertation = regeretInsert_1o_to_1c(c, o, k);
+                    //maxRegret.inpool(presudoSol.objfValue, presudoSol.routeSeq); 
+                    if (candInsertation.objValue > mostRegretInsertation.objValue) {
+                        mostRegretInsertation =  candInsertation;
+                        insertOrder = o;
+                    }
                 }
             }
             /* update the 'toInsertList' and 'removedOrdersList' */
-            removedOrdersList.remove(index_maxRegret);
-            courier.routeSeq = tempInsertList; 
+            removedOrdersList.remove(insertOrder);
+            mostRegretInsertation.takeEffect(); 
         }
         return;
     }
 
-    PseudoSolution regeretInsertOne(ArrayList<Node> toInsertList, Order order, int k){
-        int length = toInsertList.size();
+    void regeretInsert_to_1c(Courier courier, ArrayList<Order> removedOrdersList, int k){
+        //perform regret Insert to one courier
+        //alternative common approach exist, but I just want to unify this kind of operation as Oddpool
+        oneInsertOfCourier mostRegretInsertation = new oneInsertOfCourier();
+        while (!removedOrdersList.isEmpty()) {
+            Order insertOrder = null;
+            /* insert the i_th order */ 
+            for (Order o : removedOrdersList) {
+                oneInsertOfCourier candInsertation = regeretInsert_1o_to_1c(courier, o, k);
+                //maxRegret.inpool(presudoSol.objfValue, presudoSol.routeSeq); 
+                if (candInsertation.objValue > mostRegretInsertation.objValue) {
+                    mostRegretInsertation =  candInsertation;
+                    insertOrder = o;
+                }
+            }
+            /* update the 'toInsertList' and 'removedOrdersList' */
+            removedOrdersList.remove(insertOrder);
+            mostRegretInsertation.takeEffect();  
+        }
+        return;
+    }
 
+    oneInsertOfCourier regeretInsert_1o_to_1c(Courier courier, Order order, int k){
+        //regret insert one order to one courier
+        ArrayList<Node> toInsertList = courier.routeSeq;  //按我的理解，应该没必要clone
+        int length = toInsertList.size();
         OddPool insertObjfPool = new OddPool(k + 1);
         /* test every insert position */
         /* insert pickup position  */
@@ -295,13 +295,11 @@ class TrivalSolver extends _Solver_ {
                 ArrayList<Node> toInsert_cstm = new ArrayList<Node>(toInsert_rstr); // the route to be insert(in the cstm insert step)
                 toInsert_cstm.add(j, order.cstmNode);   //TODO: a lot can be optimized, there is no need for create a new array?
                 /* rebuild the solution base on the tempRoute */
-                instantiateSolution_t_routeSeq(toInsert_cstm);
+                courier.routeSeq = toInsert_cstm;
+                instantiateSolution_t_one(courier);
                 /* compute the ObjF & record the lowest k ObjF */
                 insertObjfPool.inpool( - ObjfValue(), toInsert_cstm); 
-                
-                //TODO debug:: hotfix
-                //Functions.printRouteSeq(toInsert_cstm);
-                
+                              
                 //'- ObjfValue' inpool will save the max k, we need save the lowest k 
             }
         } 
@@ -309,72 +307,7 @@ class TrivalSolver extends _Solver_ {
         double regretk = regretK(insertObjfPool);
         
         @SuppressWarnings("unchecked")
-        PseudoSolution propInsertation = new PseudoSolution( (ArrayList<Node>) insertObjfPool.indexlist.getFirst(), regretk);
+        oneInsertOfCourier propInsertation = new oneInsertOfCourier(courier, (ArrayList<Node>) insertObjfPool.indexlist.getFirst(), regretk);
         return propInsertation;
     }
-
-    private double regretK(OddPool insertObjfPool){
-        double regretk = 0; 
-        double minObjf =  - insertObjfPool.list.getFirst();
-        for (int i = 1; i < insertObjfPool.length; i++) {
-            regretk +=  (-insertObjfPool.list.get(i)) - minObjf; 
-        }
-        return regretk;
-    }
-    
-    double order_relatedness(Vehicle vehicle, Order o1, Order o2){
-        double p_dis = 1; 
-        double p_time = 1;
-        //float p_nodetype = 5;
-        double relatedness = p_dis * ( vehicle.callNodeDistance(o1.cstmNode, o2.cstmNode) + 
-                                        vehicle.callNodeDistance(o1.rstrNode, o2.rstrNode) ) + 
-                             p_time * ( ( o1.T_prepared - o2.T_prepared ) + 
-                                         ( o1.T_expected - o2.T_expected ) );
-        return relatedness;                         
-    }
-
-    int randomExpOne(int p, float range){    
-        /** 
-         * get 1 with probability, 
-         * bigger p, higher probability to get an int close or equal to one. 
-         */
-        float div = 1/range;
-        float rd = rand.nextFloat();
-        rd = (float) Math.pow(rd, p);
-        int i;
-        for (i = 1; i <= range; i++) {
-            if ( i*div >= rd) {
-                return (i-1);
-            }
-        }
-        System.out.println("!!!     Error in <randomOne>");
-        System.out.println("range: " + range + ", randomNumber: " + rd + " i*div: " +  i*div + " i*div: " + div);
-        return (i-1);
-    }
-
-    ArrayList<Integer> randomExpOneList(int q, int p, int range){
-        //q is the lenth of List
-        ArrayList<Integer> randlist = new ArrayList<Integer>();
-        for (int i = 0; i < q; i++) {
-            int candidate =  randomExpOne(p, range);
-            while (randlist.contains(candidate)) {
-                candidate ++;
-                if(candidate >= range){
-                    candidate = randomExpOne(p, range); //exceed the range, regenerate
-                }
-            }
-            randlist.add(candidate);
-        }
-        return randlist;
-    }
-    
-    /*ArrayList<Integer> randomExpOneList(int q, int p, int range){
-        //q is the lenth of List
-        ArrayList<Integer> randlist = new ArrayList<Integer>();
-        for (int i = 0; i < q; i++) {
-            int candidate =  randomExpOne(p, range);
-            randlist.add(candidate);
-        }
-        return randlist;
-    }*/
 }   

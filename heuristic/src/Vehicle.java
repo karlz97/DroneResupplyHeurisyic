@@ -1,10 +1,5 @@
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedList;
-import java.util.List;
-
-import javax.swing.text.Position;
 
 abstract class Vehicle {
     int id;
@@ -20,6 +15,8 @@ abstract class Vehicle {
         this.time = 0;
         this.position = startPosition; 
     }
+
+    abstract public String removeOrderFromRoute(Order order);
 
     public double callNodeDistance(Node node1 ,Node node2){
         if(node1 == node2)
@@ -42,6 +39,24 @@ class Courier extends Vehicle{
         routeSeq.add(position); //将起始点加入
         timeSeq = new ArrayList<Integer>();
     }
+
+    @Override
+    public String removeOrderFromRoute(Order order) {
+        Node rstrNode = order.rstrNode;
+        Node cstmNode = order.cstmNode;
+        boolean rm_rstr = routeSeq.remove(rstrNode);
+        boolean rm_cstm = routeSeq.remove(cstmNode);
+        if (rm_cstm && rm_rstr) 
+            return "removed_both";
+
+        if (rm_cstm) 
+            return "removed_cstm";
+        
+        if (rm_rstr) 
+            return "removed_rstr";
+
+        return "removed_none";
+    }
 }
 
 class Drone extends Vehicle{
@@ -56,6 +71,23 @@ class Drone extends Vehicle{
         super(id, startPosition);
         flights = new ArrayList<Flight>();
         this.distanceMatrix = distanceMatrix;
+    }
+
+    @Override
+    public String removeOrderFromRoute(Order order) {
+        Node cstmNode = order.cstmNode;
+        boolean isRemoved = false;
+        for (Flight flight : flights) {
+            if (flight.remove(cstmNode)) 
+                isRemoved = true;
+            if (isRemoved) {
+                break;
+            }
+        }
+        if (isRemoved) 
+            return "removed_cstm";
+        
+        return "removed_none";
     }
 
     void reset(){
@@ -210,7 +242,6 @@ class Drone extends Vehicle{
 
 class Flight{
     //Flight defines as from one resupply node to another resupply node; not a drone base to another dorne base.
-
     boolean hasBuilt;
     double gapTime; //time between currently launch and last flight land.
     Node launchNode; double launchTime;
@@ -241,18 +272,24 @@ class Flight{
         
     }
 
+    public boolean remove(Node node) {
+        if (this.pickupNode == node) {
+            pickupNode = null;
+            supplyNode.isMeet = false;
+            supplyNode = null;
+            return true;
+        }
+        return false;
+    }
 
-
-    public void reset(Nodes nodes) {
+    public void reset() {
         this.hasBuilt = false;
         this.launchTime = -1;
         this.pickupTime = -1;
         this.supplyTime = -1;
         this.landTime = -1;
         this.gapTime = 0;
-        // if (supplyNode != null) {
-        //     nodes.NodeList[supplyNode.id].isMeet = false;
-        // }
+        //supplyNode.isMeet = false;
     }
 
 

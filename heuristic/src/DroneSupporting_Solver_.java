@@ -5,9 +5,19 @@ import java.util.List;
 public class DroneSupporting_Solver_ extends TrivalSolver{
     Drone[] drones;    //drone and courier are per Solution resources use as memory to instantiate solution
 
-    public DroneSupporting_Solver_(Orders orders, Nodes nodes, Objfunction f, Courier courier, Drone[] droneList) {
-        super(orders, nodes, f, courier);
+    public DroneSupporting_Solver_(Orders orders, Nodes nodes, Objfunction f, Courier[] courierList, Drone[] droneList) {
+        super(orders, nodes, f, courierList);
         this.drones = droneList;
+    }
+
+    @Override
+    public void removeOrder(Order order) {
+        for (int i = 0; i < couriers.length; i++) {
+            if(couriers[i].removeOrderFromRoute(order) == "removed_both")
+                return;
+        }
+        Functions.printAlert("No order matched in all couriers!");
+        TODO
     }
 
     void instantiateSolution_d(Courier courier){
@@ -21,7 +31,7 @@ public class DroneSupporting_Solver_ extends TrivalSolver{
         }
         for (Drone d : drones) {
             for (Flight f : d.flights) {
-                f.reset(nodes); 
+                f.reset(); 
             }
             d.reset();
         }
@@ -104,8 +114,8 @@ public class DroneSupporting_Solver_ extends TrivalSolver{
     public void printSolution(Solution s){
         recoverFromSolution(s);
         instantiateSolution_d(courier);
-        Functions.printSolution_Courier(s, orders);
-        Functions.printSolution_Flight(s);
+        printSolution_Courier(s, orders);
+        printSolution_Flight(s);
         System.out.println("ObjF: " + ObjfValue());  
     } 
 
@@ -115,20 +125,19 @@ public class DroneSupporting_Solver_ extends TrivalSolver{
             但注意 Nodes中的 isMeet 和 meetCourier, meetDrone 是与解相关的信息，理想的话应该与Node解耦合，但是现在还没空做
             */
         nodes.reset();
-        courier.routeSeq = new ArrayList<>(solution.courierRoute);
+        super.recoverFromSolution(solution);
         if (solution.flightSeqs == null) {
             for (int i = 0; i < drones.length; i ++) {
                 drones[i].flights.clear();;
             }
             return;
         }
-
         for (int i = 0; i < drones.length; i ++) {
             drones[i].flights = solution.deSerializeFlights(i);
             for (Flight f : drones[i].flights) {
                 if (f.supplyNode != null) {
                     f.supplyNode.isMeet = true;
-                    f.supplyNode.meetCourier = this.courier; 
+                    f.supplyNode.meetCourier = this.courier;  //TODO
                     //meetCourier need search to findout, or another data structure to log all meet nodes
                     f.supplyNode.meetDrone = drones[i];   
                 }
