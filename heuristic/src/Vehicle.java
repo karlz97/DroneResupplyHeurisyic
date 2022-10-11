@@ -1,6 +1,8 @@
 import java.util.ArrayList;
 import java.util.LinkedList;
 
+import javax.swing.text.Position;
+
 abstract class Vehicle {
     int id;
     double speed;
@@ -32,6 +34,7 @@ abstract class Vehicle {
 class Courier extends Vehicle{
     ArrayList<Node> routeSeq; //直接引用NodeList里面的Node不用初始化
     ArrayList<Integer> timeSeq; 
+    boolean buildDone = false;
     public Courier(int id, Node startPosition, Double[][] distanceMatrix){
         super(id, startPosition);
         this.distanceMatrix = distanceMatrix;
@@ -48,14 +51,18 @@ class Courier extends Vehicle{
         boolean rm_cstm = routeSeq.remove(cstmNode);
         if (rm_cstm && rm_rstr) 
             return "removed_both";
-
         if (rm_cstm) 
             return "removed_cstm";
-        
         if (rm_rstr) 
-            return "removed_rstr";
-
+            //return "removed_rstr";
+            Functions.printDebug("should not have only remove rstr but not cstm");
         return "removed_none";
+    }
+
+    void reset(){
+        buildDone = false;
+        position = routeSeq.get(0);
+        time = 0;
     }
 }
 
@@ -66,6 +73,7 @@ class Drone extends Vehicle{
     LinkedList<Node>[] feasibleSupplySet;
     LinkedList<Node>[] feasibleTransferSet;
     LinkedList<Node>[][] feasibleLandSet;
+    this.position = null; // the position of drone is not actively sustained
 
     public Drone(int id, Node startPosition, Double[][] distanceMatrix){
         super(id, startPosition);
@@ -91,6 +99,8 @@ class Drone extends Vehicle{
     }
 
     void reset(){
+        this.position = flights.get(0).launchNode;
+        this.time = 0;
         this.currFlight_id = 0;
     }
 
@@ -114,8 +124,8 @@ class Drone extends Vehicle{
             currFlight.launchTime = this.time;
             if (currFlight.pickupNode == null) { //this is a transfer flight
                 currFlight.pickupTime = currFlight.launchTime;
-                currFlight.supplyTime = currFlight.pickupTime;
-                currFlight.landTime = currFlight.supplyTime 
+                currFlight.supplyTime = currFlight.launchTime;
+                currFlight.landTime = currFlight.launchTime 
                     + callNodeDistance(currFlight.launchNode,currFlight.landNode);
             } else {
                 currFlight.pickupTime = currFlight.launchTime 
@@ -135,7 +145,6 @@ class Drone extends Vehicle{
                     Functions.printAlert("No meet node in <buildFlight>");
                 break;
             }
-            
         }
         return currFlight.supplyTime;
     }

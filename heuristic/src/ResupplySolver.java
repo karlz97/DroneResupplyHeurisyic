@@ -53,7 +53,7 @@ class ResupplySolver extends DroneSupporting_Solver_{
             /* insert courier */
             this.regeretInsert_to_1c(courier, removedOrderList, 3);
             /* instantiateSolution */
-            this.instantiateSolution_d(courier);
+            this.instantiateSolution_d_one(courier);
             double tempObjValue = this.ObjfValue();
         
             if (tempObjValue < minObjfValue) {
@@ -115,7 +115,7 @@ class ResupplySolver extends DroneSupporting_Solver_{
             /* Print Insert Status---------*/
 
             /* instantiateSolution */
-            this.instantiateSolution_d(courier);
+            this.instantiateSolution_d_one(courier);
             double tempObjValue = this.ObjfValue();
             if (tempObjValue < minObjfValue) {
                 minObjfValue = tempObjValue;
@@ -226,8 +226,6 @@ class ResupplySolver extends DroneSupporting_Solver_{
         int size = Math.min(speci_size, removedOrderList.size());
         OddPool regretPool = new OddPool(size);
             //for every order get the loss of every possible insertation
-
-
     }
 
 

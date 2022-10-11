@@ -1,12 +1,9 @@
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-
-import org.w3c.dom.NodeList;
-import org.w3c.dom.css.Counter;
-
 
 
 public class Main {
@@ -79,6 +76,7 @@ public class Main {
         MFlight = Functions.buildNodeSeqFromArray(flightArray, null, nodes.NodeList);
         List<Node>[] Mflights = new List[1]; //for now only 1 drone.
         Mflights[0] = MFlight;
+        HashMap<Node, MeetPoint> meetPoints = new HashMap<Node, MeetPoint>();
 
         ArrayList<Node>[] MRoutes = new ArrayList[solver.couriers.length];
         for (int i = 0; i < MRoutes.length; i++) {

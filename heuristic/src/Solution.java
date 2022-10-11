@@ -1,4 +1,5 @@
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -6,6 +7,8 @@ public class Solution {
     double objfValue;
     ArrayList<Node>[] courierRoutes;
     LinkedList<Node>[] flightSeqs;
+    HashMap<Node, MeetPoint> meetPoints;
+
     public Solution(Solution s) {
         this.objfValue = s.objfValue;
         courierRoutes = new ArrayList[s.courierRoutes.length];
@@ -33,21 +36,27 @@ public class Solution {
         }
     }
 
-    public Solution(List<Node>[] courierRoutes, List<Node>[] flightSeqs) {
+    public Solution(List<Node>[] courierRoutes, List<Node>[] flightSeqs,
+                            HashMap<Node, MeetPoint> meetsMap) {
         this(courierRoutes);
         this.flightSeqs = new LinkedList[flightSeqs.length];
         for (int i = 0; i < flightSeqs.length; i++) {
             this.flightSeqs[i] = new LinkedList<Node>(flightSeqs[i]);
         }
+        this.meetPoints = new HashMap<Node, MeetPoint>(meetsMap);
     }
 
-    public Solution(Courier[] courierList, Drone[] droneList) {
+    public Solution(Courier[] courierList, Drone[] droneList, 
+                            HashMap<Node, MeetPoint> meetsMap) {
         this(courierList);
         flightSeqs = new LinkedList[droneList.length];
         for (int i = 0; i < droneList.length; i++) {
             flightSeqs[i] = serializeFlights(droneList[i].flights);
         }
+        this.meetPoints =  new HashMap<Node, MeetPoint>(meetsMap);
     }
+
+
 
     public static LinkedList<Node> serializeFlights(ArrayList<Flight> flights) {
         LinkedList<Node> flightSeq = new LinkedList<>();

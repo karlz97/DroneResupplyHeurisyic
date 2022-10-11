@@ -25,7 +25,7 @@ public class TruckOnly_Solver_ extends _Solver_ {
     } 
 
     @Override
-    public void recoverFromSolution(Solution solution) {
+    public void recoverFromSolution(Solution solution){
         nodes.reset();
         for (int i = 0; i < couriers.length; i++) {
             couriers[i].routeSeq = new ArrayList<>(solution.courierRoutes[i]);
@@ -33,7 +33,7 @@ public class TruckOnly_Solver_ extends _Solver_ {
     }
 
     @Override
-    public void removeOrderFromCurrentStates(Order order) {
+    public void removeOrderFromCurrentStates(Order order){
     //search through all vehicle and remove the order from their routes.
         for (int i = 0; i < couriers.length; i++) {
             if(couriers[i].removeOrderFromRoute(order) == "removed_both")
@@ -49,7 +49,7 @@ public class TruckOnly_Solver_ extends _Solver_ {
         
     }
 
-    void instantiateSolution_t_one(Courier courier){
+    private void instantiateSolution_t_one(Courier courier){
         ArrayList<Node> routeSeq = courier.routeSeq;
         /* reset all order, nodes to initial */
         for(int i = 0; i<orders.OrderList.length; i++) {
