@@ -83,18 +83,11 @@ class Drone extends Vehicle{
 
     @Override
     public String removeOrderFromRoute(Order order) {
-        Node cstmNode = order.cstmNode;
-        boolean isRemoved = false;
+        Node rstrNode = order.rstrNode;
         for (Flight flight : flights) {
-            if (flight.remove(cstmNode)) 
-                isRemoved = true;
-            if (isRemoved) {
-                break;
-            }
-        }
-        if (isRemoved) 
-            return "removed_cstm";
-        
+            if (flight.remove(rstrNode))
+                return "removed_rstr";
+        }        
         return "removed_none";
     }
 
@@ -247,6 +240,32 @@ class Drone extends Vehicle{
         this.feasibleTransferSet = drone.feasibleTransferSet;
     } 
 
+    Flight concateFlights(Flight f1, Flight f2) {
+        if (!tryDirect_concateFlights(f1, f2)) { //if direct concate failed
+            Node n1 = f1.landNode; Node n2 = f2.launchNode;
+            if (feasibleTransferSet[n1.id].contains(f2.launchNode)) {
+                return new Flight(n1, n2);
+            }
+            return null;
+        }
+        return f2;
+    }
+
+    boolean tryDirect_concateFlights(Flight f1, Flight f2) {
+        return tryDirect_concateFlights(f1, f2.launchNode);
+    }
+
+
+    boolean tryDirect_concateFlights(Flight f1, Node next) {
+        Node nl = f1.launchNode;
+        Node ns = f1.supplyNode;
+        if (feasibleLandSet[nl.id][ns.id].contains(next)) {
+            f1.landNode = next;
+            return true;
+        }
+        return false;
+    }
+
 }
 
 class Flight{
@@ -300,8 +319,6 @@ class Flight{
         this.gapTime = 0;
         //supplyNode.isMeet = false;
     }
-
-
 }
 
 

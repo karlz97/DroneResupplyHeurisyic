@@ -1,6 +1,7 @@
 import java.lang.reflect.Array;
 import java.security.KeyRep;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.HashMap;
@@ -10,6 +11,7 @@ import java.util.List;
 import javax.swing.text.Position;
 
 class ResupplySolver extends DroneSupporting_Solver_{
+    OddPool candidatePool;
   
     public ResupplySolver(Orders orders, Nodes nodes, Objfunction f, Courier[] courierList, Drone[] droneList) {
         super(orders, nodes, f, courierList, droneList);
@@ -155,6 +157,21 @@ class ResupplySolver extends DroneSupporting_Solver_{
     /*          Herusitics operators           */
 
     /*          destory operators               */
+    /* Random remove orders from all orders and update to courier and drones */
+    void randomRemoval(int q){   //q is the number of remove.
+        int count = 0;
+        int len = orders.OrderList.length;
+        ArrayList <Order> toRemoveOrderList = new ArrayList<>(len);
+        Collections.addAll(toRemoveOrderList, orders.OrderList);
+        while (count < q) {
+            Order o = toRemoveOrderList.get(rand.nextInt(toRemoveOrderList.size()));
+            toRemoveOrderList.remove(o);
+            removedOrderList.add(o);
+            super.removeOrderFromCurrentStates(o);
+            count ++;
+        }
+    }
+
     /* Randomly remove a Flight and its following flights from a drone */
     void randomFlightRemovalOne(Drone drone){
         /* generate randomly choose a flight, remove it and its following flights */
@@ -165,12 +182,13 @@ class ResupplySolver extends DroneSupporting_Solver_{
         //+ remove the cooresbounding deliver node
         for (int j = r; j < drone.flights.size(); j++) {
             Flight f =  drone.flights.get(j);
-            Node pickupNode =  f.pickupNode;
-            if (pickupNode != null) {
+            if (f.pickupNode != null) {
+                Courier courier = f.supplyNode.meetCourier;
                 // empty the meet related information of node
+                meetPointsMap.remove(f.supplyNode);
                 f.supplyNode.reset();
                 // remove the corresponding order
-                Order o = orders.OrderList[pickupNode.orderNum];
+                Order o = orders.OrderList[f.pickupNode.orderNum];
                 this.removedOrderList.add(o);
                 // remove the corresbounding delivery node
                 Node deliveryNode = o.cstmNode;
@@ -194,10 +212,11 @@ class ResupplySolver extends DroneSupporting_Solver_{
             return;
         int r = rand.nextInt(drone.flights.size());
         Flight f =  drone.flights.get(r);
-        if (f.supplyNode != null) {
-            f.supplyNode.reset();
-        }
+        Courier courier = null;
         if (f.pickupNode != null) {
+            courier = f.supplyNode.meetCourier;
+            meetPointsMap.remove(f.supplyNode);
+            f.supplyNode.reset();
             Order o = orders.OrderList[f.pickupNode.orderNum];
             //add order to removedOrderList
             this.removedOrderList.add(o);
@@ -224,10 +243,52 @@ class ResupplySolver extends DroneSupporting_Solver_{
     void regretIntegrationRepairOne(int speci_size){  
         //Get regretion value from every order, then choose one to repair
         int size = Math.min(speci_size, removedOrderList.size());
-        OddPool regretPool = new OddPool(size);
+        
             //for every order get the loss of every possible insertation
+
+        
     }
 
+    private bestRepair_drone_specify (Order order, Courier courier, Drone drone) {
+
+        
+    }
+
+
+    private List<Flight> findFesible_Preflight() {
+        return null;
+    }
+
+    private void name() {
+        
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    /******************************************************************************************************/
 
     void randomSupplyFlightCreate_order(){      
         // find all removed & 1st order-drone-feasible orders 
@@ -250,7 +311,6 @@ class ResupplySolver extends DroneSupporting_Solver_{
         int r = rand.nextInt(feasibleOrderList.size());
         Order theInsertOrder = feasibleOrderList.get(r);
         removedOrderList.remove(theInsertOrder);  //remove the oreder from <reinsert list>
-
         Node pickupNode = theInsertOrder.rstrNode, supplyNode, landNode; //assume pickupNode == launchNode;
         Drone drone = null; 
         for (Drone d : drones) {
@@ -293,7 +353,7 @@ class ResupplySolver extends DroneSupporting_Solver_{
     
         r = rand.nextInt(feasibleSupplyList.size());
         supplyNode = feasibleSupplyList.get(r);
-        
+            
 
         List<Node> feasibleLandList = drone.feasibleLandSet[pickupNode.id][supplyNode.id];
         r = rand.nextInt(feasibleLandList.size());

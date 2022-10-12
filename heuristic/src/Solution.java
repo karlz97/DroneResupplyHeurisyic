@@ -92,22 +92,4 @@ public class Solution {
     
 }
 
-class oneInsertOfCourier { 
-    Courier courier; //This is only a reference to the courier
-    ArrayList<Node> routeSeq; //This is a solid copy of route
-    double objValue;
 
-    public oneInsertOfCourier(){
-        objValue = Integer.MIN_VALUE;
-    }
-
-    public oneInsertOfCourier(Courier courier, ArrayList<Node> routeSeq, double objValue){
-        this.courier = courier;
-        this.routeSeq = routeSeq;
-        this.objValue = objValue;
-    }
-
-    public void takeEffect() {
-        this.courier.routeSeq = this.routeSeq;
-    }
-}

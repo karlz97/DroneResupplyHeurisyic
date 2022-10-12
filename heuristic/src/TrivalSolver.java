@@ -236,13 +236,13 @@ class TrivalSolver extends TruckOnly_Solver_ {
     }
 
     void regeretInsert_Courier(ArrayList<Order> removedOrdersList, int k){
-        oneInsertOfCourier mostRegretInsertation = new oneInsertOfCourier();
+        Repair_1c mostRegretInsertation = new Repair_1c();
         while (!removedOrdersList.isEmpty()) {
             Order insertOrder = null;
             /* insert the i_th order */ 
             for (Order o : removedOrdersList) {
                 for (Courier c : couriers) {
-                    oneInsertOfCourier candInsertation = regeretInsert_1o_to_1c(c, o, k);
+                    Repair_1c candInsertation = regeretInsert_1o_to_1c(c, o, k);
                     //maxRegret.inpool(presudoSol.objfValue, presudoSol.routeSeq); 
                     if (candInsertation.objValue > mostRegretInsertation.objValue) {
                         mostRegretInsertation =  candInsertation;
@@ -260,12 +260,12 @@ class TrivalSolver extends TruckOnly_Solver_ {
     void regeretInsert_to_1c(Courier courier, ArrayList<Order> removedOrdersList, int k){
         //perform regret Insert to one courier
         //alternative common approach exist, but I just want to unify this kind of operation as Oddpool
-        oneInsertOfCourier mostRegretInsertation = new oneInsertOfCourier();
+        Repair_1c mostRegretInsertation = new Repair_1c();
         while (!removedOrdersList.isEmpty()) {
             Order insertOrder = null;
             /* insert the i_th order */ 
             for (Order o : removedOrdersList) {
-                oneInsertOfCourier candInsertation = regeretInsert_1o_to_1c(courier, o, k);
+                Repair_1c candInsertation = regeretInsert_1o_to_1c(courier, o, k);
                 //maxRegret.inpool(presudoSol.objfValue, presudoSol.routeSeq); 
                 if (candInsertation.objValue > mostRegretInsertation.objValue) {
                     mostRegretInsertation =  candInsertation;
@@ -279,7 +279,7 @@ class TrivalSolver extends TruckOnly_Solver_ {
         return;
     }
 
-    oneInsertOfCourier regeretInsert_1o_to_1c(Courier courier, Order order, int k){
+    Repair_1c regeretInsert_1o_to_1c(Courier courier, Order order, int k){
         //regret insert one order to one courier
         ArrayList<Node> toInsertList = courier.routeSeq;  //按我的理解，应该没必要clone
         int length = toInsertList.size();
@@ -295,7 +295,7 @@ class TrivalSolver extends TruckOnly_Solver_ {
                 ArrayList<Node> toInsert_cstm = new ArrayList<Node>(toInsert_rstr); // the route to be insert(in the cstm insert step)
                 toInsert_cstm.add(j, order.cstmNode);   //TODO: a lot can be optimized, there is no need for create a new array?
                 /* rebuild the solution base on the tempRoute */
-                courier.routeSeq = toInsert_cstm;
+                courier.routeSeq =  ;
                 instantiateSolution_t_one(courier);
                 /* compute the ObjF & record the lowest k ObjF */
                 insertObjfPool.inpool( - ObjfValue(), toInsert_cstm); 
@@ -307,7 +307,7 @@ class TrivalSolver extends TruckOnly_Solver_ {
         double regretk = regretK(insertObjfPool);
         
         @SuppressWarnings("unchecked")
-        oneInsertOfCourier propInsertation = new oneInsertOfCourier(courier, (ArrayList<Node>) insertObjfPool.indexlist.getFirst(), regretk);
+        Repair_1c propInsertation = new Repair_1c(courier, (ArrayList<Node>) insertObjfPool.indexlist.getFirst(), regretk);
         return propInsertation;
     }
 }   

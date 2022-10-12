@@ -24,40 +24,62 @@ public class DroneSupporting_Solver_ extends TrivalSolver{
             for (int i = 0; i < drones.length; i ++) {
                 drones[i].flights.clear();
             }
+            meetPointsMap = new HashMap<>();
             return;
         }
         //recover meetNode
+        assert solution.meetPoints != null;
+        meetPointsMap = solution.meetPoints;
         for (int i = 0; i < drones.length; i ++) {
             drones[i].flights = solution.deSerializeFlights(i);
             for (Flight f : drones[i].flights) {
                 Node supplyNode = f.supplyNode;
                 if (supplyNode != null) {
                     supplyNode.isMeet = true;
-                    supplyNode.meetCourier = solution.meetPoints.get(supplyNode).courier;  //TODO
+                    supplyNode.meetCourier = meetPointsMap.get(supplyNode).courier;  
                     //meetCourier need search to findout, or another data structure to log all meet nodes
                     supplyNode.meetDrone = drones[i];   
                 }
             }
         }
 
+
     }
 
     @Override
-    public void removeOrderFromCurrentStates(Order order) {
-        for (int i = 0; i < couriers.length; i++) {
-            switch (couriers[i].removeOrderFromRoute(order)) {
+    public void removeOrderFromCurrentStates(Order o) {
+        for (Courier c : couriers) {
+            switch (c.removeOrderFromRoute(o)) {
                 case "removed_both":
-                    return;
-                
-                case "removed_cstm":
-                    for (Drone d : drones)
-                        if(d.removeOrderFromRoute(order) == "removed_cstm")
-                            return;
-                case "removed_none":
-                    break;               
-                default:
+                    return;            
+                case "removed_cstm":  //this search could be implemnted by add aonther MAP: order->meetNode
+                    Node rstrNode = o.rstrNode;
+                    for (Drone d : drones){  //In order to get removed meet node
+                        for (int i = 0; i < d.flights.size(); i++) {
+                            Flight f = d.flights.get(i);
+                            if (f.pickupNode == rstrNode) {
+                                /* try to optimize the transfer flight */
+                                if(i > 0) {  //not the first flight 
+                                    //try to concate the front and next flight
+                                    Flight ff = d.concateFlights(d.flights.get(i-1),d.flights.get(i+1));
+                                    assert ff != null;
+                                    if (ff != d.flights.get(i+1)) { //created a new transfer flight
+                                        d.flights.remove(i);
+                                        d.flights.add(i, ff);
+                                    }
+                                } //没解决第一个flight的问题，或许可以不用解决（假设固定起点）
+                                //TODO 还是需要一个单独的程序来合并transfer flight
+                                //f.pickupNode = null;
+                                meetPointsMap.remove(f.supplyNode);
+                                f.supplyNode.isMeet = false;
+                                //f.supplyNode = null;
+                                return;
+                            }
+                        }        
+                    }
                     Functions.printDebug("No matche result in removeOrder");
-                    break;
+                case "removed_none":
+                    continue;               
             }
             Functions.printAlert("No order matched in all drones and couriers!");
         }
@@ -96,8 +118,7 @@ public class DroneSupporting_Solver_ extends TrivalSolver{
                 f.reset(); 
             }
             
-        }
-        for (Courier c : couriers) {
+        }        for (Courier c : couriers) {
             c.reset();
         }
     }

@@ -49,7 +49,7 @@ public class TruckOnly_Solver_ extends _Solver_ {
         
     }
 
-    private void instantiateSolution_t_one(Courier courier){
+    void instantiateSolution_t_one(Courier courier){
         ArrayList<Node> routeSeq = courier.routeSeq;
         /* reset all order, nodes to initial */
         for(int i = 0; i<orders.OrderList.length; i++) {
