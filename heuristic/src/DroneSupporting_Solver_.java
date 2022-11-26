@@ -5,7 +5,8 @@ import java.util.List;
 
 public class DroneSupporting_Solver_ extends TrivalSolver{
     Drone[] drones;    //drone and courier are per Solution resources use as memory to instantiate solution
-    HashMap<Node, MeetPoint> meetPointsMap;
+    HashMap<Node, MeetPoint> meetPointsMap; /* just for recovery the meetpoint information from Solution: 
+                                            the drone meet with which courier at supplyNode */
     
     public DroneSupporting_Solver_(Orders orders, Nodes nodes, Objfunction f, Courier[] courierList, Drone[] droneList) {
         super(orders, nodes, f, courierList);
@@ -14,7 +15,7 @@ public class DroneSupporting_Solver_ extends TrivalSolver{
 
     @Override
     public void recoverFromSolution(Solution solution) {
-        /* Nodes和Orders 中大部分信息可分为两类，一类时固定不变的元信息，另一类是用来initial solution的信息。
+        /* Nodes和Orders 中大部分信息可分为两类，一类是固定不变的元信息，另一类是用来initial solution的信息。
             但注意 Nodes中的 isMeet 和 meetCourier, meetDrone 是与解相关的信息，理想的话应该与Node解耦合，但是现在还没空做
             */
         //recover courier & resset nodes
@@ -52,7 +53,7 @@ public class DroneSupporting_Solver_ extends TrivalSolver{
             switch (c.removeOrderFromRoute(o)) {
                 case "removed_both":
                     return;            
-                case "removed_cstm":  //this search could be implemnted by add aonther MAP: order->meetNode
+                case "removed_cstm":  //drone resupply case //this search could be implemnted by add aonther MAP: order->meetNode
                     Node rstrNode = o.rstrNode;
                     for (Drone d : drones){  //In order to get removed meet node
                         for (int i = 0; i < d.flights.size(); i++) {
@@ -60,11 +61,11 @@ public class DroneSupporting_Solver_ extends TrivalSolver{
                             if (f.pickupNode == rstrNode) {
                                 /* try to optimize the transfer flight */
                                 if(i > 0) {  //not the first flight 
-                                    //try to concate the front and next flight
+                                    //try to concate the front and next flight; 
+                                    //if (ff == null) means its a direct concate, no transfer flight
                                     Flight ff = d.concateFlights(d.flights.get(i-1),d.flights.get(i+1));
-                                    assert ff != null;
-                                    if (ff != d.flights.get(i+1)) { //created a new transfer flight
-                                        d.flights.remove(i);
+                                    d.flights.remove(i);
+                                    if (ff != null) { //created a new transfer flight
                                         d.flights.add(i, ff);
                                     }
                                 } //没解决第一个flight的问题，或许可以不用解决（假设固定起点）
@@ -84,6 +85,13 @@ public class DroneSupporting_Solver_ extends TrivalSolver{
             Functions.printAlert("No order matched in all drones and couriers!");
         }
         return;
+    }
+
+    /* 1. cancel transfer flight from self to self
+     * 2. combine two consequent transfer flight if possible */
+    public boolean optimizeTransferFlight() {
+        
+        return false;
     }
 
     void instantiateSolution_d(){
@@ -208,7 +216,7 @@ public class DroneSupporting_Solver_ extends TrivalSolver{
         }
     }
 
-    private void instantiateSolution_d_one(Courier courier){
+    void instantiateSolution_d_one(Courier courier){
         ArrayList<Node> routeSeq = courier.routeSeq;
         /* try to instantiate solution by courier route untill the first meet node */
         Node currNode;      //temp variables to speedup the program

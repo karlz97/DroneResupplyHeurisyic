@@ -150,6 +150,10 @@ class OddPool {  //OddPool for 'ordered Pool'
         this.length = length;
     }
 
+    public int size() {
+        return currlen;
+    }
+
     public Object takeitem(int i) {     // remove i and return indexlist[i]
         Object item;
         item = indexlist.get(i);
@@ -160,6 +164,9 @@ class OddPool {  //OddPool for 'ordered Pool'
     }
 
     public void inpool(double value, Object index) {
+        if (currlen == length && valuelist.getLast() > value) {
+            return;   
+        }
         //System.out.println("currlen:" + currlen + "truelen" + list.size());
         if (currlen > 0 ) {
             if (value > valuelist.getFirst() ){   //smaller than the last 
@@ -187,14 +194,14 @@ class OddPool {  //OddPool for 'ordered Pool'
     }
 
     private void inbody(double value, Object index){
+        if (valuelist.getLast() > value) {
+            valuelist.addLast(value);
+            indexlist.addLast(index);
+        }
         for (int i = 0; i < currlen; i ++) {
-            if ( value > valuelist.get(i) ) {
+            if (value > valuelist.get(i) ) {
                 valuelist.add(i, value);
-                indexlist.add(i,index);
-                break;
-            } else {
-                valuelist.addLast(value);
-                indexlist.addLast(index);
+                indexlist.add(i, index);
                 break;
             }
         }

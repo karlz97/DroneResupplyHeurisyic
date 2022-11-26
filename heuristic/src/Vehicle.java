@@ -1,6 +1,6 @@
 import java.util.ArrayList;
 import java.util.LinkedList;
-
+import java.lang.Exception;
 import javax.swing.text.Position;
 
 abstract class Vehicle {
@@ -184,6 +184,8 @@ class Drone extends Vehicle{
             
             for (int i2 = 0; i2 < nodeList.length; i2++) {
                 Node n2 = nodeList[i2];
+                if (!n2.isSply) //if n2 is not suppliable then jump
+                    continue;
                 Double dist1 = callNodeDistance(n1, n2);
                 if (!n2.isSply || dist1 > this.MAXFILGHT) {
                     //Functions.printDebug("[level 1] continued, n2.isSply:"+ n2.isSply + ", dist1:" + dist1); 
@@ -246,9 +248,9 @@ class Drone extends Vehicle{
             if (feasibleTransferSet[n1.id].contains(f2.launchNode)) {
                 return new Flight(n1, n2);
             }
-            return null;
+            throw new RuntimeException("Problem in concate Flights")
         }
-        return f2;
+        return null;
     }
 
     boolean tryDirect_concateFlights(Flight f1, Flight f2) {

@@ -54,7 +54,7 @@ public class Main {
         System.out.println();
         
         //solver.LNS1r_test(3);
-        solver.LNS1r(5000,3);
+        solver.LNS1r_one(5000,3);
         System.out.println("---------------------   LNS1_drone (5000) Solution  ---------------------");
         solver.printSolution(); 
         System.out.println("Routes: ");

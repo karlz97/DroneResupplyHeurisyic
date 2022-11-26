@@ -186,7 +186,7 @@ class TrivalSolver extends TruckOnly_Solver_ {
 
         int count = 0;
         while (count < q) {
-            int index = randomExpOne(p, poolSize);
+            int index = randomExpOne(p, orderPool.size());
             Order o = (Order) orderPool.takeitem(index); 
             toRemoveOrderList.remove(o);
             removedOrderList.add(o);
@@ -236,15 +236,15 @@ class TrivalSolver extends TruckOnly_Solver_ {
     }
 
     void regeretInsert_Courier(ArrayList<Order> removedOrdersList, int k){
-        Repair_1c mostRegretInsertation = new Repair_1c();
+        Repair mostRegretInsertation = new Repair_1cc();
         while (!removedOrdersList.isEmpty()) {
             Order insertOrder = null;
             /* insert the i_th order */ 
             for (Order o : removedOrdersList) {
                 for (Courier c : couriers) {
-                    Repair_1c candInsertation = regeretInsert_1o_to_1c(c, o, k);
+                    Repair candInsertation = regeretRepair_1o_to_1c(c, o, k);
                     //maxRegret.inpool(presudoSol.objfValue, presudoSol.routeSeq); 
-                    if (candInsertation.objValue > mostRegretInsertation.objValue) {
+                    if (candInsertation.value > mostRegretInsertation.value) {
                         mostRegretInsertation =  candInsertation;
                         insertOrder = o;
                     }
@@ -260,17 +260,18 @@ class TrivalSolver extends TruckOnly_Solver_ {
     void regeretInsert_to_1c(Courier courier, ArrayList<Order> removedOrdersList, int k){
         //perform regret Insert to one courier
         //alternative common approach exist, but I just want to unify this kind of operation as Oddpool
-        Repair_1c mostRegretInsertation = new Repair_1c();
+        Repair_1cc mostRegretInsertation = new Repair_1cc();
         while (!removedOrdersList.isEmpty()) {
             Order insertOrder = null;
             /* insert the i_th order */ 
             for (Order o : removedOrdersList) {
-                Repair_1c candInsertation = regeretInsert_1o_to_1c(courier, o, k);
+                Repair_1cc candInsertation = regeretRepair_1o_to_1c(courier, o, k);
                 //maxRegret.inpool(presudoSol.objfValue, presudoSol.routeSeq); 
-                if (candInsertation.objValue > mostRegretInsertation.objValue) {
+                if (candInsertation.value > mostRegretInsertation.value) {
                     mostRegretInsertation =  candInsertation;
                     insertOrder = o;
                 }
+
             }
             /* update the 'toInsertList' and 'removedOrdersList' */
             removedOrdersList.remove(insertOrder);
@@ -279,23 +280,23 @@ class TrivalSolver extends TruckOnly_Solver_ {
         return;
     }
 
-    Repair_1c regeretInsert_1o_to_1c(Courier courier, Order order, int k){
+    Repair_1cc regeretRepair_1o_to_1c(Courier courier, Order order, int k){
         //regret insert one order to one courier
-        ArrayList<Node> toInsertList = courier.routeSeq;  //按我的理解，应该没必要clone
+        ArrayList<Node> toInsertList = new ArrayList<Node>(courier.routeSeq);  
         int length = toInsertList.size();
         OddPool insertObjfPool = new OddPool(k + 1);
         /* test every insert position */
         /* insert pickup position  */
         
-        for (int i = 1; i < length + 1; i++) { //插入pickup node 从1开始可以插入，可插到最后。
+        for (int i = 1; i <= length; i++) { //插入pickup node 从1开始可以插入，可插到最后。
             ArrayList<Node> toInsert_rstr = new ArrayList<Node>(toInsertList); // the route to be insert(in the rstr insert step)
             toInsert_rstr.add(i, order.rstrNode); 
             /* inset delivery position */
-            for (int j = i + 1; j < Math.max(i + 2, length + 1); j++) {
+            for (int j = i + 1; j <= Math.max(i + 1, length); j++) {
                 ArrayList<Node> toInsert_cstm = new ArrayList<Node>(toInsert_rstr); // the route to be insert(in the cstm insert step)
                 toInsert_cstm.add(j, order.cstmNode);   //TODO: a lot can be optimized, there is no need for create a new array?
                 /* rebuild the solution base on the tempRoute */
-                courier.routeSeq =  ;
+                courier.routeSeq = toInsert_cstm;
                 instantiateSolution_t_one(courier);
                 /* compute the ObjF & record the lowest k ObjF */
                 insertObjfPool.inpool( - ObjfValue(), toInsert_cstm); 
@@ -303,11 +304,42 @@ class TrivalSolver extends TruckOnly_Solver_ {
                 //'- ObjfValue' inpool will save the max k, we need save the lowest k 
             }
         } 
+        /*recover*/ courier.routeSeq = new ArrayList<>(toInsertList);
         /* calculate the regretK, return the propInsertation */
         double regretk = regretK(insertObjfPool);
         
         @SuppressWarnings("unchecked")
-        Repair_1c propInsertation = new Repair_1c(courier, (ArrayList<Node>) insertObjfPool.indexlist.getFirst(), regretk);
+        Repair_1cc propInsertation = new Repair_1cc(courier, (ArrayList<Node>) insertObjfPool.indexlist.getFirst(), regretk);
         return propInsertation;
+    }
+
+
+    Repair_1cc bestRepair_1o_to_1c(Courier courier, Order order){
+        //greedily insert one order to one courier
+        double bestObjValue = -1; 
+        Repair_1cc repair = new Repair_1cc(courier);
+        ArrayList<Node> toInsertList = new ArrayList<Node>(courier.routeSeq);  
+        int length = toInsertList.size();
+        /* test every insert position */
+        /* insert pickup position  */
+        
+        for (int i = 1; i <= length; i++) { //插入pickup node 从1开始可以插入，可插到最后。
+            ArrayList<Node> toInsert_rstr = new ArrayList<Node>(toInsertList); // the route to be insert(in the rstr insert step)
+            toInsert_rstr.add(i, order.rstrNode); 
+            /* inset delivery position */
+            for (int j = i + 1; j <= Math.max(i + 1, length); j++) {
+                ArrayList<Node> toInsert_cstm = new ArrayList<Node>(toInsert_rstr); // the route to be insert(in the cstm insert step)
+                toInsert_cstm.add(j, order.cstmNode);   //TODO: a lot can be optimized, there is no need for create a new array?
+                /* rebuild the solution base on the tempRoute */
+                courier.routeSeq = toInsert_cstm;
+                instantiateSolution_t_one(courier);
+                if (ObjfValue() > bestObjValue) {
+                    bestObjValue = ObjfValue();
+                    repair.routeSeq = courier.routeSeq;
+                }
+            }
+        } 
+        /*recover*/ courier.routeSeq = new ArrayList<>(toInsertList);
+        return repair;
     }
 }   
