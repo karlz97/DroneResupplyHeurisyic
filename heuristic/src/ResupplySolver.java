@@ -262,10 +262,13 @@ class ResupplySolver extends DroneSupporting_Solver_{
                 repair_pool.inpool(candRepair.value, candRepair);
             }
         }
-        // p-randomly choose a repair with highest value
+        // p-randomly choose a repair with highest value and make it take effect
         int pick_index = randomExpOne(p, repair_pool.size());
-        Repair repair = repair_pool.takeitem(pick_index)
-    /* !!!Don't forget update 'meetPointsMap' */        
+        Repair repair = (Repair) repair_pool.takeitem(pick_index);
+        MeetPoint mp = repair.getMeetPoint(); /* !!!Don't forget update 'meetPointsMap' */        
+        if (mp != null) 
+            meetPointsMap.put(mp.meetNode, mp);
+        repair.takeEffect();
     }
 
     private Repair resupply_repairOne(Order order, Courier courier, Drone drone) {
@@ -427,25 +430,6 @@ class ResupplySolver extends DroneSupporting_Solver_{
         }
         return repair;
     }
-
-
-    private List<Flight> findFesible_Preflight() {
-        return null;
-    }
-
-    private void name() {
-        
-    }
-
-
-
-
-
-
-
-
-
-
 
     /******************************************************************************************************/
 

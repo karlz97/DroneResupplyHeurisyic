@@ -5,7 +5,7 @@ public abstract class Repair {
     public Repair(){}
 
     abstract boolean takeEffect();
-
+    abstract MeetPoint getMeetPoint();
 }
 
 class Repair_1cc extends Repair{ 
@@ -33,6 +33,11 @@ class Repair_1cc extends Repair{
         return true;
     }
 
+    @Override
+    public MeetPoint getMeetPoint() {
+        return null;
+    }
+
 }
 
 class Repair_1dc extends Repair{ 
@@ -41,6 +46,7 @@ class Repair_1dc extends Repair{
     Drone drone; //This is only a reference to the courier
     ArrayList<Flight> flightSeq; //This is a solid copy of route
     Node meetNode;
+    
 
     public Repair_1dc(){
         value = Integer.MIN_VALUE;
@@ -61,4 +67,10 @@ class Repair_1dc extends Repair{
         this.drone.flights = this.flightSeq;
         return true;
     }
+
+    @Override
+    public MeetPoint getMeetPoint() {
+        return new MeetPoint(courier, drone, meetNode);
+    }
+
 }
