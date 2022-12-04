@@ -2,9 +2,12 @@ import java.util.ArrayList;
 
 public abstract class Repair {
     double value;
+    Order order;
     public Repair(){}
 
+
     abstract boolean takeEffect();
+    abstract boolean takeEffect_hold();
     abstract MeetPoint getMeetPoint();
 }
 
@@ -29,6 +32,12 @@ class Repair_1cc extends Repair{
 
     @Override
     public boolean takeEffect() {
+        this.value = Integer.MIN_VALUE;
+        return this.takeEffect_hold();
+    }
+
+    @Override
+    public boolean takeEffect_hold() {
         this.courier.routeSeq = this.routeSeq;
         return true;
     }
@@ -64,9 +73,17 @@ class Repair_1dc extends Repair{
 
     @Override
     public boolean takeEffect() {
+        this.value = Integer.MIN_VALUE;
+        return this.takeEffect_hold();
+    }
+
+    @Override
+    public boolean takeEffect_hold() {
+        this.courier.routeSeq = this.routeSeq;
         this.drone.flights = this.flightSeq;
         return true;
     }
+
 
     @Override
     public MeetPoint getMeetPoint() {

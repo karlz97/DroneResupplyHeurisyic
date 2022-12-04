@@ -73,7 +73,7 @@ class Drone extends Vehicle{
     LinkedList<Node>[] feasibleSupplySet;
     LinkedList<Node>[] feasibleTransferSet;
     LinkedList<Node>[][] feasibleLandSet;
-    this.position = null; // the position of drone is not actively sustained
+   
 
     public Drone(int id, Node startPosition, Double[][] distanceMatrix){
         super(id, startPosition);
@@ -248,7 +248,7 @@ class Drone extends Vehicle{
             if (feasibleTransferSet[n1.id].contains(f2.launchNode)) {
                 return new Flight(n1, n2);
             }
-            throw new RuntimeException("Problem in concate Flights")
+            throw new RuntimeException("Problem in concate Flights");
         }
         return null;
     }

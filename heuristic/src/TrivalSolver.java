@@ -5,6 +5,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 
+
 import javax.crypto.spec.PBEKeySpec;
 import javax.naming.InitialContext;
 
@@ -63,14 +64,13 @@ class TrivalSolver extends TruckOnly_Solver_ {
         while (iter < maxIteration) {
             /* resume the status to global optimal */
             recoverFromSolution(candidateSolution);
-            
             /* remove heuristic */
             randomRemoval(sizeOfNeiborhood);
             /* insert heuristic */
             regeretInsert_Courier(removedOrderList, 3);
             /* decide whether accept new solution */
             instantiateSolution_t(couriers);
-            double tempObjValue = ObjfValue();
+            double tempObjValue   = ObjfValue();
             if (tempObjValue < minObjfValue) {
                 minObjfValue = tempObjValue;
                 candidateSolution = new Solution(couriers);
@@ -86,28 +86,38 @@ class TrivalSolver extends TruckOnly_Solver_ {
         Node candidatNode;
         double eptArrivetime;
         // Until: All orders has been done.
+        ArrayList<Order> to_assign_orderList = new ArrayList<>(Arrays.asList(orders.OrderList));
+        ArrayList<Order>[] courier_half_assign_list = new ArrayList[couriers.length];
+        for (int i = 0; i < couriers.length; i++) {
+            courier_half_assign_list[i] = new ArrayList<>();
+        }
+
         while (!orders.allDone()){
             double max = 0;
             double tempPrio = 0;
             int courierIndex = 0;
-            int orderIndex = 0;
+            Order candidateOrder = orders.OrderList[0];
             /* Compute the prioScore for every orders */
             for (int i = 0; i < couriers.length; i++) {      
                 Courier courier = couriers[i];          
-                for(int j = 0; j < orders.numOfOrders; j++){
-                    tempPrio = computeOrderPrioScore(orders.OrderList[j], courier);
+                for(Order o : merge_list(to_assign_orderList, courier_half_assign_list[i])){
+                    tempPrio = computeOrderPrioScore(o, courier);
                     if (tempPrio >= max){
                         max = tempPrio;
-                        orderIndex = j;
+                        candidateOrder = o;
                         courierIndex = i;
                     }
                 }
             }
             /* choose one with highest order with priority score*/
             Courier courier = couriers[courierIndex];
-            Order candidateOrder = orders.OrderList[orderIndex];
             candidatNode = candidateOrder.getNode();
-
+            if (candidateOrder.isPicked == false) {
+                courier_half_assign_list[courierIndex].add(candidateOrder);
+                to_assign_orderList.remove(candidateOrder);
+            } else {
+                courier_half_assign_list[courierIndex].remove(candidateOrder);
+            }
             /* add route to the route ArrayList */
             courier.routeSeq.add(candidatNode);
 
@@ -122,7 +132,8 @@ class TrivalSolver extends TruckOnly_Solver_ {
             courier.time = eptArrivetime;
             candidateOrder.update(courier, courier.time);
         }
-
+        for (Courier c : couriers)
+            Functions.printRouteSeq_with_time(c.routeSeq);
         /* update globalSolution */
         this.globalOptSolution = new Solution(couriers);
     }
@@ -253,6 +264,7 @@ class TrivalSolver extends TruckOnly_Solver_ {
             /* update the 'toInsertList' and 'removedOrdersList' */
             removedOrdersList.remove(insertOrder);
             mostRegretInsertation.takeEffect(); 
+
         }
         return;
     }
@@ -341,5 +353,12 @@ class TrivalSolver extends TruckOnly_Solver_ {
         } 
         /*recover*/ courier.routeSeq = new ArrayList<>(toInsertList);
         return repair;
+    }
+
+    private static<T> List<T> merge_list(List<T> list1,List<T> list2){
+        ArrayList<T> list = new ArrayList<>();
+        list.addAll(list1);
+        list.addAll(list2);
+        return list;
     }
 }   

@@ -57,6 +57,16 @@ class Functions{
         System.out.println();
     }
 
+    static public void printRouteSeq_with_time(List<Node> routeSeq){
+        System.out.println("Routes: ");
+        for (Iterator<Node> it = routeSeq.iterator(); it.hasNext();) {
+            Node n = it.next();
+            System.out.print( n.id + "[" + n.T_courier + "] --> ");
+        }
+        System.out.print("over");
+        System.out.println();
+    }
+
     static public void printOrderList(List<Order> orderList){
         System.out.println("OrderList: ");
         for (Iterator<Order> it = orderList.iterator(); it.hasNext();) {
@@ -194,16 +204,18 @@ class OddPool {  //OddPool for 'ordered Pool'
     }
 
     private void inbody(double value, Object index){
-        if (valuelist.getLast() > value) {
+        boolean already_in = false;
+        for (int i = 0; i < currlen; i ++) {
+            if ( value > valuelist.get(i) ) {
+                valuelist.add(i, value);
+                indexlist.add(i,index);
+                already_in = true;
+                break;
+            } 
+        }
+        if(!already_in) {
             valuelist.addLast(value);
             indexlist.addLast(index);
-        }
-        for (int i = 0; i < currlen; i ++) {
-            if (value > valuelist.get(i) ) {
-                valuelist.add(i, value);
-                indexlist.add(i, index);
-                break;
-            }
         }
         if (currlen == length) {
             valuelist.removeLast();

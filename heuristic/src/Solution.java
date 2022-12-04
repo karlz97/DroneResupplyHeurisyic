@@ -24,6 +24,7 @@ public class Solution {
     }
 
     public Solution(List<Node>[] courierRoutes) {   
+        this.courierRoutes = new ArrayList[courierRoutes.length];
         //如果减少对新建solution的调用，在一个solution上更改，可以节省反复创建ArrayList
             for (int i = 0; i < courierRoutes.length; i++) {
                 this.courierRoutes[i] = new ArrayList<>(courierRoutes[i]);  
@@ -31,8 +32,9 @@ public class Solution {
         }
 
     public Solution(Courier[] courierList) {
+        this.courierRoutes = new ArrayList[courierList.length];
         for (int i = 0; i < courierList.length; i++) {
-            this.courierRoutes[i] = courierList[i].routeSeq; 
+            this.courierRoutes[i] = new ArrayList<>(courierList[i].routeSeq); 
         }
     }
 

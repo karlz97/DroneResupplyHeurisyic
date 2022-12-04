@@ -51,7 +51,7 @@ public class TruckOnly_Solver_ extends _Solver_ {
 
     void instantiateSolution_t_one(Courier courier){
         ArrayList<Node> routeSeq = courier.routeSeq;
-        /* reset all order, nodes to initial */
+        /* reset all order, nodes to initial */ // TODO 不能在这儿把所有点全部重置了
         for(int i = 0; i<orders.OrderList.length; i++) {
             orders.OrderList[i].reset_r();  //only reset the order but not the related node.
         }
@@ -89,7 +89,7 @@ public class TruckOnly_Solver_ extends _Solver_ {
     double regretK(OddPool insertObjfPool){
         double regretk = 0; 
         double minObjf =  - insertObjfPool.valuelist.getFirst();
-        for (int i = 1; i < insertObjfPool.length; i++) {
+        for (int i = 1; i < insertObjfPool.currlen; i++) {
             regretk +=  (-insertObjfPool.valuelist.get(i)) - minObjf; 
         }
         return regretk;
@@ -114,15 +114,16 @@ public class TruckOnly_Solver_ extends _Solver_ {
         float div = 1/range;
         float rd = rand.nextFloat();
         rd = (float) Math.pow(rd, p);
-        int i;
-        for (i = 1; i <= range; i++) {
-            if ( i*div >= rd) {
-                return (i-1);
-            }
-        }
-        System.out.println("!!!     Error in <randomOne>");
-        System.out.println("range: " + range + ", randomNumber: " + rd + " i*div: " +  i*div + " i*div: " + div);
-        return (i-1);
+        return (int) (rd/div);
+        // int i;
+        // for (i = 1; i <= range; i++) {
+        //     if ( i*div >= rd) {
+        //         return (i-1);
+        //     }
+        // }
+        // System.out.println("!!!     Error in <randomOne>");
+        // System.out.println("range: " + range + ", randomNumber: " + rd + " i*div: " +  i*div + " i*div: " + div);
+        // return (i-1);
     }
 
     ArrayList<Integer> randomExpOneList(int q, int p, int range){

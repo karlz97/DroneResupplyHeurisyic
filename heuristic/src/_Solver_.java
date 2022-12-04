@@ -54,13 +54,13 @@ abstract class _Solver_ {
 
     public double computeOrderPrioScore(Order order, Vehicle vehicle){
         // Earilst pickup time left from now 
-        double earilstPickup_lfn = earlistExecuteTime_lfn(order, vehicle); 
-
+        double pickup_effort = earlistExecuteTime_lfn(order, vehicle); 
+        double pickup_time = earlistExecuteTime(order, vehicle);
         // how close is the expected delivery time
-        double remaintime = order.T_expected - vehicle.time;
-
+        double remaintime = order.T_expected - pickup_time;
+        pickup_effort = 0;
         //double score = Math.max(2/remaintime,0) + 10/earilstPickup_lfn; //note that remain time is also acoount by time.
-        double score =  10/earilstPickup_lfn;
+        double score =  10/(pickup_effort + 1) + 10/(remaintime + 1);
         //double score =  max(10/earilstPickup_lfn - remaintime);
 
         // score must always be a positive number
