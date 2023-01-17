@@ -43,6 +43,13 @@ public class TruckOnly_Solver_ extends _Solver_ {
     }
 
     void instantiateSolution_t(Courier[] courierList){
+        /* reset all order, nodes to initial */ 
+        for(int i = 0; i<orders.OrderList.length; i++) {
+            orders.OrderList[i].reset_r();  //only reset the order but not the related node.
+        }
+        for(int i = 0; i<nodes.NodeList.length; i++) {
+            nodes.NodeList[i].reset_r();
+        }
         for (Courier c : courierList) {
             instantiateSolution_t_one(c);
         }
@@ -51,14 +58,14 @@ public class TruckOnly_Solver_ extends _Solver_ {
 
     void instantiateSolution_t_one(Courier courier){
         ArrayList<Node> routeSeq = courier.routeSeq;
-        /* reset all order, nodes to initial */ // TODO 不能在这儿把所有点全部重置了
-        for(int i = 0; i<orders.OrderList.length; i++) {
-            orders.OrderList[i].reset_r();  //only reset the order but not the related node.
+        // 不能在这儿把所有点全部重置了 [[2022/12/03]] 23:34
+        for(Node n : routeSeq) {  //start at the startnode //start after the startnode
+            if(n.orderNum != -1){
+                Order o = orders.OrderList[n.orderNum];            
+                o.reset_r();
+            }
+            n.reset_r();
         }
-        for(int i = 0; i<nodes.NodeList.length; i++) {
-            nodes.NodeList[i].reset_r();
-        }
-
         /* set the status of courier, order, node by follow the routeSeq */
         Node currNode;      //temp variables to speedup the program
         Order currOrder;    //temp variables

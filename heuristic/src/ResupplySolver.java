@@ -17,7 +17,54 @@ class ResupplySolver extends DroneSupporting_Solver_{
         super(orders, nodes, f, courierList, droneList);
     }
     
-    /*              Heuristic               */    
+    /*              Heuristic               */
+    @Override  
+    public void genGreedySolve(){
+        super.genGreedySolve();
+        globalOptSolution.flightSeqs = new LinkedList[drones.length];
+        for (int i = 0; i < drones.length; i++) {
+            globalOptSolution.flightSeqs[i] = Solution.serializeFlights(drones[i].flights);
+        }
+        globalOptSolution.meetPoints =  new HashMap<Node, MeetPoint>();
+    }
+    
+
+    @Override
+    public void LNS1t(int maxIteration, int sizeOfNeiborhood){ 
+        /* 仅用于储存临时解，全局最优解在globalOptSolution中 */
+        Solution candidateSolution = new Solution(globalOptSolution);
+        removedOrderList = new ArrayList<>();
+        double minObjfValue = ObjfValue();
+        /* Acceptance and Stopping Criteria */
+        int iter = 0;
+        while (iter < maxIteration) {
+            /* resume the status to global optimal */
+            recoverFromSolution(candidateSolution);
+            
+            /* remove heuristic */
+            shawRemoval_Courier(sizeOfNeiborhood, 3);
+            /* insert heuristic */
+            regeretInsert_Courier(removedOrderList, 3);
+            /* decide whether accept new solution */
+            instantiateSolution_t(couriers);
+            double tempObjValue = ObjfValue();
+            if (tempObjValue < minObjfValue) {
+                minObjfValue = tempObjValue;
+                candidateSolution = new Solution(couriers);
+                printSolution_Courier(candidateSolution);
+                System.out.println("ObjF: " + ObjfValue());
+            }
+            iter++;
+        }
+        globalOptSolution = candidateSolution;
+        globalOptSolution.flightSeqs = new LinkedList[drones.length];
+        for (int i = 0; i < drones.length; i++) {
+            globalOptSolution.flightSeqs[i] = Solution.serializeFlights(drones[i].flights);
+        }
+        globalOptSolution.meetPoints =  new HashMap<Node, MeetPoint>();
+        instantiateSolution();
+    } 
+
     /* LNS1
      * optimize the solution *after* genGreedySolution
      * --------------------- operator ---------------------
@@ -42,7 +89,7 @@ class ResupplySolver extends DroneSupporting_Solver_{
                 the fly task + remove useless transfer */
             //randomly choose one drone
             r = rand.nextInt(this.drones.length);
-            Drone d = drones[r];
+            // Drone d = drones[r];
             this.randomRemoval(sizeOfNeiborhood);   
             Functions.checkDuplicate(removedOrderList);
             /* ------------ insert heuristic -------------- */
@@ -52,6 +99,7 @@ class ResupplySolver extends DroneSupporting_Solver_{
 
             /* instantiateSolution */
             this.instantiateSolution_d();
+            System.out.println("----ONE ROUND OF COMPLETE REPAIR----");
             double tempObjValue = this.ObjfValue();
         
             if (tempObjValue < minObjfValue) {
@@ -174,7 +222,7 @@ class ResupplySolver extends DroneSupporting_Solver_{
         /* generate randomly choose a flight, remove it and its following flights */
         if (drone.flights.size() == 0)
             return;
-        int r = rand.nextInt(drone.flights.size());
+        int r = rand.nextInt(drone.flights.size() - 1) + 1;
         //Add the picked node's and the subsequence nodes' corresbonding orders to the 'removedOrderList' 
         //+ remove the cooresbounding deliver node
         for (int j = r; j < drone.flights.size(); j++) {
@@ -248,10 +296,11 @@ class ResupplySolver extends DroneSupporting_Solver_{
             for (Drone d : drones) {
                 for (Courier c : couriers) {
                     Repair candRepair = resupply_repairOne(o, c, d);
-                    candRepair.order = o;
-                    if (candRepair != null) 
+                    if (candRepair != null) {
+                        candRepair.order = o;
                         repair_pool.inpool(candRepair.value, candRepair);
-                }    
+                    }
+                }   
             }
 
             for (Courier c : couriers) {
@@ -299,7 +348,8 @@ class ResupplySolver extends DroneSupporting_Solver_{
                 feasible_flight_insertIndex.add(i);
         }
         if (drone.feasibleTransferSet[drone.flights.get(0).launchNode.id].contains(rstrmNode))
-                feasible_flight_insertIndex.add(-1);
+                feasible_flight_insertIndex.add(-1);  
+                //插入位置为-1意思是插入在队列之首（TODO 考虑创建drone的时候就加入一个dummy flight 来解决种种麻烦）
         
         /* Gathering feasible meetNode */
         HashSet<Node> feasible_meetNode_set = new HashSet<>();
@@ -319,9 +369,11 @@ class ResupplySolver extends DroneSupporting_Solver_{
         for (Node meetNode : feasible_meetNode_set) {
             for (int k : feasible_flight_insertIndex) {
                 Node isNode = (k == -1)?  drone.flights.get(0).launchNode : drone.flights.get(k).landNode;
-                Flight transfer = new Flight(isNode, rstrmNode); //isNode : insert-start node
+                Flight transfer = new Flight(isNode, rstrmNode); //isNode : insert-start node; MAKE SURE: 允许从自己到自己的transfer flight!! 否则这儿变得很麻烦 
                 Flight resupply = new Flight(rstrmNode, rstrmNode, meetNode, isNode);
-                Flight ff = drone.concateFlights(resupply, drone.flights.get(k + 1));
+                Flight ff = null;
+                if (k < drone.flights.size() - 1)
+                    ff = drone.concateFlights(resupply, drone.flights.get(k + 1));
                 //if (ff == null) means its a direct concate, no transfer flight
                 drone.flights.add(k+1, transfer);
                 drone.flights.add(k+2, resupply);
@@ -331,10 +383,13 @@ class ResupplySolver extends DroneSupporting_Solver_{
                 }
                 /* ------------------------------- Courier part -------------------------------------- */
                 // estimate_1 : base on[meetNode, flight_insertIndex] to speed up the calculate   
-                ArrayList<Node> toInsertList = new ArrayList<Node>(courier.routeSeq);  
+                ArrayList<Node> toInsertList = new ArrayList<Node>(courier.routeSeq); 
+                
+                //TODO 下面的插入逻辑有问题，没考虑meeNode必须在cstm Node之前插入的问题
                 int length = toInsertList.size();
+                // TODO 下面三行可能可以优化为一行，直接搜索meetNode的位置？
                 for (int i = 1; i <= length; i++) { //meetIndex
-                    if (!feasible_meetNode_set.contains(courier.routeSeq.get(i)))
+                    if (!feasible_meetNode_set.contains(courier.routeSeq.get(i))) //这个应该是错的，现在已经限定MeetNode了
                         continue;
                     for (int j = i + 1; j <= Math.max(i + 1, length); j++) {
                         // estimate_2 : base on[meetNode, flight_insertIndex, courier_delieverIndex] to speed up the calculate  
@@ -342,17 +397,28 @@ class ResupplySolver extends DroneSupporting_Solver_{
                         toInsert_cstm.add(j, order.cstmNode);  
                         /* rebuild the solution base on the tempRoute */
                         courier.routeSeq = toInsert_cstm;
-                        instantiateSolution_t_one(courier);
+                        // instantiateSolution_t_one(courier);
+                        System.out.println(" -- -+- --");
+
+                        //TODO 注意：此处的initialization原来没有上meetPoint，是怎么设计的呢？
+                        attachMeetNode(meetNode, courier, drone);
+                        instantiateSolution_d();
+                        detachMeetNode(meetNode);
+
+                        System.out.println(" -- +-+ --");
                         if (ObjfValue() > bestObjValue) {
                             bestObjValue = ObjfValue();
                             repair.routeSeq = new ArrayList<>(courier.routeSeq);
                             repair.flightSeq = new ArrayList<>(drone.flights);
                             repair.meetNode = meetNode;
                         }
+
+                        
                     }
                 }
                 /*recover*/ drone.flights = new ArrayList<>(originalFlights);
             }
+            System.out.println(" --=============== + ====================--");
         }
         return repair;
     }
@@ -372,7 +438,6 @@ class ResupplySolver extends DroneSupporting_Solver_{
         Node rstrmNode = order.rstrNode;
         if (!rstrmNode.isDrbs || drone.feasibleSupplySet[rstrmNode.id].isEmpty())
             return null;
-
         /* Gathering feasibile insert point of drone [? CASE 1: need to transfer --> ?]
          * TODO !!MAKE SURE: 允许从自己到自己的transfer flight!! 否则这儿变得很麻烦 
         */

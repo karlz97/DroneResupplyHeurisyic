@@ -1,6 +1,7 @@
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
@@ -48,6 +49,7 @@ class TrivalSolver extends TruckOnly_Solver_ {
                 minObjfValue = tempObjValue;
                 candidateSolution = new Solution(couriers);
                 printSolution_Courier(candidateSolution);
+                System.out.println("ObjF: " + ObjfValue());
             }
             iter++;
         }
@@ -132,8 +134,6 @@ class TrivalSolver extends TruckOnly_Solver_ {
             courier.time = eptArrivetime;
             candidateOrder.update(courier, courier.time);
         }
-        for (Courier c : couriers)
-            Functions.printRouteSeq_with_time(c.routeSeq);
         /* update globalSolution */
         this.globalOptSolution = new Solution(couriers);
     }

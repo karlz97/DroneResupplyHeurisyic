@@ -78,6 +78,8 @@ class Drone extends Vehicle{
     public Drone(int id, Node startPosition, Double[][] distanceMatrix){
         super(id, startPosition);
         flights = new ArrayList<Flight>();
+        Flight dummpyFlight = new Flight(startPosition, startPosition);
+        flights.add(dummpyFlight);
         this.distanceMatrix = distanceMatrix;
     }
 
@@ -92,6 +94,9 @@ class Drone extends Vehicle{
     }
 
     void reset(){
+        // if (!flights.isEmpty()) {
+        //     this.position = flights.get(0).launchNode;
+        // }
         this.position = flights.get(0).launchNode;
         this.time = 0;
         this.currFlight_id = 0;
@@ -170,7 +175,7 @@ class Drone extends Vehicle{
 
     public void computeFeasibleFlight(Nodes nodes) {
         //unsafe way to use generic array
-        feasibleSupplySet = new LinkedList[nodes.numOfNodes];
+        feasibleSupplySet =      new LinkedList[nodes.numOfNodes];
         feasibleTransferSet = new LinkedList[nodes.numOfNodes];
         feasibleLandSet = new LinkedList[nodes.numOfNodes][nodes.numOfNodes];
 

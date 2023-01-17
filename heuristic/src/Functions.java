@@ -67,6 +67,23 @@ class Functions{
         System.out.println();
     }
 
+    static public void printFlights(ArrayList<Flight> flights){
+        List<Node> flightSeq = Solution.serializeFlights(flights);
+        System.out.print("Flight: ");
+        int counter = 0;
+        for (Node n : flightSeq) {  
+            if ((++counter - 1)% 4 == 0 && counter != 1) 
+                System.out.print( " | ");  
+            if (n == null)
+                continue;
+            if (n.isMeet) 
+                System.out.print( n.id + "[" + n.T_drone + "] --> ");  
+            else
+                System.out.print( n.id + " --> ");
+        }
+        System.out.println();
+    }
+
     static public void printOrderList(List<Order> orderList){
         System.out.println("OrderList: ");
         for (Iterator<Order> it = orderList.iterator(); it.hasNext();) {

@@ -8,7 +8,7 @@ import java.util.List;
 
 public class Main {
     public static void main(String[] args) throws IOException {
-        main2_multi();
+        main3();
     }
 
 
@@ -43,50 +43,48 @@ public class Main {
         ResupplySolver solver = new ResupplySolver(orders, nodes, objF, courierList, droneList);
 
         /* call generate greedy solution */
+        System.out.println("-------------------------   GreedySolution:   --------------------------");
         solver.genGreedySolve();
-        System.out.println("---------------------   GreedySolution finished     ---------------------");
         solver.printSolution();    
         System.out.println();
         /* call LNS1 to improve the solution */
         System.out.println("---------------------   LNS1_truck (500) Solution  ---------------------");
-        solver.LNS1t(500,2); //finish in a acceptable time(less than 5 min) at 10,000,000 (千万次), 
+        //solver.LNS1t(500,2); //finish in a acceptable time(less than 5 min) at 10,000,000 (千万次), 
+        solver.LNS1t(500, 2);
+        System.out.println("-------------------------- v v v v v v v v v ---------------------------");
         solver.printSolution(); 
         System.out.println();
         
         //solver.LNS1r_test(3);
-        System.out.println("---------------------   LNS1_drone (5000) Solution  ---------------------");
+        System.out.println("---------------------   LNS1_drone (500) Solution  ---------------------");
         solver.LNS1r(500,2);
+        System.out.println("-------------------------- v v v v v v v v v ---------------------------");
         solver.printSolution(); 
-        // System.out.println("Routes: ");
-        // for (Iterator<Node> it = solver.globalOptSolution.courierRoute.iterator(); it.hasNext();) {
-        //     System.out.print( it.next().id + ",");
-        //     // debug::: System.out.print( it.next().id + "(" +  + ")" + " --> ");
+
+        // System.out.println();
+
+        // System.out.println("---------------------   Manually Solution 1      ---------------------");
+        // /* mannally built a solution */ 
+        // ArrayList<Node> MRoute = null;
+        // ArrayList<Node> MFlight = null;
+        // Integer[] routeArray = {0,1,4,6,8,9,2,7,5};
+        // Integer[] flightArray = {1,-1,-1,3,3,3,4,1};
+        // // Drone drone = droneList[0];
+        // MRoute = Functions.buildNodeSeqFromArray(routeArray, startnode, nodes.NodeList);
+        // MFlight = Functions.buildNodeSeqFromArray(flightArray, null, nodes.NodeList);
+        // List<Node>[] Mflights = new List[1]; //for now only 1 drone.
+        // Mflights[0] = MFlight;
+        // HashMap<Node, MeetPoint> meetPoints = new HashMap<Node, MeetPoint>();
+
+        // ArrayList<Node>[] MRoutes = new ArrayList[solver.couriers.length];
+        // for (int i = 0; i < MRoutes.length; i++) {
+        //     MRoutes[i] = new ArrayList<Node>();
         // }
-
-        System.out.println();
-
-        System.out.println("---------------------   Manually Solution 1      ---------------------");
-        /* mannally built a solution */ 
-        ArrayList<Node> MRoute = null;
-        ArrayList<Node> MFlight = null;
-        Integer[] routeArray = {0,1,4,6,8,9,2,7,5};
-        Integer[] flightArray = {1,-1,-1,3,3,3,4,1};
-        Drone drone = droneList[0];
-        MRoute = Functions.buildNodeSeqFromArray(routeArray, startnode, nodes.NodeList);
-        MFlight = Functions.buildNodeSeqFromArray(flightArray, null, nodes.NodeList);
-        List<Node>[] Mflights = new List[1]; //for now only 1 drone.
-        Mflights[0] = MFlight;
-        HashMap<Node, MeetPoint> meetPoints = new HashMap<Node, MeetPoint>();
-
-        ArrayList<Node>[] MRoutes = new ArrayList[solver.couriers.length];
-        for (int i = 0; i < MRoutes.length; i++) {
-            MRoutes[i] = new ArrayList<Node>();
-        }
-        MRoutes[0] = MRoute;
-        Solution MSolution = new Solution(MRoutes, Mflights, meetPoints); 
-        /* recover the solution and instantiate it */
-        solver.globalOptSolution = MSolution;
-        solver.printSolution();
+        // MRoutes[0] = MRoute;
+        // Solution MSolution = new Solution(MRoutes, Mflights, meetPoints); 
+        // /* recover the solution and instantiate it */
+        // solver.globalOptSolution = MSolution;
+        // solver.printSolution();
 
 
         // System.out.println("---------------------   Manually Solution 2     ---------------------");
@@ -140,8 +138,8 @@ public class Main {
 
 
         /* call generate greedy solution */
+        System.out.println("-------------------------   GreedySolution:   --------------------------");
         solver.genGreedySolve();
-        System.out.println("---------------------   GreedySolution finished     ---------------------");
         solver.printSolution();    
         System.out.println();
         /* call LNS1 to improve the solution */
@@ -152,6 +150,7 @@ public class Main {
         System.out.println("---------------------   LNS1_truck (500) Solution  ---------------------");
         //solver.LNS1t(500,2); //finish in a acceptable time(less than 5 min) at 10,000,000 (千万次), 
         solver.LNS1t(500, 2);
+        System.out.println("-------------------------- v v v v v v v v v ---------------------------");
         solver.printSolution(); 
         System.out.println();
 

@@ -135,7 +135,7 @@ class Order {
         }
     }
 
-    boolean update(Vehicle vehicle, double time){
+    boolean update(Vehicle vehicle, double time) {
         // automatically update the status no matter it is a pickup or delivery
         if(isReleased == false){
             Functions.printAlert("WARNING!!! Update to a [unrealeased] order");
@@ -150,14 +150,15 @@ class Order {
             T_delivered = time;
             return true;
         }else{
-            Functions.printAlert("WARNING!!! Update to a [delivered] order. Order:" + this.id + "; Vehicle:" + vehicle.id);
-            return false;
+            throw new java.lang.RuntimeException("Update to a [delivered] order. Order:" + this.id + "; Vehicle:" + vehicle.id);
+            // Functions.printAlert("WARNING!!! Update to a [delivered] order. Order:" + this.id + "; Vehicle:" + vehicle.id);
+            // return false;
         }
     }
 
     
 
 
-
+   
 
 }

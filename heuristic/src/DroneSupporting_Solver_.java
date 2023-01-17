@@ -23,7 +23,13 @@ public class DroneSupporting_Solver_ extends TrivalSolver{
         //recover drone
         if (solution.flightSeqs == null) {
             for (int i = 0; i < drones.length; i ++) {
+                //preserve dummy flight
+                Node startPosition = drones[i].flights.get(0).launchNode;
+                Flight dummpyFlight = new Flight(startPosition, startPosition);
                 drones[i].flights.clear();
+                //preserve dummy flight
+                drones[i].flights = new ArrayList<Flight>();
+                drones[i].flights.add(dummpyFlight);
             }
             meetPointsMap = new HashMap<>();
             return;
@@ -94,9 +100,18 @@ public class DroneSupporting_Solver_ extends TrivalSolver{
         return false;
     }
 
+    @Override
+    void instantiateSolution(){
+        recoverFromSolution(globalOptSolution);
+        instantiateSolution_d();
+        System.out.println("miniObjValue: " + this.ObjfValue()); //debug
+    }
+
     void instantiateSolution_d(){
         resetStates();
-        while(initializeDone()) {
+        Functions.printRouteSeq(couriers[0].routeSeq);
+        Functions.printFlights(drones[0].flights);
+        while(!initializeDone()) {
             for (Courier c : couriers) 
                 instantiate_1c(c);
             for (Drone d : drones) 
@@ -109,6 +124,24 @@ public class DroneSupporting_Solver_ extends TrivalSolver{
             if (!c.buildDone) 
                 return false;
         return true;
+    }
+
+    boolean isMeet; //isDrone*Courier meet here
+    Drone meetDrone;
+    Courier meetCourier;
+
+    void attachMeetNode(Node n, Courier c, Drone d) {
+        n.isMeet = true;
+        n.meetCourier = c;
+        n.meetDrone = d;
+        // MeetPoint mp = new MeetPoint(c, d, n);
+        // meetPointsMap.put(n, mp)
+    }
+
+    void detachMeetNode(Node n) {
+        n.isMeet = false;
+        n.meetCourier = null;
+        n.meetDrone = null;
     }
 
 
@@ -139,18 +172,31 @@ public class DroneSupporting_Solver_ extends TrivalSolver{
         Flight currFlight = flights.get(drone.currFlight_id);
         Node currMeetNode = currFlight.supplyNode;
         /* No supply node: This Flights is a transfer flight */
-        if (currMeetNode == null)
+        if (currMeetNode == null) {
+            //TODO 全部卡在这里了
+            //TODO meetPointsMap是空的
+            drone.currFlight_id += 1;
             return;
+        }
+        Functions.printDebug("herehere1");
+
         /* Courier has not yet initialized (courier always initialize first) */
-        if (currMeetNode.T_courier == -1)  //Alternative: if (currFlight.supplyNode.meetCourier.position != currFlight.supplyNode) {
+        if (currMeetNode.T_courier == -1) {  //Alternative: if (currFlight.supplyNode.meetCourier.position != currFlight.supplyNode) {
+            Functions.printDebug("drone meetNode: " + currMeetNode.id);
             return;
-        
+        }
+
+        Functions.printDebug("herehere2");
+
         /* Initialize the currentFlight */ 
         /* compute the earlist time of drone arrive meetNode */
         drone.time = drone.buildFlight(currMeetNode);  
         Courier courier = currFlight.supplyNode.meetCourier; 
+        
+        //TODO 下面的那个assert没作用。meetPointMap为null但是不报错。
         assert courier == meetPointsMap.get(currFlight.supplyNode).courier; //only for check bug
         assert courier.time == currFlight.supplyNode.T_courier; //only for check bug
+        
         /* determine the meet time of meetNode */
         if (courier.time > drone.time) {    //courier arrive later
             //reversely build Flight by supplyTime and determine the gap time;
@@ -183,8 +229,10 @@ public class DroneSupporting_Solver_ extends TrivalSolver{
             return;
         }
         //deal with meetNode /* if drone has not yet initialized */
-        if (currNode.isMeet && currNode.T_drone == -1)
+        if (currNode.isMeet && currNode.T_drone == -1){
+            Functions.printDebug("courier meetNode: " + currNode.id);
             return;
+        }
         
         //continue to initiate
         for(int i =  routeSeq.indexOf(currNode) + 1; i<routeSeq.size(); i++) {  //start after the startnode
@@ -198,21 +246,19 @@ public class DroneSupporting_Solver_ extends TrivalSolver{
                 courier.time = earlistExecuteTime(currNode, courier);
             }
             currNode.T_courier = courier.time;
-            
+            courier.position = currNode;
             /* currNode is a meetNode */
             if (currNode.isMeet) {  
                 return;
             }else{  /* currNode is not a meetNode */
                 currNode.courierWaitTime = 0;
-                courier.position = currNode;
                 currNode.T_courier = courier.time;
             }      
             //update the order
             if(currNode.orderNum != -1){ 
-                //System.out.println("a"); //debug::
+                // System.out.print("Node: " + currNode.id + " | "); //debug::
                 currOrder.update(courier, courier.time); 
             }
-            courier.position = currNode;
         }
     }
 
@@ -281,12 +327,7 @@ public class DroneSupporting_Solver_ extends TrivalSolver{
         }
     }
 
-    @Override
-    void instantiateSolution(){
-        recoverFromSolution(globalOptSolution);
-        instantiateSolution_d();
-        System.out.println("miniObjValue: " + this.ObjfValue()); //debug
-    }
+
     
     @Override
     public void printSolution(){
