@@ -29,6 +29,17 @@ for i in A:
             #print('u:',i,'to:',j,':',round(u[(i,j)].X))
             print('u:',i,'to:',j)
 
+# Sequential
+cn = ts #current node: cn
+s_r = 'route: '
+while cn != te:
+    for j in A:
+        if abs(x[(cn,j)].X-1)<1e-5:
+            s_r += (str(cn) + '[' + str(T[(cn)].X) + '] -> ')
+            cn = j
+s_r += str(cn) + '[' + str(T[(cn)].X) + ']'
+print(s_r)
+
 
 
 

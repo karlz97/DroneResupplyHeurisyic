@@ -41,10 +41,10 @@ public class Main {
         System.out.println("---------------------   GreedySolution      ---------------------");
         solution.printSolution();    
 
-        /* call LNS1 to improve the solution */
-        solution.LNS1(100); //finish in a acceptable time(less than 5 min) at 10,000,000 (千万次), 
-        System.out.println("---------------------   LNS1(100) Solution  ---------------------");
-        solution.printSolution();  
+        // /* call LNS1 to improve the solution */
+        // solution.LNS1(100); //finish in a acceptable time(less than 5 min) at 10,000,000 (千万次), 
+        // System.out.println("---------------------   LNS1(100) Solution  ---------------------");
+        // solution.printSolution();  
 
         // System.out.println("---------------------   MILP Solution       ---------------------");
         // ArrayList<Node> MILP_Route = new ArrayList<Node>();
