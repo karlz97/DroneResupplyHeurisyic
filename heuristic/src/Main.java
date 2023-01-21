@@ -21,7 +21,7 @@ public class Main {
         /* readData from csv */
         dataMatrix = ReadDataFromCSV.readDoubleToMatrix("../insgen/exNODES.csv");
         truckDistanceMatrix = ReadDataFromCSV.readDoubleToMatrix("../insgen/Tt.csv");
-        droneDistanceMatrix = ReadDataFromCSV.readDoubleToMatrix("../insgen/Td.csv"); //TODO 暂时使用truck矩阵 
+        droneDistanceMatrix = ReadDataFromCSV.readDoubleToMatrix("../insgen/Td.csv"); 
         
         /* initialize Nodes */
         nodes = new Nodes(dataMatrix);
@@ -55,9 +55,11 @@ public class Main {
         solver.printSolution(); 
         System.out.println();
         
+
+        
         //solver.LNS1r_test(3);
         System.out.println("---------------------   LNS1_drone (500) Solution  ---------------------");
-        solver.LNS1r(500,2);
+        solver.LNS1r(200,3);
         System.out.println("-------------------------- v v v v v v v v v ---------------------------");
         solver.printSolution(); 
 

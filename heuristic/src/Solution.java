@@ -21,14 +21,16 @@ public class Solution {
                 flightSeqs[i] = new LinkedList<>(s.flightSeqs[i]);
             }   
         }
+        meetPoints = new HashMap<>();
     }
 
     public Solution(List<Node>[] courierRoutes) {   
         this.courierRoutes = new ArrayList[courierRoutes.length];
         //如果减少对新建solution的调用，在一个solution上更改，可以节省反复创建ArrayList
-            for (int i = 0; i < courierRoutes.length; i++) {
-                this.courierRoutes[i] = new ArrayList<>(courierRoutes[i]);  
-            }
+        for (int i = 0; i < courierRoutes.length; i++) {
+            this.courierRoutes[i] = new ArrayList<>(courierRoutes[i]);  
+        }
+        meetPoints = new HashMap<>();
         }
 
     public Solution(Courier[] courierList) {
@@ -36,6 +38,7 @@ public class Solution {
         for (int i = 0; i < courierList.length; i++) {
             this.courierRoutes[i] = new ArrayList<>(courierList[i].routeSeq); 
         }
+        meetPoints = new HashMap<>();
     }
 
     public Solution(List<Node>[] courierRoutes, List<Node>[] flightSeqs,

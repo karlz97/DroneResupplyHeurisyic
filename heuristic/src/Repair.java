@@ -9,6 +9,8 @@ public abstract class Repair {
     abstract boolean takeEffect();
     abstract boolean takeEffect_hold();
     abstract MeetPoint getMeetPoint();
+    abstract void attachMeetNode();
+    abstract void detachMeetNode();
 }
 
 class Repair_1cc extends Repair{ 
@@ -47,6 +49,17 @@ class Repair_1cc extends Repair{
         return null;
     }
 
+    @Override
+    void attachMeetNode() {
+        return;
+        // MeetPoint mp = new MeetPoint(c, d, n);
+        // meetPointsMap.put(n, mp)
+    }
+
+    @Override
+    void detachMeetNode() {
+        return;
+    }
 }
 
 class Repair_1dc extends Repair{ 
@@ -65,6 +78,22 @@ class Repair_1dc extends Repair{
         this.drone = drone;
     }
 
+    public Repair_1dc(Courier courier, Drone drone, Node meetNode){
+        this.courier = courier;
+        this.drone = drone;
+        this.meetNode = meetNode;
+        this.routeSeq = new ArrayList<>(courier.routeSeq);
+        this.flightSeq = new ArrayList<>(drone.flights);
+    }
+
+    public Repair_1dc(MeetPoint mp){
+        this.courier = mp.courier;
+        this.drone = mp.drone;
+        this.meetNode = mp.meetNode;
+        this.routeSeq = new ArrayList<>(mp.courier.routeSeq);
+        this.flightSeq = new ArrayList<>(mp.drone.flights);
+    }
+
     // public Repair_1dc(Courier courier, ArrayList<Node> routeSeq, Drone drone, ArrayList<Flight> flightSeq, MeetPoint mp, double value){
     //     this.drone = drone;
     //     this.flightSeq = flightSeq;
@@ -74,7 +103,9 @@ class Repair_1dc extends Repair{
     @Override
     public boolean takeEffect() {
         this.value = Integer.MIN_VALUE;
-        return this.takeEffect_hold();
+        this.takeEffect_hold();
+        this.attachMeetNode();
+        return true;
     }
 
     @Override
@@ -88,6 +119,22 @@ class Repair_1dc extends Repair{
     @Override
     public MeetPoint getMeetPoint() {
         return new MeetPoint(courier, drone, meetNode);
+    }
+    
+    @Override
+    void attachMeetNode() {
+        meetNode.isMeet = true;
+        meetNode.meetCourier = courier;
+        meetNode.meetDrone = drone;
+        // MeetPoint mp = new MeetPoint(c, d, n);
+        // meetPointsMap.put(n, mp)
+    }
+
+    @Override
+    void detachMeetNode() {
+        meetNode.isMeet = false;
+        meetNode.meetCourier = null;
+        meetNode.meetDrone = null;
     }
 
 }

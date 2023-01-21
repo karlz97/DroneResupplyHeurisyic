@@ -75,7 +75,7 @@ class Functions{
             if ((++counter - 1)% 4 == 0 && counter != 1) 
                 System.out.print( " | ");  
             if (n == null)
-                continue;
+                continue;   
             if (n.isMeet) 
                 System.out.print( n.id + "[" + n.T_drone + "] --> ");  
             else

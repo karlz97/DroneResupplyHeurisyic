@@ -95,15 +95,23 @@ class ResupplySolver extends DroneSupporting_Solver_{
             /* ------------ insert heuristic -------------- */
             while (!removedOrderList.isEmpty()) {
                 integrationRepairOne(removedOrderList, 3, 3);
+                // Functions.printDebug("(V): Finished inserting one");
             }
 
             /* instantiateSolution */
             this.instantiateSolution_d();
-            System.out.println("----ONE ROUND OF COMPLETE REPAIR----");
+            // System.out.println("----ONE ROUND OF COMPLETE REPAIR----");
             double tempObjValue = this.ObjfValue();
-        
+            
+            /* For test: */
+            Functions.printDebug("----- temp solution ----:");
+            Functions.printRouteSeq_with_time(couriers[0].routeSeq);
+            Functions.printFlights(drones[0].flights);
+            System.out.println("ObjF: " + ObjfValue());  
+
             if (tempObjValue < minObjfValue) {
                 minObjfValue = tempObjValue;
+                assert meetPointsMap != null;
                 candidateSolution = new Solution(couriers, drones, meetPointsMap);
                 printSolution(candidateSolution);
                 iter = 0;
@@ -122,7 +130,7 @@ class ResupplySolver extends DroneSupporting_Solver_{
     //  * no dynamic weight adjustment of different heuristics.
     //  * 
     //  */
-    // public void LNS2r(int maxIteration, int sizeOfNeiborhood){  //TODO
+    // public void LNS2r(int maxIteration, int sizeOfNeiborhood){  
     //     /* 仅用于储存临时解，全局最优解在globalOptSolution中 */
     //     Solution candidateSolution = new Solution(globalOptSolution);
     //     removedOrderList = new ArrayList<>();
@@ -168,7 +176,7 @@ class ResupplySolver extends DroneSupporting_Solver_{
     //             candidateSolution = new Solution(courier,drones);
     //             printSolution(candidateSolution);
     //             iter = 0;
-    //         } else { /*  TODO accept solution with probability */
+    //         } else { /*  todo accept solution with probability */
                 
     //         }   
     //         iter++;
@@ -308,14 +316,16 @@ class ResupplySolver extends DroneSupporting_Solver_{
                 candRepair.order = o;
                 repair_pool.inpool(candRepair.value, candRepair);
             }
+            // Functions.printDebug("finished trying Order: " + o.id);
         }
         // p-randomly choose a repair with highest value and make it take effect
         int pick_index = randomExpOne(p, repair_pool.size());
         Repair repair = (Repair) repair_pool.takeitem(pick_index);
+        // 下面takeEffect的抽象不完全，不会让meetPoint生效。
+        repair.attachMeetNode();
         MeetPoint mp = repair.getMeetPoint(); /* !!!Don't forget update 'meetPointsMap' */        
-        if (mp != null) 
+        if (mp != null) //means its a resupply repair
             meetPointsMap.put(mp.meetNode, mp);
-        
         removedOrdersList.remove(repair.order);
         repair.takeEffect();
     }
@@ -354,16 +364,18 @@ class ResupplySolver extends DroneSupporting_Solver_{
         /* Gathering feasible meetNode */
         HashSet<Node> feasible_meetNode_set = new HashSet<>();
         for (Node n : drone.feasibleSupplySet[rstrmNode.id]) {
-            if (courier.routeSeq.contains(n))
+            if (courier.routeSeq.contains(n) && !n.isMeet) //不允许一个点meet两次
                 feasible_meetNode_set.add(n);
+                 //此处为取交集的动作，可能可以优化
         }   
         if (feasible_meetNode_set.size() == 0)
             return null;
 
         /* prepare standards */        
         double bestObjValue = -1;
-        Repair_1dc repair = new Repair_1dc(courier,drone);
+        Repair_1dc best_repair = new Repair_1dc(courier,drone);
         ArrayList<Flight> originalFlights = new ArrayList<>(drone.flights);
+        ArrayList<Node> originalRouteSeq = new ArrayList<Node>(courier.routeSeq); 
 
         /* trying to find the optimal insertation */
         for (Node meetNode : feasible_meetNode_set) {
@@ -383,44 +395,37 @@ class ResupplySolver extends DroneSupporting_Solver_{
                 }
                 /* ------------------------------- Courier part -------------------------------------- */
                 // estimate_1 : base on[meetNode, flight_insertIndex] to speed up the calculate   
-                ArrayList<Node> toInsertList = new ArrayList<Node>(courier.routeSeq); 
-                
-                //TODO 下面的插入逻辑有问题，没考虑meeNode必须在cstm Node之前插入的问题
-                int length = toInsertList.size();
-                // TODO 下面三行可能可以优化为一行，直接搜索meetNode的位置？
-                for (int i = 1; i <= length; i++) { //meetIndex
-                    if (!feasible_meetNode_set.contains(courier.routeSeq.get(i))) //这个应该是错的，现在已经限定MeetNode了
-                        continue;
-                    for (int j = i + 1; j <= Math.max(i + 1, length); j++) {
-                        // estimate_2 : base on[meetNode, flight_insertIndex, courier_delieverIndex] to speed up the calculate  
-                        ArrayList<Node> toInsert_cstm = new ArrayList<Node>(toInsertList); // the route to be insert(in the cstm insert step)
-                        toInsert_cstm.add(j, order.cstmNode);  
-                        /* rebuild the solution base on the tempRoute */
-                        courier.routeSeq = toInsert_cstm;
-                        // instantiateSolution_t_one(courier);
-                        System.out.println(" -- -+- --");
-
-                        //TODO 注意：此处的initialization原来没有上meetPoint，是怎么设计的呢？
-                        attachMeetNode(meetNode, courier, drone);
-                        instantiateSolution_d();
-                        detachMeetNode(meetNode);
-
-                        System.out.println(" -- +-+ --");
-                        if (ObjfValue() > bestObjValue) {
-                            bestObjValue = ObjfValue();
-                            repair.routeSeq = new ArrayList<>(courier.routeSeq);
-                            repair.flightSeq = new ArrayList<>(drone.flights);
-                            repair.meetNode = meetNode;
-                        }
-
-                        
+                int meetNodeIndex = courier.routeSeq.indexOf(meetNode);
+                // 理论上上面已经做过筛选，这里应该不用判断
+                // if (meetNodeIndex == -1) {
+                //     continue;
+                // }
+                /* cstmNode只能插入在meetNode之后： */
+                for (int j = meetNodeIndex + 1; j <= Math.max(meetNodeIndex + 1, originalRouteSeq.size()); j++) {
+                    // estimate_2 : base on[meetNode, flight_insertIndex, courier_delieverIndex] to speed up the calculate  
+                    ArrayList<Node> toInsert_cstm = new ArrayList<Node>(originalRouteSeq); // the route to be insert(in the cstm insert step)
+                    toInsert_cstm.add(j, order.cstmNode);  
+                    /* rebuild the solution base on the tempRoute */
+                    courier.routeSeq = toInsert_cstm;
+                    // instantiateSolution_t_one(courier);
+                    // 注意：此处的initialization原来没有上meetPoint，是怎么设计的呢？
+                    Repair_1dc repair = new Repair_1dc(courier, drone, meetNode);
+                    repair.attachMeetNode();    
+                    /* 下面一行信息量较大
+                        instantiateSolution成功了排除了dead lock,同时也为调用ObjfValue作准备
+                        若 ObjectValue > bestObjValue 则将这个repair作为候选repair*/
+                    if (instantiateSolution_d() && ObjfValue() > bestObjValue) {
+                        bestObjValue = ObjfValue();
+                        best_repair = repair;
                     }
+                    repair.detachMeetNode();
                 }
                 /*recover*/ drone.flights = new ArrayList<>(originalFlights);
             }
-            System.out.println(" --=============== + ====================--");
+            // System.out.println(" --=============== + ====================--");
         }
-        return repair;
+        courier.routeSeq = originalRouteSeq;
+        return best_repair;
     }
 
     /* cabinate version: resupply will not apply to the courier exsiting route, courier will need to add trip to 
@@ -439,7 +444,7 @@ class ResupplySolver extends DroneSupporting_Solver_{
         if (!rstrmNode.isDrbs || drone.feasibleSupplySet[rstrmNode.id].isEmpty())
             return null;
         /* Gathering feasibile insert point of drone [? CASE 1: need to transfer --> ?]
-         * TODO !!MAKE SURE: 允许从自己到自己的transfer flight!! 否则这儿变得很麻烦 
+         * //TODO !! MAKE SURE: 允许从自己到自己的transfer flight!! 否则这儿变得很麻烦 
         */
         ArrayList<Integer> feasible_flight_insertIndex = new ArrayList<>();
         for (int i = 0; i < drone.flights.size(); i ++) {
@@ -531,7 +536,7 @@ class ResupplySolver extends DroneSupporting_Solver_{
     //         Functions.printAlert("can't find the drone at the location");
         
 
-    //     //TODO -------Built the supply flight, resupply it p-randomly to the node with closet time
+    //     //todo -------Built the supply flight, resupply it p-randomly to the node with closet time
         
     //     //randomly supply the a node and randomly land a node, built the flight
 

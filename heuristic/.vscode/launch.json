@@ -15,7 +15,8 @@
             "name": "Launch Main",
             "request": "launch",
             "mainClass": "Main",
-            "projectName": "heuristic_d831d704"
+            "projectName": "heuristic_d831d704",
+            "vmArgs": "-enableassertions"
         }
     ]
 }
