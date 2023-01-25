@@ -82,7 +82,7 @@ public class DroneSupporting_Solver_ extends TrivalSolver{
                             Flight f = d.flights.get(i);
                             if (f.pickupNode == rstrNode) {
                                 /* try to optimize the transfer flight */
-                                if(i > 0) {  //not the first flight 
+                                if(i > 0 && i < d.flights.size() -1) {  //not the first flight or the last flight //TODO 没处理好这里 [!!TODO]
                                     //try to concate the front and next flight; 
                                     //if (ff == null) means its a direct concate, no transfer flight
                                     Flight ff = d.concateFlights(d.flights.get(i-1),d.flights.get(i+1));
@@ -126,8 +126,8 @@ public class DroneSupporting_Solver_ extends TrivalSolver{
     boolean instantiateSolution_d(){
         int count = 0; 
         resetStates();
-        // Functions.printRouteSeq(couriers[0].routeSeq);
-        // Functions.printFlights(drones[0].flights);
+        Functions.printRouteSeq(couriers[0].routeSeq);
+        Functions.printFlights(drones[0].flights);
         while(!initializeDone()) {
             // Functions.printDebug("count:" + count);
             if(count ++ > 10) {

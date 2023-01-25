@@ -328,7 +328,7 @@ class TrivalSolver extends TruckOnly_Solver_ {
 
     Repair_1cc bestRepair_1o_to_1c(Courier courier, Order order){
         //greedily insert one order to one courier
-        double bestObjValue = -1; 
+        double bestObjValue = Integer.MAX_VALUE; 
         Repair_1cc repair = new Repair_1cc(courier);
         ArrayList<Node> toInsertList = new ArrayList<Node>(courier.routeSeq);  
         int length = toInsertList.size();
@@ -345,7 +345,7 @@ class TrivalSolver extends TruckOnly_Solver_ {
                 /* rebuild the solution base on the tempRoute */
                 courier.routeSeq = toInsert_cstm;
                 instantiateSolution_t_one(courier);
-                if (ObjfValue() > bestObjValue) {
+                if (ObjfValue() < bestObjValue) {
                     bestObjValue = ObjfValue();
                     repair.routeSeq = courier.routeSeq;
                 }

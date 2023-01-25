@@ -1,7 +1,7 @@
 import java.util.ArrayList;
 
 public abstract class Repair {
-    double value;
+    double value = Integer.MAX_VALUE;
     Order order;
     public Repair(){}
 

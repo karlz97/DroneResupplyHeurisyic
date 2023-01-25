@@ -247,6 +247,21 @@ class Drone extends Vehicle{
         this.feasibleTransferSet = drone.feasibleTransferSet;
     } 
 
+
+    void cancelResupplyFlight(int flightIndex) {
+        assert flightIndex != 0;
+        if (flightIndex == 0) 
+            return;
+
+        this.flights.remove(flightIndex);
+        
+        if (flightIndex == this.flights.size())
+            return;
+        
+        Flight cf = concateFlights(this.flights.get(flightIndex-1), this.flights.get(flightIndex+1));
+        this.flights.add(flightIndex,cf);
+    }
+
     Flight concateFlights(Flight f1, Flight f2) {
         if (!tryDirect_concateFlights(f1, f2)) { //if direct concate failed
             Node n1 = f1.landNode; Node n2 = f2.launchNode;
@@ -266,7 +281,12 @@ class Drone extends Vehicle{
     boolean tryDirect_concateFlights(Flight f1, Node next) {
         Node nl = f1.launchNode;
         Node ns = f1.supplyNode;
-        if (feasibleLandSet[nl.id][ns.id].contains(next)) {
+        if (ns == null && feasibleTransferSet[nl.id].contains(next)) { //没有suplyNode，上架次是transfer flight
+            f1.landNode = next;
+            return true;
+        } 
+    
+        if (ns != null && feasibleLandSet[nl.id][ns.id].contains(next)) {
             f1.landNode = next;
             return true;
         }

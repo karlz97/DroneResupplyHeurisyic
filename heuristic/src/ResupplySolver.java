@@ -83,7 +83,10 @@ class ResupplySolver extends DroneSupporting_Solver_{
         while (iter < maxIteration) {
             /* resume the status from global optimal */
             recoverFromSolution(candidateSolution);
-
+            Functions.printDebug("<1> Size of meetPointsMap: " + meetPointsMap.size());
+            Functions.printRouteSeq_with_time(couriers[0].routeSeq);
+            Functions.printFlights(drones[0].flights);
+            Functions.printDebug(" - - - - - - -");
             /* ------------ remove heuristic -------------- */
             /* remove the flight first; 1.remove the whole flight, 2.only canceled 
                 the fly task + remove useless transfer */
@@ -92,17 +95,21 @@ class ResupplySolver extends DroneSupporting_Solver_{
             // Drone d = drones[r];
             this.randomRemoval(sizeOfNeiborhood);   
             Functions.checkDuplicate(removedOrderList);
+
+            Functions.printRouteSeq_with_time(couriers[0].routeSeq);
+            Functions.printFlights(drones[0].flights);
+            Functions.printDebug(" - - - - - - -");
             /* ------------ insert heuristic -------------- */
             while (!removedOrderList.isEmpty()) {
-                integrationRepairOne(removedOrderList, 3, 3);
+                integrationRepairOne(removedOrderList, 4, 2);
                 // Functions.printDebug("(V): Finished inserting one");
             }
-
+            Functions.printDebug("<2> Size of meetPointsMap: " + meetPointsMap.size());
             /* instantiateSolution */
             this.instantiateSolution_d();
             // System.out.println("----ONE ROUND OF COMPLETE REPAIR----");
             double tempObjValue = this.ObjfValue();
-            
+            Functions.printDebug("<3> Size of meetPointsMap: " + meetPointsMap.size());
             /* For test: */
             Functions.printDebug("----- temp solution ----:");
             Functions.printRouteSeq_with_time(couriers[0].routeSeq);
@@ -112,7 +119,9 @@ class ResupplySolver extends DroneSupporting_Solver_{
             if (tempObjValue < minObjfValue) {
                 minObjfValue = tempObjValue;
                 assert meetPointsMap != null;
+                Functions.printDebug("<4> Size of meetPointsMap: " + meetPointsMap.size());
                 candidateSolution = new Solution(couriers, drones, meetPointsMap);
+                Functions.printAlert("----- better solution ----:");
                 printSolution(candidateSolution);
                 iter = 0;
             }
@@ -212,15 +221,17 @@ class ResupplySolver extends DroneSupporting_Solver_{
     /* Random remove orders from all orders and update to courier and drones */
     void randomRemoval(int q){   //q is the number of remove.
         int count = 0;
-        int len = orders.OrderList.length;
-        ArrayList <Order> toRemoveOrderList = new ArrayList<>(len);
+        ArrayList <Order> toRemoveOrderList = new ArrayList<>(orders.OrderList.length);
         Collections.addAll(toRemoveOrderList, orders.OrderList);
         while (count < q) {
             Order o = toRemoveOrderList.get(rand.nextInt(toRemoveOrderList.size()));
             toRemoveOrderList.remove(o);
+            count ++;
+            if (o.rstrNode.isMeet || o.cstmNode.isMeet) //[暂时]不移除meetNode(直接跳过)
+                continue;
             removedOrderList.add(o);
             super.removeOrderFromCurrentStates(o);
-            count ++;
+            
         }
     }
 
@@ -364,7 +375,7 @@ class ResupplySolver extends DroneSupporting_Solver_{
         /* Gathering feasible meetNode */
         HashSet<Node> feasible_meetNode_set = new HashSet<>();
         for (Node n : drone.feasibleSupplySet[rstrmNode.id]) {
-            if (courier.routeSeq.contains(n) && !n.isMeet) //不允许一个点meet两次
+            if (courier.routeSeq.contains(n) && !n.isMeet) //不允许一个点meet两次，重复meetNode
                 feasible_meetNode_set.add(n);
                  //此处为取交集的动作，可能可以优化
         }   
@@ -372,7 +383,7 @@ class ResupplySolver extends DroneSupporting_Solver_{
             return null;
 
         /* prepare standards */        
-        double bestObjValue = -1;
+        double bestObjValue = Integer.MAX_VALUE;
         Repair_1dc best_repair = new Repair_1dc(courier,drone);
         ArrayList<Flight> originalFlights = new ArrayList<>(drone.flights);
         ArrayList<Node> originalRouteSeq = new ArrayList<Node>(courier.routeSeq); 
@@ -407,14 +418,12 @@ class ResupplySolver extends DroneSupporting_Solver_{
                     toInsert_cstm.add(j, order.cstmNode);  
                     /* rebuild the solution base on the tempRoute */
                     courier.routeSeq = toInsert_cstm;
-                    // instantiateSolution_t_one(courier);
-                    // 注意：此处的initialization原来没有上meetPoint，是怎么设计的呢？
                     Repair_1dc repair = new Repair_1dc(courier, drone, meetNode);
                     repair.attachMeetNode();    
                     /* 下面一行信息量较大
                         instantiateSolution成功了排除了dead lock,同时也为调用ObjfValue作准备
                         若 ObjectValue > bestObjValue 则将这个repair作为候选repair*/
-                    if (instantiateSolution_d() && ObjfValue() > bestObjValue) {
+                    if (instantiateSolution_d() && ObjfValue() < bestObjValue) {
                         bestObjValue = ObjfValue();
                         best_repair = repair;
                     }
