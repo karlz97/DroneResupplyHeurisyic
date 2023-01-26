@@ -52,7 +52,7 @@ public class DroneSupporting_Solver_ extends TrivalSolver{
         }
         //recover meetNode
         assert solution.meetPoints != null;
-        meetPointsMap = solution.meetPoints;
+        meetPointsMap = new HashMap<>(solution.meetPoints);
         for (int i = 0; i < drones.length; i ++) {
             drones[i].flights = solution.deSerializeFlights(i);
             for (Flight f : drones[i].flights) {
@@ -82,15 +82,7 @@ public class DroneSupporting_Solver_ extends TrivalSolver{
                             Flight f = d.flights.get(i);
                             if (f.pickupNode == rstrNode) {
                                 /* try to optimize the transfer flight */
-                                if(i > 0 && i < d.flights.size() -1) {  //not the first flight or the last flight //TODO 没处理好这里 [!!TODO]
-                                    //try to concate the front and next flight; 
-                                    //if (ff == null) means its a direct concate, no transfer flight
-                                    Flight ff = d.concateFlights(d.flights.get(i-1),d.flights.get(i+1));
-                                    d.flights.remove(i);
-                                    if (ff != null) { //created a new transfer flight
-                                        d.flights.add(i, ff);
-                                    }
-                                } //没解决第一个flight的问题，或许可以不用解决（假设固定起点）
+                                d.cancelResupplyFlight(i);
                                 //TODO 还是需要一个单独的程序来合并transfer flight
                                 //f.pickupNode = null;
                                 meetPointsMap.remove(f.supplyNode);
@@ -126,8 +118,8 @@ public class DroneSupporting_Solver_ extends TrivalSolver{
     boolean instantiateSolution_d(){
         int count = 0; 
         resetStates();
-        Functions.printRouteSeq(couriers[0].routeSeq);
-        Functions.printFlights(drones[0].flights);
+        // Functions.printRouteSeq(couriers[0].routeSeq);
+        // Functions.printFlights(drones[0].flights);
         while(!initializeDone()) {
             // Functions.printDebug("count:" + count);
             if(count ++ > 10) {

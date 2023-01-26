@@ -253,24 +253,27 @@ class Drone extends Vehicle{
         if (flightIndex == 0) 
             return;
 
-        this.flights.remove(flightIndex);
-        
-        if (flightIndex == this.flights.size())
+        if (flightIndex == this.flights.size() - 1) {
+            this.flights.remove(flightIndex); //如果把remove放前面，后面判断index就乱了
             return;
+        }
         
         Flight cf = concateFlights(this.flights.get(flightIndex-1), this.flights.get(flightIndex+1));
-        this.flights.add(flightIndex,cf);
+        this.flights.remove(flightIndex);
+        if (cf != null)
+            this.flights.add(flightIndex,cf);
     }
 
     Flight concateFlights(Flight f1, Flight f2) {
-        if (!tryDirect_concateFlights(f1, f2)) { //if direct concate failed
-            Node n1 = f1.landNode; Node n2 = f2.launchNode;
-            if (feasibleTransferSet[n1.id].contains(f2.launchNode)) {
-                return new Flight(n1, n2);
-            }
-            throw new RuntimeException("Problem in concate Flights");
+        if (tryDirect_concateFlights(f1, f2))
+            return null;
+
+        //if direct concate failed
+        Node n1 = f1.landNode; Node n2 = f2.launchNode;
+        if (feasibleTransferSet[n1.id].contains(f2.launchNode)) {
+            return new Flight(n1, n2);
         }
-        return null;
+        throw new RuntimeException("Problem in concate Flights");
     }
 
     boolean tryDirect_concateFlights(Flight f1, Flight f2) {

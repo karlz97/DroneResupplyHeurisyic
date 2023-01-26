@@ -83,6 +83,7 @@ class ResupplySolver extends DroneSupporting_Solver_{
         while (iter < maxIteration) {
             /* resume the status from global optimal */
             recoverFromSolution(candidateSolution);
+            meetPointCounter(); //for debug
             Functions.printDebug("<1> Size of meetPointsMap: " + meetPointsMap.size());
             Functions.printRouteSeq_with_time(couriers[0].routeSeq);
             Functions.printFlights(drones[0].flights);
@@ -104,12 +105,12 @@ class ResupplySolver extends DroneSupporting_Solver_{
                 integrationRepairOne(removedOrderList, 4, 2);
                 // Functions.printDebug("(V): Finished inserting one");
             }
-            Functions.printDebug("<2> Size of meetPointsMap: " + meetPointsMap.size());
+            Functions.printDebug("<2> Size of meetPointsMap: " + meetPointsMap.size()); //for debug
             /* instantiateSolution */
             this.instantiateSolution_d();
             // System.out.println("----ONE ROUND OF COMPLETE REPAIR----");
             double tempObjValue = this.ObjfValue();
-            Functions.printDebug("<3> Size of meetPointsMap: " + meetPointsMap.size());
+            Functions.printDebug("<3> Size of meetPointsMap: " + meetPointsMap.size()); //for debug
             /* For test: */
             Functions.printDebug("----- temp solution ----:");
             Functions.printRouteSeq_with_time(couriers[0].routeSeq);
@@ -119,7 +120,8 @@ class ResupplySolver extends DroneSupporting_Solver_{
             if (tempObjValue < minObjfValue) {
                 minObjfValue = tempObjValue;
                 assert meetPointsMap != null;
-                Functions.printDebug("<4> Size of meetPointsMap: " + meetPointsMap.size());
+                Functions.printDebug("<4> Size of meetPointsMap: " + meetPointsMap.size()); //for debug
+                meetPointCounter(); //for debug
                 candidateSolution = new Solution(couriers, drones, meetPointsMap);
                 Functions.printAlert("----- better solution ----:");
                 printSolution(candidateSolution);
@@ -130,6 +132,15 @@ class ResupplySolver extends DroneSupporting_Solver_{
         globalOptSolution = candidateSolution;
         this.instantiateSolution();
     } 
+
+    private void meetPointCounter() {
+        int c1=0, c2=0;
+        for (Node n : nodes.NodeList) {
+            if (n.isMeet)
+                c1++;
+        }
+        assert meetPointsMap.size() == c1;
+    }
 
     // /* LNS2
     //  * optimize the solution *after* genGreedySolution
