@@ -23,7 +23,7 @@ class Nodes{
                 continue;  
             }
             numOfNodes ++;
-            /*count the number of order Nodes */
+            /*count the number of order Nodes： 100s are rstr node 200s are cstm node */
             if ( temp[2] < 300 && temp[2] >= 100){
                 numOfOrderNode ++;
             }

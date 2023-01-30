@@ -67,12 +67,12 @@ class Courier extends Vehicle{
 }
 
 class Drone extends Vehicle{
-    final int MAXFILGHT = 50;
+    final int MAXFILGHT = 15;
     ArrayList<Flight> flights;
     int currFlight_id = 0; //mainly used to buildFlight(determine the arrive time of each node)
-    LinkedList<Node>[] feasibleSupplySet;
-    LinkedList<Node>[] feasibleTransferSet;
-    LinkedList<Node>[][] feasibleLandSet;
+    ArrayList<Node>[] feasibleSupplySet;
+    ArrayList<Node>[] feasibleTransferSet;
+    ArrayList<Node>[][] feasibleLandSet;
    
 
     public Drone(int id, Node startPosition, Double[][] distanceMatrix){
@@ -175,9 +175,9 @@ class Drone extends Vehicle{
 
     public void computeFeasibleFlight(Nodes nodes) {
         //unsafe way to use generic array
-        feasibleSupplySet =      new LinkedList[nodes.numOfNodes];
-        feasibleTransferSet = new LinkedList[nodes.numOfNodes];
-        feasibleLandSet = new LinkedList[nodes.numOfNodes][nodes.numOfNodes];
+        feasibleSupplySet = new ArrayList[nodes.numOfNodes];
+        feasibleTransferSet = new ArrayList[nodes.numOfNodes];
+        feasibleLandSet = new ArrayList[nodes.numOfNodes][nodes.numOfNodes];
 
         //cancel the seting of dummy node(drone base)
         Node[] nodeList = nodes.NodeList;
@@ -205,10 +205,10 @@ class Drone extends Vehicle{
                     }
                     //Functions.printAlert("Not continued, n2.isSply:"+ n2.isSply + ", dist1+2:" + (dist1 + dist2)); 
                     if (feasibleSupplySet[n1.id] == null) {
-                        feasibleSupplySet[n1.id] = new LinkedList<Node>();                
+                        feasibleSupplySet[n1.id] = new ArrayList<Node>();                
                     }
                     if (feasibleLandSet[n1.id][n2.id] == null) {
-                        feasibleLandSet[n1.id][n2.id] = new LinkedList<Node>();                
+                        feasibleLandSet[n1.id][n2.id] = new ArrayList<Node>();                
                     }
                     feasibleSupplySet[n1.id].add(n2);
                     feasibleLandSet[n1.id][n2.id].add(m);
@@ -222,7 +222,7 @@ class Drone extends Vehicle{
                     continue;
                 }
                 if (feasibleTransferSet[n1.id] == null) {
-                    feasibleTransferSet[n1.id] = new LinkedList<Node>();                
+                    feasibleTransferSet[n1.id] = new ArrayList<Node>();                
                 }
                 feasibleTransferSet[n1.id].add(m);
             }

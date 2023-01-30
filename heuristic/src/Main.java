@@ -4,12 +4,16 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Random;
 
 
 public class Main {
     public static void main(String[] args) throws IOException {
-        main3_multi();
-        //main2_multi();
+        int run = 1;
+        if (run == 1)
+            main3_multi();
+        if (run == 2)
+            main2_multi();
     }
 
     private static void main3_multi() throws IOException{
@@ -30,12 +34,27 @@ public class Main {
         /* initialize Orders(by orderNodeList) */
         orders = new Orders(nodes.orderNodeList);  
         
+        /* find a drone-base node */
+        ArrayList<Node> droneBaseSet = new ArrayList<>();
+        for (Node n : nodes.NodeList)
+            if (n.isDrbs == true)
+                droneBaseSet.add(n);
+        
         /* initialize vehicle */
-        Courier[] courierList = new Courier[]{new Courier(0, startnode, truckDistanceMatrix), new Courier(1, startnode, truckDistanceMatrix)};
-        Drone[] droneList = new Drone[]{new Drone(0, nodes.NodeList[1], droneDistanceMatrix)};
-        droneList[0].computeFeasibleFlight(nodes);
-        droneList[0].showFeasibleFlight();
-
+        // Courier[] courierList = new Courier[]{new Courier(0, startnode, truckDistanceMatrix), new Courier(1, startnode, truckDistanceMatrix), new Courier(2, startnode, truckDistanceMatrix)};
+        Courier[] courierList = new Courier[]{
+            new Courier(0, startnode, truckDistanceMatrix), 
+            new Courier(1, startnode, truckDistanceMatrix), 
+            new Courier(2, startnode, truckDistanceMatrix),
+            new Courier(3, startnode, truckDistanceMatrix)};
+        
+        Random rand = new Random();
+        Drone[] droneList = new Drone[]{new Drone(0, droneBaseSet.get(rand.nextInt(droneBaseSet.size())), droneDistanceMatrix),
+                                        new Drone(1, droneBaseSet.get(rand.nextInt(droneBaseSet.size())), droneDistanceMatrix)};
+        for (Drone d : droneList) {
+            d.computeFeasibleFlight(nodes);
+            d.showFeasibleFlight();
+        }
 
         /* initialize solution */
         ObjF_latePunish objF = new ObjF_latePunish(1);
@@ -55,7 +74,7 @@ public class Main {
         // solver.printSolution(); 
         // System.out.println();
         System.out.println("---------------------   LNS1_drone (500) Solution  ---------------------");
-        solver.LNS1r(2000,2);
+        solver.LNS1r(2000,3);
         System.out.println("-------------------------- v v v v v v v v v ---------------------------");
         solver.printSolution(); 
     }    
@@ -77,10 +96,16 @@ public class Main {
     
         /* initialize Orders(by orderNodeList) */
         orders = new Orders(nodes.orderNodeList);  
+
+        /* find a drone-base node */
+        Node droneStartNode = null;
+        for (Node n : nodes.NodeList)
+            if (n.isDrbs == true)
+                droneStartNode = n;
         
         /* initialize vehicle */
         Courier[] courierList = new Courier[]{new Courier(0, startnode, truckDistanceMatrix)};
-        Drone[] droneList = new Drone[]{new Drone(0, nodes.NodeList[1], droneDistanceMatrix)};
+        Drone[] droneList = new Drone[]{new Drone(0, droneStartNode, droneDistanceMatrix)};
         droneList[0].computeFeasibleFlight(nodes);
         droneList[0].showFeasibleFlight();
 
@@ -149,7 +174,13 @@ public class Main {
         //在这个测试例子中courier的startnode是第13个，对应distanceMatrix中第12
     
         /* initialize Orders(by orderNodeList) */
-        orders = new Orders(nodes.orderNodeList);  
+        orders = new Orders(nodes.orderNodeList);
+        
+        /* find a drone-base node */
+        Node droneStartNode = null;
+        for (Node n : nodes.NodeList)
+            if (n.isDrbs == true)
+                droneStartNode = n;  
         
         /* initialize vehicle */
         //Courier courier = new Courier(0, startnode, truckDistanceMatrix);
@@ -158,7 +189,7 @@ public class Main {
             new Courier(1, startnode, truckDistanceMatrix), 
             new Courier(2, startnode, truckDistanceMatrix),
             new Courier(3, startnode, truckDistanceMatrix)};
-        Drone[] droneList = new Drone[]{new Drone(0, startnode, droneDistanceMatrix)};
+        Drone[] droneList = new Drone[]{new Drone(0, droneStartNode, droneDistanceMatrix)};
 
 
         /* initialize solution */

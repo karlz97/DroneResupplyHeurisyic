@@ -15,10 +15,12 @@ import xlwings as xw
 
 droneNumber = 1
 courierNumber = 1 
-orderNumber = 5
-droneBaseNumber = 2
+# orderNumber = 5
+orderNumber = 30
+droneBaseNumber = 7
 supplynodeNumber = 0 
-mapLenth = 25
+# mapLenth = 25
+mapLenth = 50
 # timewindosType = 'Dense'
 timewindosType = 'Loose'
 
@@ -62,6 +64,7 @@ def generateOrderNode(number,droneBaseNumber,timewindosType):
         droneBaseSet.add(rand)
     return tempNODES,droneBaseSet
 
+
 def generateSENode(droneNumber,courierNumber,droneBaseSet,NODES):
     tempNODES = np.zeros([2*(droneNumber + courierNumber),5])
     #find drone base
@@ -69,12 +72,12 @@ def generateSENode(droneNumber,courierNumber,droneBaseSet,NODES):
     if droneBaseNumber == 0:  
         droneBaseNumber = 1
         snode = 0
-        print('111')
+        print('No drone base')
     else:    
         j = random.randint(0,droneBaseNumber-1)
         snode = list(droneBaseSet)[j]
+    # drone start at a randomly picked from one of drone base
     for i in range(droneNumber):
-        print('aaa')
         tempNODES[i,0] = NODES[snode,0]
         tempNODES[i,1] = NODES[snode,1]
         tempNODES[i,2] = -1001
@@ -85,7 +88,7 @@ def generateSENode(droneNumber,courierNumber,droneBaseSet,NODES):
         tempNODES[i+droneNumber,2] = -1002
         tempNODES[i+droneNumber,3] = -1
         tempNODES[i+droneNumber,4] = -1
-
+    # courier always start at (1,1) position
     for i in range(courierNumber):
         tempNODES[droneNumber*2+i,0] = 1
         tempNODES[droneNumber*2+i,1] = 1

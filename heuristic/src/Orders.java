@@ -16,7 +16,7 @@ public class Orders {
         OrderList = new Order[numOfOrders];
         for (int i = 0; i < orderNodeList.length; i++ ){
             int j = orderNodeList[i].orderNum;   //降低了运行效率但是增加了可读性...
-            if(!(OrderList[j] != null )){
+            if(OrderList[j] == null ){
                 OrderList[j]  = new Order(j);   
             }
             if(orderNodeList[i].isCstm == true){

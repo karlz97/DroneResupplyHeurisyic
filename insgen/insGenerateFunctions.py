@@ -94,8 +94,7 @@ def classification(NODES):
         elif NODES[i,2] == -2001:
             ts = i
         elif NODES[i,2] == -2002:
-            te = i        
-            
+            te = i
         else:
             print('unknow classify value')
         if NODES[i,2] == 103:

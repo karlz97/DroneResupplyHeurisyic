@@ -83,45 +83,38 @@ class ResupplySolver extends DroneSupporting_Solver_{
         while (iter < maxIteration) {
             /* resume the status from global optimal */
             recoverFromSolution(candidateSolution);
-            meetPointCounter(); //for debug
-            Functions.printDebug("<1> Size of meetPointsMap: " + meetPointsMap.size());
-            Functions.printRouteSeq_with_time(couriers[0].routeSeq);
-            Functions.printFlights(drones[0].flights);
-            Functions.printDebug(" - - - - - - -");
+            // meetPointCounter(); //for debug
+
             /* ------------ remove heuristic -------------- */
             /* remove the flight first; 1.remove the whole flight, 2.only canceled 
                 the fly task + remove useless transfer */
             //randomly choose one drone
             r = rand.nextInt(this.drones.length);
-            // Drone d = drones[r];
             this.randomRemoval(sizeOfNeiborhood);   
             Functions.checkDuplicate(removedOrderList);
 
-            Functions.printRouteSeq_with_time(couriers[0].routeSeq);
-            Functions.printFlights(drones[0].flights);
-            Functions.printDebug(" - - - - - - -");
+            // Functions.printRouteSeq_with_time(couriers[0].routeSeq);
+            // Functions.printFlights(drones[0].flights);
+            // Functions.printDebug(" - - - - - - -");
             /* ------------ insert heuristic -------------- */
             while (!removedOrderList.isEmpty()) {
-                integrationRepairOne(removedOrderList, 4, 2);
+                integrationRepairOne(removedOrderList, 5, 3);
                 // Functions.printDebug("(V): Finished inserting one");
             }
-            Functions.printDebug("<2> Size of meetPointsMap: " + meetPointsMap.size()); //for debug
             /* instantiateSolution */
             this.instantiateSolution_d();
             // System.out.println("----ONE ROUND OF COMPLETE REPAIR----");
             double tempObjValue = this.ObjfValue();
-            Functions.printDebug("<3> Size of meetPointsMap: " + meetPointsMap.size()); //for debug
-            /* For test: */
+            /* For test: 
             Functions.printDebug("----- temp solution ----:");
             Functions.printRouteSeq_with_time(couriers[0].routeSeq);
             Functions.printFlights(drones[0].flights);
-            System.out.println("ObjF: " + ObjfValue());  
+            System.out.println("ObjF: " + ObjfValue());  */ 
 
             if (tempObjValue < minObjfValue) {
                 minObjfValue = tempObjValue;
                 assert meetPointsMap != null;
-                Functions.printDebug("<4> Size of meetPointsMap: " + meetPointsMap.size()); //for debug
-                meetPointCounter(); //for debug
+                // meetPointCounter(); //for debug
                 candidateSolution = new Solution(couriers, drones, meetPointsMap);
                 Functions.printAlert("----- better solution ----:");
                 printSolution(candidateSolution);
@@ -318,7 +311,8 @@ class ResupplySolver extends DroneSupporting_Solver_{
 
     //repair are always done one by one. repair one will always be a building block
     void integrationRepairOne(ArrayList<Order> removedOrdersList, int pool_size, int p){   
-        OddPool repair_pool = new OddPool(Math.min(pool_size, removedOrderList.size()));
+        // OddPool repair_pool = new OddPool(Math.min(pool_size, removedOrderList.size())); //为何要min到removedOrderList.size()？
+        OddPool repair_pool = new OddPool(pool_size);
         /* Get regretion/Objf value from every order - drone - courier pair
          * Get all (o-d-c speicific) repairs options inpool
         */
@@ -395,7 +389,7 @@ class ResupplySolver extends DroneSupporting_Solver_{
 
         /* prepare standards */        
         double bestObjValue = Integer.MAX_VALUE;
-        Repair_1dc best_repair = new Repair_1dc(courier,drone);
+        Repair_1dc best_repair = null;
         ArrayList<Flight> originalFlights = new ArrayList<>(drone.flights);
         ArrayList<Node> originalRouteSeq = new ArrayList<Node>(courier.routeSeq); 
 

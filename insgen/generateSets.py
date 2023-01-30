@@ -8,7 +8,7 @@ Created on Sat Nov 27 14:16:32 2021
 ## to `runcell`, use rightclick of mouse and select `runcell` (instead of `runfile`)
 """
 import insGenerateFunctions as gf
-import dill
+# import dill
 
 # FILENAME_INSTANCES = 'test1_5.csv'
 MAXLAUNCH = 2
