@@ -223,9 +223,10 @@ class drone(vehicle):
         
             
 class truck(vehicle):
-    def calNorm(self,position1,position2):       
-        return calNorm1(position1,position2)
-
+    def calNorm(self,position1,position2):
+        COEFFICIENT = 1.4
+        # return calNorm1(position1,position2)
+        return calNorm2(position1,position2)*COEFFICIENT
 
 def orderpair(NODES):
     num = int(max(NODES[:,3]))
