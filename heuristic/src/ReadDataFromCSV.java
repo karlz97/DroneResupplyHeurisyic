@@ -37,9 +37,6 @@ public class ReadDataFromCSV {
         }
     }
 
-    
-
-
     private void readCsvLine() throws IOException{
         String line = reader.readLine();
         this.tempStringsSet = line.split(",");
@@ -90,7 +87,6 @@ public class ReadDataFromCSV {
         }
     }
 
-
     // read as IntValues, only when it is int.
     public void readIntValues(ArrayList<Integer[]> Valueslist) throws IOException{
         while(reader.ready()){
@@ -117,28 +113,7 @@ public class ReadDataFromCSV {
 
         return outputMatrix;
     }
-/*
-    public void readIntValues3D(ArrayList<Integer[][]> Valueslist){
-        Integer[][] temp = new Integer[this.Dim][];
-        for (int i = 0; i < Dim; i++){
-            if (isInt(tempStringsSet[i])){
-                String[] tempSubStringSet = tempStringsSet[i].split(",");
-                int Dim2 = tempSubStringSet.length;
-                for (int i = 0; i < Dim2; i++){
-                    
-                }
-            }else{
-                tempStringsSet[i] = int[0];
-            }
-            
-        }
-        Valueslist.add(temp);
-    }
-*/
 
-
-
-    
     public boolean close() throws IOException{
         try{
             this.reader.close();

@@ -214,31 +214,6 @@ public class Main {
         System.out.println("-------------------------- v v v v v v v v v ---------------------------");
         solver.printSolution(); 
         System.out.println();
-
-        // System.out.println("---------------------   Manually Solution 1      ---------------------");
-        // /* mannally built a solution */ 
-        // ArrayList<Node> MRoute = null;
-        // ArrayList<Node> MFlight = null;
-        // Integer[] routeArray = {0,1,4,6,8,9,2,7,5};
-        // Integer[] flightArray = {1,-1,-1,1,1,-1,-1,3,3,3,4,1};
-        // // Drone drone = droneList[0];
-        // MRoute = Functions.buildNodeSeqFromArray(routeArray, startnode, nodes.NodeList);
-        // MFlight = Functions.buildNodeSeqFromArray(flightArray, null, nodes.NodeList);
-        // List<Node>[] Mflights = new List[1]; //for now only 1 drone.
-        // Mflights[0] = MFlight;
-        // HashMap<Node, MeetPoint> meetPoints = new HashMap<Node, MeetPoint>();
-        // MeetPoint mp = new MeetPoint(courierList[0], droneList[0], nodes.NodeList[4]);
-        // meetPoints.put(nodes.NodeList[4], mp);
-
-        // ArrayList<Node>[] MRoutes = new ArrayList[solver.couriers.length];
-        // for (int i = 0; i < MRoutes.length; i++) {
-        //     MRoutes[i] = new ArrayList<Node>();
-        // }
-        // MRoutes[0] = MRoute;
-        // Solution MSolution = new Solution(MRoutes, Mflights, meetPoints); 
-        // /* recover the solution and instantiate it */
-        // solver.globalOptSolution = MSolution;
-        // solver.printSolution();
     }  
 
     private static void main2() throws IOException{

@@ -47,7 +47,6 @@ class Functions{
         return routeSeq;
     }
 
-
     static public void printRouteSeq(List<Node> routeSeq){
         System.out.println("Routes: ");
         for (Iterator<Node> it = routeSeq.iterator(); it.hasNext();) {
