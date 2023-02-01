@@ -12,8 +12,8 @@ import javax.naming.InitialContext;
 
 class TrivalSolver extends TruckOnly_Solver_ {
 
-    public TrivalSolver(Orders orders, Nodes nodes, Objfunction f, Courier[] courierList){
-        super(orders, nodes, f, courierList);
+    public TrivalSolver(Orders orders, Nodes nodes, Objfunction f, Courier[] courierArray){
+        super(orders, nodes, f, courierArray);
     }
 
     /*              Heuristic               */

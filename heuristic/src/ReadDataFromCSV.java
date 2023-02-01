@@ -13,6 +13,16 @@ public class ReadDataFromCSV {
     private String[] tempStringsSet;
     private int Dim; 
 
+    public ReadDataFromCSV(String path) throws IOException{
+        File infile = new File(path);
+        try{
+            BufferedReader reader = new BufferedReader(new FileReader(infile));
+            this.reader = reader;
+        }finally{
+            //nothing
+        }
+    }
+    
     static public Double[][] readDoubleToMatrix(String path) throws IOException{
         // readData from csv
         ArrayList<Double[]> dataInList = new ArrayList<Double[]>();
@@ -26,15 +36,17 @@ public class ReadDataFromCSV {
         return  trun2Matirx(dataInList);
     }
 
-
-    public ReadDataFromCSV(String path) throws IOException{
-        File infile = new File(path);
-        try{
-            BufferedReader reader = new BufferedReader(new FileReader(infile));
-            this.reader = reader;
-        }finally{
-            //nothing
+    static public ArrayList<Integer[]> readIntToList(String path) throws IOException{
+        // readData from csv
+        ArrayList<Integer[]> dataInList = new ArrayList<Integer[]>();
+        try {
+            ReadDataFromCSV csvReader = new ReadDataFromCSV(path);
+            csvReader.readAsIntValues(dataInList);
+            csvReader.close();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
+        return  dataInList;
     }
 
     private void readCsvLine() throws IOException{

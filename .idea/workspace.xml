@@ -2,11 +2,25 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="010b3d39-106a-401e-a7d2-1f0ba61626d9" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/generate_eleme_instance.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Td.csv" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Tt.csv" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/eleme_test/Td.csv" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/eleme_test/Tt.csv" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/eleme_test/exNodes.csv" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/exNodes.csv" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/heuristic/src/batch_runing.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/DroneResupplyHeurisyic.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/DroneResupplyHeurisyic.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/elemeDataExplore.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/elemeDataExplore.ipynb" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/heuristic/.vscode/launch.json" beforeDir="false" afterPath="$PROJECT_DIR$/heuristic/.vscode/launch.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/insgen/insGenerateFunctions.py" beforeDir="false" afterPath="$PROJECT_DIR$/insgen/insGenerateFunctions.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/heuristic/batch_runing.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/heuristic/src/DroneSupporting_Solver_.java" beforeDir="false" afterPath="$PROJECT_DIR$/heuristic/src/DroneSupporting_Solver_.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/heuristic/src/Main.java" beforeDir="false" afterPath="$PROJECT_DIR$/heuristic/src/Main.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/heuristic/src/ReadDataFromCSV.java" beforeDir="false" afterPath="$PROJECT_DIR$/heuristic/src/ReadDataFromCSV.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/heuristic/src/ResupplySolver.java" beforeDir="false" afterPath="$PROJECT_DIR$/heuristic/src/ResupplySolver.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/heuristic/src/TrivalSolver.java" beforeDir="false" afterPath="$PROJECT_DIR$/heuristic/src/TrivalSolver.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/heuristic/src/TruckOnly_Solver_.java" beforeDir="false" afterPath="$PROJECT_DIR$/heuristic/src/TruckOnly_Solver_.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/heuristic/src/Vehicle.java" beforeDir="false" afterPath="$PROJECT_DIR$/heuristic/src/Vehicle.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -27,12 +41,16 @@
     <option name="stateVersion" value="1" />
   </component>
   <component name="ProjectId" id="2L3ohPo3nK2DSTDzlgJmnXh7WlZ" />
+  <component name="ProjectLevelVcsManager">
+    <ConfirmationsSetting value="2" id="Add" />
+  </component>
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
   <component name="PropertiesComponent"><![CDATA[{
   "keyToString": {
+    "ASKED_ADD_EXTERNAL_FILES": "true",
     "RunOnceActivity.OpenProjectViewOnStart": "true",
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "WebServerToolWindowFactoryState": "false"
@@ -49,5 +67,8 @@
         </entry>
       </map>
     </option>
+  </component>
+  <component name="VcsManagerConfiguration">
+    <option name="ADD_EXTERNAL_FILES_SILENTLY" value="true" />
   </component>
 </project>

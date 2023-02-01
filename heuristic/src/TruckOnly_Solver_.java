@@ -7,10 +7,10 @@ public class TruckOnly_Solver_ extends _Solver_ {
     Random rand = new Random();
     ArrayList<Order> removedOrderList;
 
-    public TruckOnly_Solver_(Orders orders, Nodes nodes, Objfunction f, Courier[] courierList){
+    public TruckOnly_Solver_(Orders orders, Nodes nodes, Objfunction f, Courier[] courierArray){
         super(orders, nodes);
         this.Objf = f;
-        this.couriers = courierList;
+        this.couriers = courierArray;
     }
 
     public double ObjfValue(){

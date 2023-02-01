@@ -8,10 +8,10 @@ public class DroneSupporting_Solver_ extends TrivalSolver{
     HashMap<Node, MeetPoint> meetPointsMap; /* just for recovery the meetpoint information from Solution: 
                                             the drone meet with which courier at supplyNode */
     
-    public DroneSupporting_Solver_(Orders orders, Nodes nodes, Objfunction f, Courier[] courierList, Drone[] droneList) {
-        super(orders, nodes, f, courierList);
+    public DroneSupporting_Solver_(Orders orders, Nodes nodes, Objfunction f, Courier[] courierArray, Drone[] droneArray) {
+        super(orders, nodes, f, courierArray);
         meetPointsMap = new HashMap<>();
-        this.drones = droneList;
+        this.drones = droneArray;
     }
 
     // void attachMeetNode(Node n, Courier c, Drone d) {

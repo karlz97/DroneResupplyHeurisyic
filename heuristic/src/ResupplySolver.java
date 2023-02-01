@@ -13,8 +13,8 @@ import javax.swing.text.Position;
 class ResupplySolver extends DroneSupporting_Solver_{
     OddPool candidatePool;
   
-    public ResupplySolver(Orders orders, Nodes nodes, Objfunction f, Courier[] courierList, Drone[] droneList) {
-        super(orders, nodes, f, courierList, droneList);
+    public ResupplySolver(Orders orders, Nodes nodes, Objfunction f, Courier[] courierArray, Drone[] droneArray) {
+        super(orders, nodes, f, courierArray, droneArray);
     }
     
     /*              Heuristic               */

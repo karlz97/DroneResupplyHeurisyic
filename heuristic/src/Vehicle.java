@@ -67,7 +67,8 @@ class Courier extends Vehicle{
 }
 
 class Drone extends Vehicle{
-    final int MAXFILGHT = 15;
+    // final int MAXFILGHT = 15;
+    double MAXFILGHT;
     ArrayList<Flight> flights;
     int currFlight_id = 0; //mainly used to buildFlight(determine the arrive time of each node)
     ArrayList<Node>[] feasibleSupplySet;
@@ -75,8 +76,9 @@ class Drone extends Vehicle{
     ArrayList<Node>[][] feasibleLandSet;
    
 
-    public Drone(int id, Node startPosition, Double[][] distanceMatrix){
+    public Drone(int id, Node startPosition, Double[][] distanceMatrix, double MAXFILGHT){
         super(id, startPosition);
+        this.MAXFILGHT = MAXFILGHT;
         flights = new ArrayList<Flight>();
         Flight dummpyFlight = new Flight(startPosition, startPosition);
         flights.add(dummpyFlight);

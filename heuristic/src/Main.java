@@ -23,9 +23,11 @@ public class Main {
         Nodes nodes;
         Orders orders;
         /* readData from csv */
-        dataMatrix = ReadDataFromCSV.readDoubleToMatrix("../insgen/exNODES.csv");
-        truckDistanceMatrix = ReadDataFromCSV.readDoubleToMatrix("../insgen/Tt.csv");
-        droneDistanceMatrix = ReadDataFromCSV.readDoubleToMatrix("../insgen/Td.csv"); 
+        // String path = "../insgen/";
+        String path = "../eleme_test/";
+        dataMatrix = ReadDataFromCSV.readDoubleToMatrix(path + "exNODES.csv");
+        truckDistanceMatrix = ReadDataFromCSV.readDoubleToMatrix(path + "Tt.csv");
+        droneDistanceMatrix = ReadDataFromCSV.readDoubleToMatrix(path + "Td.csv"); 
         
         /* initialize Nodes */
         nodes = new Nodes(dataMatrix);
@@ -46,11 +48,15 @@ public class Main {
             new Courier(0, startnode, truckDistanceMatrix), 
             new Courier(1, startnode, truckDistanceMatrix), 
             new Courier(2, startnode, truckDistanceMatrix),
-            new Courier(3, startnode, truckDistanceMatrix)};
+            //new Courier(3, startnode, truckDistanceMatrix),
+            //new Courier(4, startnode, truckDistanceMatrix)
+        };
         
         Random rand = new Random();
-        Drone[] droneList = new Drone[]{new Drone(0, droneBaseSet.get(rand.nextInt(droneBaseSet.size())), droneDistanceMatrix),
-                                        new Drone(1, droneBaseSet.get(rand.nextInt(droneBaseSet.size())), droneDistanceMatrix)};
+        double MAXFILGHT = 1200;
+        Drone[] droneList = new Drone[]{new Drone(0, droneBaseSet.get(rand.nextInt(droneBaseSet.size())), droneDistanceMatrix, MAXFILGHT),
+                                        //new Drone(1, droneBaseSet.get(rand.nextInt(droneBaseSet.size())), droneDistanceMatrix, MAXFILGHT)
+                                    };
         for (Drone d : droneList) {
             d.computeFeasibleFlight(nodes);
             d.showFeasibleFlight();
@@ -67,14 +73,14 @@ public class Main {
         solver.printSolution();    
         System.out.println();
         /* call LNS1 to improve the solution */
-        // System.out.println("---------------------   LNS1_truck (500) Solution  ---------------------");
-        // //solver.LNS1t(500,2); //finish in a acceptable time(less than 5 min) at 10,000,000 (千万次), 
-        // solver.LNS1t(500, 2);
-        // System.out.println("-------------------------- v v v v v v v v v ---------------------------");
-        // solver.printSolution(); 
-        // System.out.println();
+        System.out.println("---------------------   LNS1_truck (500) Solution  ---------------------");
+        //solver.LNS1t(500,2); //finish in a acceptable time(less than 5 min) at 10,000,000 (千万次), 
+        solver.LNS1t(2000, 2);
+        System.out.println("-------------------------- v v v v v v v v v ---------------------------");
+        solver.printSolution(); 
+        System.out.println();
         System.out.println("---------------------   LNS1_drone (500) Solution  ---------------------");
-        solver.LNS1r(2000,3);
+        solver.LNS1r(3000,3);
         System.out.println("-------------------------- v v v v v v v v v ---------------------------");
         solver.printSolution(); 
     }    
@@ -105,7 +111,7 @@ public class Main {
         
         /* initialize vehicle */
         Courier[] courierList = new Courier[]{new Courier(0, startnode, truckDistanceMatrix)};
-        Drone[] droneList = new Drone[]{new Drone(0, droneStartNode, droneDistanceMatrix)};
+        Drone[] droneList = new Drone[]{new Drone(0, droneStartNode, droneDistanceMatrix, 15)};
         droneList[0].computeFeasibleFlight(nodes);
         droneList[0].showFeasibleFlight();
 
@@ -189,7 +195,7 @@ public class Main {
             new Courier(1, startnode, truckDistanceMatrix), 
             new Courier(2, startnode, truckDistanceMatrix),
             new Courier(3, startnode, truckDistanceMatrix)};
-        Drone[] droneList = new Drone[]{new Drone(0, droneStartNode, droneDistanceMatrix)};
+        Drone[] droneList = new Drone[]{new Drone(0, droneStartNode, droneDistanceMatrix, 15)};
 
 
         /* initialize solution */
@@ -239,7 +245,7 @@ public class Main {
         /* initialize vehicle */
         //Courier courier = new Courier(0, startnode, truckDistanceMatrix);
         Courier[] courierList = new Courier[]{new Courier(0, startnode, truckDistanceMatrix)};
-        Drone[] droneList = new Drone[]{new Drone(0, startnode, droneDistanceMatrix)};
+        Drone[] droneList = new Drone[]{new Drone(0, startnode, droneDistanceMatrix, 15)};
 
 
         /* initialize solution */
