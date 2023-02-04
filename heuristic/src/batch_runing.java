@@ -69,7 +69,7 @@ class Setting {
             courierlist.add(new Courier(i, nodeList[ins.ground_starts[i]], ins.groundDistanceMatrix));
         }
         for (int i = 0; i < drone_num; i++) {
-            dronelist.add(new Drone(i, nodeList[ins.drone_starts[i]], ins.droneDistanceMatrix, drone_max_endurance))
+            dronelist.add(new Drone(i, nodeList[ins.drone_starts[i]], ins.droneDistanceMatrix, drone_max_endurance));
         }
 
         this.courierArray = courierlist.toArray(courierArray);

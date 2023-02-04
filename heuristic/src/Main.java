@@ -9,13 +9,21 @@ import java.util.Random;
 
 public class Main {
     public static void main(String[] args) throws IOException {
+        long stime = System.currentTimeMillis();
+        // 执行时间（1s）
         int run = 1;
         if (run == 1)
             main3_multi();
         if (run == 2)
             main2_multi();
+        // 结束时间
+        long etime = System.currentTimeMillis();
+
+        // 计算执行时间
+        System.out.printf("the program takes: %d s.", (etime - stime)/1000);
     }
 
+    
     private static void main3_multi() throws IOException{
         Double[][] dataMatrix;
         Double[][] truckDistanceMatrix;
@@ -23,8 +31,8 @@ public class Main {
         Nodes nodes;
         Orders orders;
         /* readData from csv */
-        // String path = "../insgen/";
-        String path = "../eleme_test/";
+        String path = "../insgen/";
+        // String path = "../eleme_test/";
         dataMatrix = ReadDataFromCSV.readDoubleToMatrix(path + "exNODES.csv");
         truckDistanceMatrix = ReadDataFromCSV.readDoubleToMatrix(path + "Tt.csv");
         droneDistanceMatrix = ReadDataFromCSV.readDoubleToMatrix(path + "Td.csv"); 
@@ -53,7 +61,7 @@ public class Main {
         };
         
         Random rand = new Random();
-        double MAXFILGHT = 1200;
+        double MAXFILGHT = 0;
         Drone[] droneList = new Drone[]{new Drone(0, droneBaseSet.get(rand.nextInt(droneBaseSet.size())), droneDistanceMatrix, MAXFILGHT),
                                         //new Drone(1, droneBaseSet.get(rand.nextInt(droneBaseSet.size())), droneDistanceMatrix, MAXFILGHT)
                                     };
@@ -63,7 +71,7 @@ public class Main {
         }
 
         /* initialize solution */
-        ObjF_latePunish objF = new ObjF_latePunish(1);
+        ObjF_latePunish objF = new ObjF_latePunish(10);
         //TrivalSolver solver = new TrivalSolver(orders, nodes, objF, courier, truckDistanceMatrix); 
         ResupplySolver solver = new ResupplySolver(orders, nodes, objF, courierList, droneList);
 
@@ -75,15 +83,91 @@ public class Main {
         /* call LNS1 to improve the solution */
         System.out.println("---------------------   LNS1_truck (500) Solution  ---------------------");
         //solver.LNS1t(500,2); //finish in a acceptable time(less than 5 min) at 10,000,000 (千万次), 
-        solver.LNS1t(2000, 2);
+        solver.LNS1t(2000, 3);
+        double[] ground_evaluation = new double[3];
+        ground_evaluation[0] = solver.ObjfValue();
+        ground_evaluation[1] = Evaluations.get_delay_rate(solver);
+        ground_evaluation[2] = Evaluations.get_total_delays(solver);
         System.out.println("-------------------------- v v v v v v v v v ---------------------------");
         solver.printSolution(); 
         System.out.println();
         System.out.println("---------------------   LNS1_drone (500) Solution  ---------------------");
-        solver.LNS1r(3000,3);
+        solver.LNS2t(2000,3);
+        System.out.println("-------------------------- v v v v v v v v v ---------------------------");
+        solver.printSolution();
+        double[] drone_evaluation = new double[3];
+        drone_evaluation[0] = solver.ObjfValue();
+        drone_evaluation[1] = Evaluations.get_delay_rate(solver);
+        drone_evaluation[2] = Evaluations.get_total_delays(solver);
+        Functions.printDebug("ground solution: \n Objf:" + ground_evaluation[0] +  
+                                " delay_rate:" + ground_evaluation[1] +
+                                " total_delay:" + ground_evaluation[2] +
+                            "\ndrone solution: \n Objf:" + drone_evaluation[0] +  
+                            " delay_rate:" + drone_evaluation[1] +
+                            " total_delay:" + drone_evaluation[2]);
+
+    }    
+
+    private static void main2_multi() throws IOException{
+        Double[][] dataMatrix;
+        Double[][] truckDistanceMatrix;
+        Double[][] droneDistanceMatrix;
+        Nodes nodes;
+        Orders orders;
+        /* readData from csv */
+        String path = "../eleme_test/";
+        dataMatrix = ReadDataFromCSV.readDoubleToMatrix(path + "exNODES.csv");
+        truckDistanceMatrix = ReadDataFromCSV.readDoubleToMatrix(path + "Tt.csv");
+        droneDistanceMatrix = ReadDataFromCSV.readDoubleToMatrix(path + "Td.csv"); 
+        
+        /* initialize Nodes */
+        nodes = new Nodes(dataMatrix);
+        Node startnode = new StartEndNode(12, 1, 1, 's'); 
+        //在这个测试例子中courier的startnode是第13个，对应distanceMatrix中第12
+    
+        /* initialize Orders(by orderNodeList) */
+        orders = new Orders(nodes.orderNodeList);
+        
+        /* find a drone-base node */
+        Node droneStartNode = null;
+        for (Node n : nodes.NodeList)
+            if (n.isDrbs == true)
+                droneStartNode = n;  
+        
+        /* initialize vehicle */
+        Courier[] courierList = new Courier[]{
+            new Courier(0, startnode, truckDistanceMatrix), 
+            new Courier(1, startnode, truckDistanceMatrix), 
+            new Courier(2, startnode, truckDistanceMatrix),
+            //new Courier(3, startnode, truckDistanceMatrix),
+            //new Courier(4, startnode, truckDistanceMatrix)
+        };
+        Drone[] droneList = new Drone[]{new Drone(0, droneStartNode, droneDistanceMatrix, 15)};
+
+
+        /* initialize solution */
+        ObjF_latePunish objF = new ObjF_latePunish(10);
+        TrivalSolver solver = new TrivalSolver(orders, nodes, objF, courierList); 
+        //ResupplySolver solver = new ResupplySolver(orders, nodes, objF, courier, droneList, truckDistanceMatrix);
+
+
+        /* call generate greedy solution */
+        System.out.println("-------------------------   GreedySolution:   --------------------------");
+        solver.genGreedySolve();
+        solver.printSolution();    
+        System.out.println();
+        /* call LNS1 to improve the solution */
+        // solver.LNS2t(500,3); //finish in a acceptable time(less than 5 min) at 10,000,000 (千万次), 
+        // System.out.println("---------------------   LNS2_truck (500) Solution  ---------------------");
+        // solver.printSolution(); 
+        // System.out.println();
+        System.out.println("---------------------   LNS1_truck (500) Solution  ---------------------");
+        // solver.LNS1t(2000, 3);
+        solver.LNS1t2(2000, 3);
         System.out.println("-------------------------- v v v v v v v v v ---------------------------");
         solver.printSolution(); 
-    }    
+        System.out.println();
+    }  
 
     private static void main3() throws IOException{
         Double[][] dataMatrix;
@@ -162,66 +246,6 @@ public class Main {
         solver.globalOptSolution = MSolution;
         solver.printSolution();
     }    
-
-    private static void main2_multi() throws IOException{
-        Double[][] dataMatrix;
-        Double[][] truckDistanceMatrix;
-        Double[][] droneDistanceMatrix;
-        Nodes nodes;
-        Orders orders;
-        /* readData from csv */
-        dataMatrix = ReadDataFromCSV.readDoubleToMatrix("../insgen/exNODES.csv");
-        truckDistanceMatrix = ReadDataFromCSV.readDoubleToMatrix("../insgen/Tt.csv");
-        droneDistanceMatrix = ReadDataFromCSV.readDoubleToMatrix("../insgen/Td.csv"); ; 
-        
-        /* initialize Nodes */
-        nodes = new Nodes(dataMatrix);
-        Node startnode = new StartEndNode(12, 1, 1, 's'); 
-        //在这个测试例子中courier的startnode是第13个，对应distanceMatrix中第12
-    
-        /* initialize Orders(by orderNodeList) */
-        orders = new Orders(nodes.orderNodeList);
-        
-        /* find a drone-base node */
-        Node droneStartNode = null;
-        for (Node n : nodes.NodeList)
-            if (n.isDrbs == true)
-                droneStartNode = n;  
-        
-        /* initialize vehicle */
-        //Courier courier = new Courier(0, startnode, truckDistanceMatrix);
-        Courier[] courierList = new Courier[]{
-            new Courier(0, startnode, truckDistanceMatrix), 
-            new Courier(1, startnode, truckDistanceMatrix), 
-            new Courier(2, startnode, truckDistanceMatrix),
-            new Courier(3, startnode, truckDistanceMatrix)};
-        Drone[] droneList = new Drone[]{new Drone(0, droneStartNode, droneDistanceMatrix, 15)};
-
-
-        /* initialize solution */
-        ObjF_latePunish objF = new ObjF_latePunish(1);
-        TrivalSolver solver = new TrivalSolver(orders, nodes, objF, courierList); 
-        //ResupplySolver solver = new ResupplySolver(orders, nodes, objF, courier, droneList, truckDistanceMatrix);
-
-
-        /* call generate greedy solution */
-        System.out.println("-------------------------   GreedySolution:   --------------------------");
-        solver.genGreedySolve();
-        solver.printSolution();    
-        System.out.println();
-        /* call LNS1 to improve the solution */
-        // solver.LNS2t(500,3); //finish in a acceptable time(less than 5 min) at 10,000,000 (千万次), 
-        // System.out.println("---------------------   LNS2_truck (500) Solution  ---------------------");
-        // solver.printSolution(); 
-        // System.out.println();
-        System.out.println("---------------------   LNS1_truck (500) Solution  ---------------------");
-        //solver.LNS1t(500,2); //finish in a acceptable time(less than 5 min) at 10,000,000 (千万次), 
-        solver.LNS1t(500, 2);
-        System.out.println("-------------------------- v v v v v v v v v ---------------------------");
-        solver.printSolution(); 
-        System.out.println();
-    }  
-
     private static void main2() throws IOException{
         Double[][] dataMatrix;
         Double[][] truckDistanceMatrix;

@@ -4,6 +4,12 @@
     <list default="true" id="010b3d39-106a-401e-a7d2-1f0ba61626d9" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/elemeDataExplore.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/elemeDataExplore.ipynb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/heuristic/src/Functions.java" beforeDir="false" afterPath="$PROJECT_DIR$/heuristic/src/Functions.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/heuristic/src/Main.java" beforeDir="false" afterPath="$PROJECT_DIR$/heuristic/src/Main.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/heuristic/src/Objfunction.java" beforeDir="false" afterPath="$PROJECT_DIR$/heuristic/src/Objfunction.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/heuristic/src/ResupplySolver.java" beforeDir="false" afterPath="$PROJECT_DIR$/heuristic/src/ResupplySolver.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/heuristic/src/TrivalSolver.java" beforeDir="false" afterPath="$PROJECT_DIR$/heuristic/src/TrivalSolver.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/heuristic/src/batch_runing.java" beforeDir="false" afterPath="$PROJECT_DIR$/heuristic/src/batch_runing.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -45,7 +51,19 @@
       <map>
         <entry key="MAIN">
           <value>
-            <State />
+            <State>
+              <option name="FILTERS">
+                <map>
+                  <entry key="branch">
+                    <value>
+                      <list>
+                        <option value="HEAD" />
+                      </list>
+                    </value>
+                  </entry>
+                </map>
+              </option>
+            </State>
           </value>
         </entry>
       </map>

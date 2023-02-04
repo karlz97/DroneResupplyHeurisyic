@@ -189,13 +189,14 @@ class OddPool {  //OddPool for 'ordered Pool'
         return item;
     }
 
+    //  
     public void inpool(double value, Object index) {
         if (currlen == length && valuelist.getLast() > value) {
             return;   
         }
         //System.out.println("currlen:" + currlen + "truelen" + list.size());
         if (currlen > 0 ) {
-            if (value > valuelist.getFirst() ){   //smaller than the last 
+            if (value > valuelist.getFirst() ){   //从大到小排列
                 inhead(value, index);
             } else if (value > valuelist.getLast() || currlen < length ) {
                 inbody(value, index);

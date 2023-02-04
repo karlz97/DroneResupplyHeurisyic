@@ -27,7 +27,6 @@ class TrivalSolver extends TruckOnly_Solver_ {
      * 
      */
     public void LNS1t(int maxIteration, int sizeOfNeiborhood){ 
-        
         /* 仅用于储存临时解，全局最优解在globalOptSolution中 */
         Solution candidateSolution = new Solution(globalOptSolution);
         removedOrderList = new ArrayList<>();
@@ -37,7 +36,6 @@ class TrivalSolver extends TruckOnly_Solver_ {
         while (iter < maxIteration) {
             /* resume the status to global optimal */
             recoverFromSolution(candidateSolution);
-            
             /* remove heuristic */
             shawRemoval_Courier(sizeOfNeiborhood, 3);
             /* insert heuristic */
@@ -50,6 +48,7 @@ class TrivalSolver extends TruckOnly_Solver_ {
                 candidateSolution = new Solution(couriers);
                 printSolution_Courier(candidateSolution);
                 System.out.println("ObjF: " + ObjfValue());
+                iter = 0;
             }
             iter++;
         }
@@ -57,7 +56,7 @@ class TrivalSolver extends TruckOnly_Solver_ {
         instantiateSolution();
     } 
 
-    public void LNS2t_base(int maxIteration, int sizeOfNeiborhood){ 
+    public void LNS1t2(int maxIteration, int sizeOfNeiborhood){ 
         Solution candidateSolution = new Solution(globalOptSolution);
         removedOrderList = new ArrayList<>();
         double minObjfValue = ObjfValue();
@@ -67,16 +66,18 @@ class TrivalSolver extends TruckOnly_Solver_ {
             /* resume the status to global optimal */
             recoverFromSolution(candidateSolution);
             /* remove heuristic */
-            randomRemoval(sizeOfNeiborhood);
+            shawRemoval_Courier(sizeOfNeiborhood, 3);
             /* insert heuristic */
-            regeretInsert_Courier(removedOrderList, 3);
+            bestInsert_Courier(removedOrderList, 6, 3);
             /* decide whether accept new solution */
             instantiateSolution_t(couriers);
-            double tempObjValue   = ObjfValue();
+            double tempObjValue = ObjfValue();
             if (tempObjValue < minObjfValue) {
                 minObjfValue = tempObjValue;
                 candidateSolution = new Solution(couriers);
                 printSolution_Courier(candidateSolution);
+                System.out.println("ObjF: " + ObjfValue());
+                iter = 0;
             }
             iter++;
         }
@@ -206,7 +207,7 @@ class TrivalSolver extends TruckOnly_Solver_ {
         }
     }
 
-    void randomRemoval(int q){   //q is the number of remove.
+    void a(int q){   //q is the number of remove.
         int count = 0;
         int len = orders.OrderList.length;
         ArrayList <Order> toRemoveOrderList = new ArrayList<>(len);
@@ -265,6 +266,53 @@ class TrivalSolver extends TruckOnly_Solver_ {
             removedOrdersList.remove(insertOrder);
             mostRegretInsertation.takeEffect(); 
 
+        }
+        return;
+    }
+
+    void naive_bestInsert_Courier(ArrayList<Order> removedOrdersList, int k){
+        Repair bestInsertation = new Repair_1cc();
+        bestInsertation.value = Integer.MAX_VALUE;
+        while (!removedOrdersList.isEmpty()) {
+            Order insertOrder = null;
+            /* insert the i_th order */ 
+            for (Order o : removedOrdersList) {
+                for (Courier c : couriers) {
+                    Repair candInsertation = bestRepair_1o_to_1c(c, o);
+                    //maxRegret.inpool(presudoSol.objfValue, presudoSol.routeSeq); 
+                    if (candInsertation.value < bestInsertation.value) {
+                        bestInsertation =  candInsertation;
+                        insertOrder = o;
+                    }
+                }
+            }
+            /* update the 'toInsertList' and 'removedOrdersList' */
+            removedOrdersList.remove(insertOrder);
+            bestInsertation.takeEffect(); 
+            bestInsertation.value = Integer.MAX_VALUE;
+        }
+        return;
+    }
+
+    void bestInsert_Courier(ArrayList<Order> removedOrdersList, int pool_size, int p){
+        while (!removedOrdersList.isEmpty()) {
+            OddPool repair_pool = new OddPool(pool_size);
+            /* insert the i_th order */ 
+            for (Order o : removedOrdersList) {
+                for (Courier c : couriers) {
+                    Repair candInsertation = bestRepair_1o_to_1c(c, o);
+                    //maxRegret.inpool(presudoSol.objfValue, presudoSol.routeSeq); 
+                    if (candInsertation != null) {
+                        candInsertation.order = o ;
+                        repair_pool.inpool(candInsertation.value, candInsertation);
+                    }
+                }
+            }
+            // p-randomly choose a repair with highest value and make it take effect
+            int pick_index = randomExpOne(p, repair_pool.size());
+            Repair repair = (Repair) repair_pool.takeitem(pick_index);
+            removedOrdersList.remove(repair.order);
+            repair.takeEffect();
         }
         return;
     }
