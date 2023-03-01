@@ -43,7 +43,7 @@ class ResupplySolver extends DroneSupporting_Solver_{
             
             /* remove heuristic */
             shawRemoval_Courier(sizeOfNeiborhood, 3);
-            this.randomRemoval(sizeOfNeiborhood); 
+            // this.randomRemoval(sizeOfNeiborhood); 
             /* insert heuristic */
             bestInsert_Courier(removedOrderList, 6, 3);
             /* decide whether accept new solution */
@@ -67,18 +67,24 @@ class ResupplySolver extends DroneSupporting_Solver_{
         instantiateSolution();
     } 
 
-    public void LNS2t(int maxIteration, int sizeOfNeiborhood){ 
+    public void LNS2t(int maxIteration, int sizeOfNeiborhood){
+        Double T =  ObjfValue()*0.05;
         /* 仅用于储存临时解，全局最优解在globalOptSolution中 */
         Solution candidateSolution = new Solution(globalOptSolution);
+        Solution currSolution = new Solution(globalOptSolution);
         removedOrderList = new ArrayList<>();
         double minObjfValue = ObjfValue();
         /* Acceptance and Stopping Criteria */
         int iter = 0;
         while (iter < maxIteration) {
+            T = T*0.95;
             /* resume the status from global optimal */
-            recoverFromSolution(candidateSolution);
+            recoverFromSolution(currSolution);
             /* ------------ remove heuristic -------------- */
-            this.randomRemoval(sizeOfNeiborhood);   
+            if(rand.nextDouble()<0.6)
+                this.randomRemoval(sizeOfNeiborhood);   
+            else
+                this.shawRemoval_Courier(sizeOfNeiborhood, 3);
             Functions.checkDuplicate(removedOrderList);
             /* ------------ insert heuristic -------------- */
             while (!removedOrderList.isEmpty()) {
@@ -86,14 +92,17 @@ class ResupplySolver extends DroneSupporting_Solver_{
             }
             /* instantiateSolution */
             this.instantiateSolution_d();
-            double tempObjValue = this.ObjfValue();
-            if (tempObjValue < minObjfValue) {
-                minObjfValue = tempObjValue;
+            double currObjValue = this.ObjfValue();
+            if (currObjValue < minObjfValue) {
+                minObjfValue = currObjValue;
                 assert meetPointsMap != null;
                 candidateSolution = new Solution(couriers, drones, meetPointsMap);
+                currSolution = new Solution(candidateSolution);
                 Functions.printAlert("----- better solution ----:");
                 printSolution(candidateSolution);
                 iter = 0;
+            } else if(rand.nextDouble() < (Math.exp((minObjfValue-currObjValue)/T))) {
+                currSolution = new Solution(couriers, drones, meetPointsMap);
             }
             iter++;
         }
@@ -110,52 +119,46 @@ class ResupplySolver extends DroneSupporting_Solver_{
      * 
      */
     public void LNS1r(int maxIteration, int sizeOfNeiborhood){
+        Double T =  ObjfValue()*0.05;
         /* 仅用于储存临时解，全局最优解在globalOptSolution中 */
+        Solution currSolution = new Solution(globalOptSolution);
         Solution candidateSolution = new Solution(globalOptSolution);
         removedOrderList = new ArrayList<>();
         double minObjfValue = ObjfValue();
         /* Acceptance and Stopping Criteria */
-        int iter = 0;
+        int iter = 0, iter2 = 0;
         while (iter < maxIteration) {
+            T = T*0.95;
             /* resume the status from global optimal */
-            recoverFromSolution(candidateSolution);
-            // meetPointCounter(); //for debug
-
+            recoverFromSolution(currSolution);
             /* ------------ remove heuristic -------------- */
             /* remove the flight first; 1.remove the whole flight, 2.only canceled 
                 the fly task + remove useless transfer */
-            //randomly choose one drone
             this.randomRemoval(sizeOfNeiborhood);   
             Functions.checkDuplicate(removedOrderList);
-
-            // Functions.printRouteSeq_with_time(couriers[0].routeSeq);
-            // Functions.printFlights(drones[0].flights);
-            // Functions.printDebug(" - - - - - - -");
             /* ------------ insert heuristic -------------- */
             while (!removedOrderList.isEmpty()) {
                 integrationRepairOne(removedOrderList, 6, 3);
                 // Functions.printDebug("(V): Finished inserting one");
             }
+            removeUselessTransferyFlight();
+            
             /* instantiateSolution */
             this.instantiateSolution_d();
             // System.out.println("----ONE ROUND OF COMPLETE REPAIR----");
-            double tempObjValue = this.ObjfValue();
-            /* For test: 
-            Functions.printDebug("----- temp solution ----:");
-            Functions.printRouteSeq_with_time(couriers[0].routeSeq);
-            Functions.printFlights(drones[0].flights);
-            System.out.println("ObjF: " + ObjfValue());  */ 
-
-            if (tempObjValue < minObjfValue) {
-                minObjfValue = tempObjValue;
+            double currObjValue = this.ObjfValue();
+            if (currObjValue < minObjfValue) {
+                minObjfValue = currObjValue;
                 assert meetPointsMap != null;
-                // meetPointCounter(); //for debug
                 candidateSolution = new Solution(couriers, drones, meetPointsMap);
+                currSolution = new Solution(candidateSolution);
                 Functions.printAlert("----- better solution ----:");
                 printSolution(candidateSolution);
                 iter = 0;
+            } else if(rand.nextDouble() < (Math.exp((minObjfValue-currObjValue)/T))) {
+                currSolution = new Solution(couriers, drones, meetPointsMap);
             }
-            iter++;
+            iter++; iter2++;
         }
         globalOptSolution = candidateSolution;
         this.instantiateSolution();
@@ -176,18 +179,34 @@ class ResupplySolver extends DroneSupporting_Solver_{
     
     // /* remove useless(loop) transfer */
 
+    void removeUselessTransferyFlight(){
+        for (Drone d : drones) {
+            removeUselessTransferyFlight(d);
+        }
+    }
 
-    // /* remove the useless pure resupply node for courier */
-    // void removeUselessResupplyNode(Courier courier){
-    //     ArrayList<Node> route = courier.routeSeq;
-    //     for (int i = 0; i < route.size(); i++) {
-    //         Node n = route.get(i);
-    //         if (n.orderNum == -1 && !n.isMeet) {
-    //             route.remove(i);
-    //         }
-    //     }
-    //     return;
-    // }
+    /* remove the useless transfer flight */
+    void removeUselessTransferyFlight(Drone d){
+        ArrayList<Flight> flightSeq = d.flights;
+        for (int i = 1; i < flightSeq.size() - 1; i++) {
+            Flight f = flightSeq.get(i);
+            if (f.pickupNode != null) { //如果是supply flight，跳过
+                continue;   
+            }
+            if (f.launchNode == f.landNode) { //如果是自己到自己，则删去
+                flightSeq.remove(i--);
+                continue;
+            }
+            // 否则尝试合并下一个flight
+            Flight next = flightSeq.get(i+1);
+            if (next.supplyNode == null && d.feasibleTransferSet[f.launchNode.id].contains(next.landNode.id)) {
+                flightSeq.remove(i--);
+                next.launchNode = f.launchNode;
+                continue;
+            }
+        }
+        return;
+    }
 
 
     /*          Herusitics operators           */

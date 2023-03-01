@@ -18,7 +18,7 @@ courierNumber = 1
 orderNumber = 5
 droneBaseNumber = 2
 supplynodeNumber = 0 
-mapLenth = 25
+mapLenth = 20
 timewindosType = 'Dense'
 # timewindosType = 'Loose'
 
@@ -34,8 +34,8 @@ def generateOrderNode_c(number,droneBaseNumber,timewindosType):
     tempNODES = np.zeros([2*number,5])
     # Generate frist 4 columns 
     for i in range(number):
-        tempNODES[i,0] = random.randint(0, round(mapLenth/4)) + round(mapLenth/3)
-        tempNODES[i,1] = random.randint(0, round(mapLenth/4)) + round(mapLenth/3)
+        tempNODES[i,0] = random.randint(0, round(mapLenth/4)) + round(3*mapLenth/8)
+        tempNODES[i,1] = random.randint(0, round(mapLenth/4)) + round(3*mapLenth/8)
         tempNODES[i,2] = 101
         tempNODES[i,3] = i
         tempNODES[i+number,0] = random.randint(0, mapLenth)

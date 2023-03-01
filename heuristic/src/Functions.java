@@ -156,6 +156,11 @@ class Functions{
         return false;
     }
 
+    static void evaluation_output(double[] ground_evaluation, double[] drone_evaluation) {
+        
+        
+    }
+
 }
 
 //TODO 没搞懂，list和indexlist是不是搞反了？？

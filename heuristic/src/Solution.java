@@ -21,7 +21,7 @@ public class Solution {
                 flightSeqs[i] = new LinkedList<>(s.flightSeqs[i]);
             }   
         }
-        meetPoints = new HashMap<>();
+        this.meetPoints =  new HashMap<Node, MeetPoint>(s.meetPoints);
     }
 
     public Solution(List<Node>[] courierRoutes) {   

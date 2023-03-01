@@ -122,7 +122,7 @@ public class DroneSupporting_Solver_ extends TrivalSolver{
         // Functions.printFlights(drones[0].flights);
         while(!initializeDone()) {
             // Functions.printDebug("count:" + count);
-            if(count ++ > 10) {
+            if(count ++ > 24) {
                 return false;
             }
             for (Courier c : couriers) 
@@ -144,7 +144,7 @@ public class DroneSupporting_Solver_ extends TrivalSolver{
     Drone meetDrone;
     Courier meetCourier;
 
-    private  void  resetStates() {
+    private void resetStates() {
         /* reset all order, nodes to initial */
         for(int i = 0; i<orders.OrderList.length; i++) {
             orders.OrderList[i].reset_r();  //only reset the order but not the related node.

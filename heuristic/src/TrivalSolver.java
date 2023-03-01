@@ -66,7 +66,8 @@ class TrivalSolver extends TruckOnly_Solver_ {
             /* resume the status to global optimal */
             recoverFromSolution(candidateSolution);
             /* remove heuristic */
-            shawRemoval_Courier(sizeOfNeiborhood, 3);
+            //shawRemoval_Courier(sizeOfNeiborhood, 3);
+            randomRemoval(sizeOfNeiborhood);
             /* insert heuristic */
             bestInsert_Courier(removedOrderList, 6, 3);
             /* decide whether accept new solution */
@@ -94,7 +95,8 @@ class TrivalSolver extends TruckOnly_Solver_ {
         for (int i = 0; i < couriers.length; i++) {
             courier_half_assign_list[i] = new ArrayList<>();
         }
-
+        
+        
         while (!orders.allDone()){
             double max = 0;
             double tempPrio = 0;
@@ -207,7 +209,7 @@ class TrivalSolver extends TruckOnly_Solver_ {
         }
     }
 
-    void a(int q){   //q is the number of remove.
+    void randomRemoval(int q){   //q is the number of remove.
         int count = 0;
         int len = orders.OrderList.length;
         ArrayList <Order> toRemoveOrderList = new ArrayList<>(len);

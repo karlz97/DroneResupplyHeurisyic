@@ -1,4 +1,5 @@
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.lang.Exception;
 import javax.swing.text.Position;
@@ -175,14 +176,14 @@ class Drone extends Vehicle{
         currFlight_id++;
     }
 
-    public void computeFeasibleFlight(Nodes nodes) {
+    public void computeFeasibleFlight(Node[] nodeList) {
+        int numOfNodes = nodeList.length;
         //unsafe way to use generic array
-        feasibleSupplySet = new ArrayList[nodes.numOfNodes];
-        feasibleTransferSet = new ArrayList[nodes.numOfNodes];
-        feasibleLandSet = new ArrayList[nodes.numOfNodes][nodes.numOfNodes];
+        feasibleSupplySet = new ArrayList[numOfNodes];
+        feasibleTransferSet = new ArrayList[numOfNodes];
+        feasibleLandSet = new ArrayList[numOfNodes][numOfNodes];
 
         //cancel the seting of dummy node(drone base)
-        Node[] nodeList = nodes.NodeList;
         for (int i1 = 0; i1 < nodeList.length; i1++) {
             Node n1 = nodeList[i1];
             if (!n1.isDrbs) {
@@ -212,7 +213,9 @@ class Drone extends Vehicle{
                     if (feasibleLandSet[n1.id][n2.id] == null) {
                         feasibleLandSet[n1.id][n2.id] = new ArrayList<Node>();                
                     }
-                    feasibleSupplySet[n1.id].add(n2);
+                    if (!feasibleSupplySet[n1.id].contains(n2)) {
+                        feasibleSupplySet[n1.id].add(n2);
+                    }
                     feasibleLandSet[n1.id][n2.id].add(m);
                 }
             }
@@ -230,6 +233,7 @@ class Drone extends Vehicle{
             }
             
         }
+
     } 
 
     public void showFeasibleFlight() {

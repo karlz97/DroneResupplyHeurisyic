@@ -20,7 +20,7 @@ orderNumber = 30
 droneBaseNumber = 7
 supplynodeNumber = 0 
 # mapLenth = 25
-mapLenth = 50
+mapLenth = 20
 # timewindosType = 'Dense'
 timewindosType = 'Loose'
 
