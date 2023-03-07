@@ -25,8 +25,7 @@ class Main2 {
 }
 
 class Batch {
-    static public void run_resupply(Instance ins, Setting set) {
-        
+    static public double[] run_resupply(Instance ins, Setting set) {
         ResupplySolver solver = new ResupplySolver(ins.orders, ins.nodes, set.objF, set.courierArray, set.droneArray);
         System.out.println("-------------------------   GreedySolution:   --------------------------");
         solver.genGreedySolve();
@@ -35,32 +34,36 @@ class Batch {
         /* call LNS1 to improve the solution */
         System.out.println("---------------------   LNS1_truck (500) Solution  ---------------------");
         //solver.LNS1t(500,2); //finish in a acceptable time(less than 5 min) at 10,000,000 (千万次), 
-        solver.LNS2t(2000, 4);
-        double[] ground_evaluation = new double[3];
-        ground_evaluation[0] = solver.ObjfValue();
-        ground_evaluation[1] = Evaluations.get_delay_rate(solver);
-        ground_evaluation[2] = Evaluations.get_total_delays(solver);
+        solver.LNS2t(250, 4);
+        double[] evaluation = new double[6];
+        evaluation[0] = solver.ObjfValue();
+        evaluation[1] = Evaluations.get_delay_rate(solver);
+        evaluation[2] = Evaluations.get_total_delays(solver);
         System.out.println("-------------------------- v v v v v v v v v ---------------------------");
         solver.printSolution(); 
         System.out.println("---------------------   LNS1_drone (500) Solution  ---------------------");
-        solver.LNS1r(2000,3);
+        solver.LNS1r(1000,3);
         System.out.println("-------------------------- v v v v v v v v v ---------------------------");
         solver.printSolution();
-        double[] drone_evaluation = new double[3];
-        drone_evaluation[0] = solver.ObjfValue();
-        drone_evaluation[1] = Evaluations.get_delay_rate(solver);
-        drone_evaluation[2] = Evaluations.get_total_delays(solver);
-        Functions.printDebug("ground solution: \n Objf:" + ground_evaluation[0] +  
-                                " delay_rate:" + ground_evaluation[1] +
-                                " total_delay:" + ground_evaluation[2] +
-                            "\ndrone solution: \n Objf:" + drone_evaluation[0] +  
-                            " delay_rate:" + drone_evaluation[1] +
-                            " total_delay:" + drone_evaluation[2]);
+        evaluation[3] = solver.ObjfValue();
+        evaluation[4] = Evaluations.get_delay_rate(solver);
+        evaluation[5] = Evaluations.get_total_delays(solver);
+        Functions.printDebug("ground solution: \n Objf:" + evaluation[0] +  
+                                " delay_rate:" + evaluation[1] +
+                                " total_delay:" + evaluation[2] +
+                            "\ndrone solution: \n Objf:" + evaluation[3] +  
+                            " delay_rate:" + evaluation[4] +
+                            " total_delay:" + evaluation[5]);
+        
+        
+        return evaluation; 
     }
+
 
 }
 
 class Instance {
+    String name;
     Nodes nodes;
     Orders orders;
     Double[][] groundDistanceMatrix;
@@ -71,6 +74,8 @@ class Instance {
 
     public Instance(String path) throws IOException {
         /* Read data */
+        String[] components = path.split("/");
+        this.name = components[components.length - 1];         
         Double[][] nodes_data = ReadDataFromCSV.readDoubleToMatrix(path + "/exNodes.csv");
         // `/starts`第一行是ground staIrts 的 node id（行数）， 第二行是 drone starts 的 node id
         this.groundDistanceMatrix = ReadDataFromCSV.readDoubleToMatrix(path + "/Tt.csv");

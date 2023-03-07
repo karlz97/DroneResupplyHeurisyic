@@ -16,8 +16,8 @@ import xlwings as xw
 droneNumber = 1
 courierNumber = 1 
 # orderNumber = 5
-orderNumber = 30
-droneBaseNumber = 7
+orderNumber = 5
+droneBaseNumber = 2
 supplynodeNumber = 0 
 # mapLenth = 25
 mapLenth = 20

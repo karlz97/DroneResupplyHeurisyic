@@ -1,3 +1,4 @@
+import java.io.FileWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -156,10 +157,6 @@ class Functions{
         return false;
     }
 
-    static void evaluation_output(double[] ground_evaluation, double[] drone_evaluation) {
-        
-        
-    }
 
 }
 

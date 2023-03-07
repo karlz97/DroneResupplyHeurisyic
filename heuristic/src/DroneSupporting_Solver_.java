@@ -122,7 +122,7 @@ public class DroneSupporting_Solver_ extends TrivalSolver{
         // Functions.printFlights(drones[0].flights);
         while(!initializeDone()) {
             // Functions.printDebug("count:" + count);
-            if(count ++ > 24) {
+            if(count ++ > 30) {
                 return false;
             }
             for (Courier c : couriers) 

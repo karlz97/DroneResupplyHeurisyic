@@ -77,7 +77,7 @@ class ResupplySolver extends DroneSupporting_Solver_{
         /* Acceptance and Stopping Criteria */
         int iter = 0;
         while (iter < maxIteration) {
-            T = T*0.95;
+            T = T*0.9;
             /* resume the status from global optimal */
             recoverFromSolution(currSolution);
             /* ------------ remove heuristic -------------- */
@@ -119,7 +119,7 @@ class ResupplySolver extends DroneSupporting_Solver_{
      * 
      */
     public void LNS1r(int maxIteration, int sizeOfNeiborhood){
-        Double T =  ObjfValue()*0.05;
+        Double T =  ObjfValue()*0.02;
         /* 仅用于储存临时解，全局最优解在globalOptSolution中 */
         Solution currSolution = new Solution(globalOptSolution);
         Solution candidateSolution = new Solution(globalOptSolution);
@@ -128,7 +128,7 @@ class ResupplySolver extends DroneSupporting_Solver_{
         /* Acceptance and Stopping Criteria */
         int iter = 0, iter2 = 0;
         while (iter < maxIteration) {
-            T = T*0.95;
+            T = T*0.97;
             /* resume the status from global optimal */
             recoverFromSolution(currSolution);
             /* ------------ remove heuristic -------------- */
@@ -154,9 +154,13 @@ class ResupplySolver extends DroneSupporting_Solver_{
                 currSolution = new Solution(candidateSolution);
                 Functions.printAlert("----- better solution ----:");
                 printSolution(candidateSolution);
-                iter = 0;
+                iter = 0; iter2 = 0;
             } else if(rand.nextDouble() < (Math.exp((minObjfValue-currObjValue)/T))) {
                 currSolution = new Solution(couriers, drones, meetPointsMap);
+                if (iter2 > maxIteration*0.4) {
+                    iter2 = 0;
+                    currSolution = new Solution(candidateSolution);
+                }
             }
             iter++; iter2++;
         }
