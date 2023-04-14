@@ -122,7 +122,7 @@ public class DroneSupporting_Solver_ extends TrivalSolver{
         // Functions.printFlights(drones[0].flights);
         while(!initializeDone()) {
             // Functions.printDebug("count:" + count);
-            if(count ++ > 30) {
+            if(count ++ > 40) {
                 return false;
             }
             for (Courier c : couriers) 
@@ -202,12 +202,16 @@ public class DroneSupporting_Solver_ extends TrivalSolver{
             courier.time = drone.time;
         }
         currMeetNode.T_drone = drone.time;
+        // if (currMeetNode.T_drone != currMeetNode.T_courier)
+        //     drone.time = drone.time;
         /*  update the order status.... tell the order it has been picked up;
         Not exactly the right place and right time (should be in 'buildFlight' & 'retroBuildFlight')
         but update here will not hurt because the pickup time is not important. 
         */
+
         Flight lastFlight = drone.flights.get(drone.currFlight_id - 1);
-        orders.OrderList[lastFlight.pickupNode.orderNum].update(drone, lastFlight.pickupTime);
+        orders.OrderList[lastFlight.pickupNode.orderId].update(drone, lastFlight.pickupTime);
+        drone.time = lastFlight.landTime;
         return currMeetNode;
     }
 
@@ -235,13 +239,14 @@ public class DroneSupporting_Solver_ extends TrivalSolver{
             currNode = routeSeq.get(i);
 
             /*  compute the earlist time of courier arrive meetNode */
-            if(currNode.orderNum != -1){    //if it is an order node, update the order
-                currOrder = orders.OrderList[currNode.orderNum];
+            if(currNode.orderId != -1){    //if it is an order node, update the order
+                currOrder = orders.OrderList[currNode.orderId];
                 courier.time = earlistExecuteTime(currOrder, courier); //Because during a feasible solution route, it always pickup first.
                 currOrder.update(courier, courier.time); 
-            }else{                          //if it is not an order node, don't need update the order
-                courier.time = earlistExecuteTime(currNode, courier);
             }
+            // else{                          //if it is not an order node, don't need update the order
+            //     courier.time = earlistExecuteTime(currNode, courier);
+            // }
             currNode.T_courier = courier.time;
             courier.position = currNode;
             /* currNode is a meetNode */
@@ -256,70 +261,70 @@ public class DroneSupporting_Solver_ extends TrivalSolver{
         return null;
     }
 
-    void instantiateSolution_d_one(Courier courier){
-        ArrayList<Node> routeSeq = courier.routeSeq;
-        /* try to instantiate solution by courier route untill the first meet node */
-        Node currNode;      //temp variables to speedup the program
-        Order currOrder = null;    //temp variables
-        courier.position  = routeSeq.get(0); //deal      with startnode
-        courier.time = 0; 
-        for (Drone d : drones) {
-            d.time = 0;
-        }
-        for(int i = 1; i<routeSeq.size(); i++) {  //start after the startnode
-            currNode = routeSeq.get(i);
+    // void instantiateSolution_d_one(Courier courier){
+    //     ArrayList<Node> routeSeq = courier.routeSeq;
+    //     /* try to instantiate solution by courier route untill the first meet node */
+    //     Node currNode;      //temp variables to speedup the program
+    //     Order currOrder = null;    //temp variables
+    //     courier.position  = routeSeq.get(0); //deal      with startnode
+    //     courier.time = 0; 
+    //     for (Drone d : drones) {
+    //         d.time = 0;
+    //     }
+    //     for(int i = 1; i<routeSeq.size(); i++) {  //start after the startnode
+    //         currNode = routeSeq.get(i);
 
-            /*  compute the earlist time of courier arrive meetNode */
-            if(currNode.orderNum != -1){    //if it is an order node, update the order
-                currOrder = orders.OrderList[currNode.orderNum];
-                courier.time = earlistExecuteTime(currOrder, courier); //Because during a feasible solution route, it always pickup first.
-            }else{                          //if it is not an order node, don't need update the order
-                courier.time = earlistExecuteTime(currNode, courier);
-            }
-            currNode.T_courier = courier.time;
+    //         /*  compute the earlist time of courier arrive meetNode */
+    //         if(currNode.orderId != -1){    //if it is an order node, update the order
+    //             currOrder = orders.OrderList[currNode.orderId];
+    //             courier.time = earlistExecuteTime(currOrder, courier); //Because during a feasible solution route, it always pickup first.
+    //         }else{                          //if it is not an order node, don't need update the order
+    //             courier.time = earlistExecuteTime(currNode, courier);
+    //         }
+    //         currNode.T_courier = courier.time;
             
-            /* currNode is a meetNode */
-            if (currNode.isMeet) {  
-                //debug:: //Functions.printDebug("meetNode! Node:" + currNode.id);
+    //         /* currNode is a meetNode */
+    //         if (currNode.isMeet) {  
+    //             //debug:: //Functions.printDebug("meetNode! Node:" + currNode.id);
 
-                Drone drone = currNode.meetDrone;
-                /*  compute the earlist time of drone arrive meetNode */
-                drone.time = drone.buildFlight(currNode); 
+    //             Drone drone = currNode.meetDrone;
+    //             /*  compute the earlist time of drone arrive meetNode */
+    //             drone.time = drone.buildFlight(currNode); 
 
-                /* determine the meet time of meetNode */
-                if (courier.time > drone.time) {    //courier arrive later
-                    //reversely build Flight by supplyTime and determine the gap time;
-                    drone.retroBuildFlight(courier.time);
-                    drone.time = courier.time;
-                    currNode.courierWaitTime = 0; 
-                }else{      //drone arrive later
-                    //add wait time at last node
-                    currNode.courierWaitTime = drone.time - courier.time;  
-                    courier.time = drone.time;
-                }
-                //update the node
-                courier.position = currNode;
-                currNode.T_drone = drone.time;
+    //             /* determine the meet time of meetNode */
+    //             if (courier.time > drone.time) {    //courier arrive later
+    //                 //reversely build Flight by supplyTime and determine the gap time;
+    //                 drone.retroBuildFlight(courier.time);
+    //                 drone.time = courier.time;
+    //                 currNode.courierWaitTime = 0; 
+    //             }else{      //drone arrive later
+    //                 //add wait time at last node
+    //                 currNode.courierWaitTime = drone.time - courier.time;  
+    //                 courier.time = drone.time;
+    //             }
+    //             //update the node
+    //             courier.position = currNode;
+    //             currNode.T_drone = drone.time;
                 
-                /*  update the order status.... tell the order it has been picked up;
-                Not exactly the right place and right time (should be in 'buildFlight' & 'retroBuildFlight')
-                but update here will not hurt because the pickup time is not important. 
-                */
-                orders.OrderList[drone.flights.get(drone.currFlight_id - 1).pickupNode.orderNum].update(drone, -1);
+    //             /*  update the order status.... tell the order it has been picked up;
+    //             Not exactly the right place and right time (should be in 'buildFlight' & 'retroBuildFlight')
+    //             but update here will not hurt because the pickup time is not important. 
+    //             */
+    //             orders.OrderList[drone.flights.get(drone.currFlight_id - 1).pickupNode.orderId].update(drone, -1);
 
 
-            }else{  /* currNode is not a meetNode */
-                currNode.courierWaitTime = 0;
-                courier.position = currNode;
-                currNode.T_courier = courier.time;
-            }      
-            //update the order
-            if(currNode.orderNum != -1){ 
-                //System.out.println("a"); //debug::
-                currOrder.update(courier, courier.time); 
-            }
-        }
-    }
+    //         }else{  /* currNode is not a meetNode */
+    //             currNode.courierWaitTime = 0;
+    //             courier.position = currNode;
+    //             currNode.T_courier = courier.time;
+    //         }      
+    //         //update the order
+    //         if(currNode.orderId != -1){ 
+    //             //System.out.println("a"); //debug::
+    //             currOrder.update(courier, courier.time); 
+    //         }
+    //     }
+    // }
 
 
     

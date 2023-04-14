@@ -34,7 +34,7 @@ class Batch {
         /* call LNS1 to improve the solution */
         System.out.println("---------------------   LNS1_truck (500) Solution  ---------------------");
         //solver.LNS1t(500,2); //finish in a acceptable time(less than 5 min) at 10,000,000 (千万次), 
-        solver.LNS2t(250, 4);
+        solver.LNS2t(1000, 4); //600,4
         double[] evaluation = new double[6];
         evaluation[0] = solver.ObjfValue();
         evaluation[1] = Evaluations.get_delay_rate(solver);
@@ -42,7 +42,8 @@ class Batch {
         System.out.println("-------------------------- v v v v v v v v v ---------------------------");
         solver.printSolution(); 
         System.out.println("---------------------   LNS1_drone (500) Solution  ---------------------");
-        solver.LNS1r(1000,3);
+        solver.LNS1r(2000,4); //（2000,4)
+        // solver.LNS1r(2000,3);
         System.out.println("-------------------------- v v v v v v v v v ---------------------------");
         solver.printSolution();
         evaluation[3] = solver.ObjfValue();

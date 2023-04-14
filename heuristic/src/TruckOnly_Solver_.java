@@ -60,8 +60,8 @@ public class TruckOnly_Solver_ extends _Solver_ {
         ArrayList<Node> routeSeq = courier.routeSeq;
         // 不能在这儿把所有点全部重置了 [[2022/12/03]] 23:34
         for(Node n : routeSeq) {  //start at the startnode //start after the startnode
-            if(n.orderNum != -1){
-                Order o = orders.OrderList[n.orderNum];            
+            if(n.orderId != -1){
+                Order o = orders.OrderList[n.orderId];            
                 o.reset_r();
             }
             n.reset_r();
@@ -75,8 +75,8 @@ public class TruckOnly_Solver_ extends _Solver_ {
             currNode = routeSeq.get(i);
             
             /*  courier, order  &  node */
-            if(currNode.orderNum != -1){    //if it is an order node, update the order
-                currOrder = orders.OrderList[currNode.orderNum];
+            if(currNode.orderId != -1){    //if it is an order node, update the order
+                currOrder = orders.OrderList[currNode.orderId];
                 courier.time = earlistExecuteTime(currOrder, courier); //Because during a feasible solution route, it always pickup first.
                 currOrder.update(courier, courier.time);  //For more structured progame and mode reuse, here is couples of overhead 
             }else{                          //if it is not an order node, don't need update the order

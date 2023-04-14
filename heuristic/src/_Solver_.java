@@ -1,8 +1,11 @@
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+
+import javax.management.RuntimeErrorException;
 
 
 abstract class _Solver_ {
@@ -10,6 +13,7 @@ abstract class _Solver_ {
     Nodes nodes;
     Objfunction Objf;
     Solution globalOptSolution;
+    DecimalFormat df = new DecimalFormat("#.00");
 
     public _Solver_(Orders orders, Nodes nodes/*, Objfunction f*/){
         this.orders = orders;
@@ -39,7 +43,7 @@ abstract class _Solver_ {
         }
         
         if (order.isDelivered){
-            return -1;
+            throw new RuntimeException("Working on delivered order");
         }
         return Math.max(prepared_lfn, vehicle.callNodeDistance(orderNode, vehicle.position));
     }
@@ -78,10 +82,15 @@ abstract class _Solver_ {
                         System.out.print( " | ");  
                     if (n == null)
                         continue;
-                    if (n.isMeet) 
-                        System.out.print( n.id + "[" + n.T_drone + "] --> ");  
-                    else
+                    if (n.isMeet && counter % 3 == 0) {
+                        System.out.print( n.id + "[" + df.format(n.T_drone) + "] --> ");  
+                        if (n.T_courier != n.T_drone) {
+                            System.out.print("\033[31;1m" + " !! \033[0m");
+                        }
+                    } else
                         System.out.print( n.id + " --> ");
+
+
                 }
                 System.out.println();
             }
@@ -97,7 +106,7 @@ abstract class _Solver_ {
             for (Iterator<Node> it = s.courierRoutes[i].iterator(); it.hasNext();) {
                 Node n = it.next();
                 // System.out.print( n.next().id + " --> ");
-                System.out.print( n.id + "[" + n.T_courier + "] --> ");  
+                System.out.print( n.id + "[" + df.format(n.T_courier) + "] --> ");  
                 // debug::: System.out.print( it.next().id + "(" +  + ")" + " --> ");
             }
             if (orders.allDone()) {

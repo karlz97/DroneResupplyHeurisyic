@@ -119,7 +119,7 @@ class ResupplySolver extends DroneSupporting_Solver_{
      * 
      */
     public void LNS1r(int maxIteration, int sizeOfNeiborhood){
-        Double T =  ObjfValue()*0.02;
+        Double T =  ObjfValue()*0.025;
         /* 仅用于储存临时解，全局最优解在globalOptSolution中 */
         Solution currSolution = new Solution(globalOptSolution);
         Solution candidateSolution = new Solution(globalOptSolution);
@@ -138,7 +138,7 @@ class ResupplySolver extends DroneSupporting_Solver_{
             Functions.checkDuplicate(removedOrderList);
             /* ------------ insert heuristic -------------- */
             while (!removedOrderList.isEmpty()) {
-                integrationRepairOne(removedOrderList, 6, 3);
+                integrationRepairOne(removedOrderList, 8, 3);
                 // Functions.printDebug("(V): Finished inserting one");
             }
             removeUselessTransferyFlight();
@@ -250,7 +250,7 @@ class ResupplySolver extends DroneSupporting_Solver_{
                 meetPointsMap.remove(f.supplyNode);
                 f.supplyNode.reset();
                 // remove the corresponding order
-                Order o = orders.OrderList[f.pickupNode.orderNum];
+                Order o = orders.OrderList[f.pickupNode.orderId];
                 this.removedOrderList.add(o);
                 // remove the corresbounding delivery node
                 Node deliveryNode = o.cstmNode;
@@ -280,7 +280,7 @@ class ResupplySolver extends DroneSupporting_Solver_{
             courier = f.supplyNode.meetCourier;
             meetPointsMap.remove(f.supplyNode);
             f.supplyNode.reset();
-            Order o = orders.OrderList[f.pickupNode.orderNum];
+            Order o = orders.OrderList[f.pickupNode.orderId];
             //add order to removedOrderList
             this.removedOrderList.add(o);
             // remove the corresponding delivery node
@@ -373,6 +373,36 @@ class ResupplySolver extends DroneSupporting_Solver_{
 
     private Repair courier_repairOne(Order order, Courier courier) {
         return bestRepair_1o_to_1c(courier, order);
+    }
+
+    @Override
+    Repair_1cc bestRepair_1o_to_1c(Courier courier, Order order){
+        //greedily insert one order to one courier
+        double bestObjValue = Integer.MAX_VALUE; 
+        Repair_1cc repair = new Repair_1cc(courier);
+        ArrayList<Node> toInsertList = new ArrayList<Node>(courier.routeSeq);  
+        int length = toInsertList.size();
+        /* test every insert position */
+        /* insert pickup position  */
+        
+        for (int i = 1; i <= length; i++) { //插入pickup node 从1开始可以插入，可插到最后。
+            ArrayList<Node> toInsert_rstr = new ArrayList<Node>(toInsertList); // the route to be insert(in the rstr insert step)
+            toInsert_rstr.add(i, order.rstrNode); 
+            /* inset delivery position */
+            for (int j = i + 1; j <= Math.max(i + 1, length); j++) {
+                ArrayList<Node> toInsert_cstm = new ArrayList<Node>(toInsert_rstr); // the route to be insert(in the cstm insert step)
+                toInsert_cstm.add(j, order.cstmNode);   //TODO: a lot can be optimized, there is no need for create a new array?
+                /* rebuild the solution base on the tempRoute */
+                courier.routeSeq = toInsert_cstm;
+                instantiateSolution_d();
+                if (ObjfValue() < bestObjValue) {
+                    bestObjValue = ObjfValue();
+                    repair.routeSeq = courier.routeSeq;
+                }
+            }
+        } 
+        /*recover*/ courier.routeSeq = new ArrayList<>(toInsertList);
+        return repair;
     }
 
     /* Here will not provide <estimation> or use <regretion> methodology 

@@ -111,7 +111,8 @@ class Drone extends Vehicle{
         >warning if the meetnode is exist unbuild supplyFlight before meetNode 
         return the earlist drone arriveTime of supplyNode */
     double buildFlight(Node meetNode){
-        Flight currFlight = flights.get(currFlight_id);
+        Flight currFlight = flights.get(this.currFlight_id);
+
         boolean doneMeetNode = false;
         while (!doneMeetNode) {
             // /* check */
@@ -122,6 +123,7 @@ class Drone extends Vehicle{
             if (currFlight.supplyNode == meetNode) {
                 doneMeetNode = true;
             }
+            assert flights.get(this.currFlight_id-1).landTime == this.time;
             currFlight.launchTime = this.time;
             if (currFlight.pickupNode == null) { //this is a transfer flight
                 currFlight.pickupTime = currFlight.launchTime;
@@ -138,10 +140,8 @@ class Drone extends Vehicle{
             }
 
             currFlight.hasBuilt = true;                
-            currFlight_id++;
-            if (currFlight_id < flights.size()) {
-                currFlight = flights.get(currFlight_id);
-            } else {
+            this.currFlight_id++;
+            if (this.currFlight_id >= flights.size()) {
                 if (!doneMeetNode) 
                     Functions.printAlert("No meet node in <buildFlight>");
                 break;
@@ -231,6 +231,7 @@ class Drone extends Vehicle{
                 }
                 feasibleTransferSet[n1.id].add(m);
             }
+            feasibleTransferSet[n1.id].add(n1);
             
         }
 

@@ -13,7 +13,7 @@ import java.util.Random;
 
 public class Main {
     public static void main(String[] args) throws IOException {
-        groups_run_sensitive();
+        groups_run_major();
     } 
 
     private static void groups_run_sensitive() throws IOException {
@@ -33,7 +33,7 @@ public class Main {
 
     private static void groups_run_duration() throws IOException {
         long stime = System.currentTimeMillis();
-        String group_path = "../eleme_b5_s15/";
+        String group_path = "../eleme_b5_s15_total/";
         String output_path = "../eleme_output/";
         File file = new File(group_path);
         File[] subdirs = file.listFiles();
@@ -56,13 +56,11 @@ public class Main {
             String f_name = f.getName();    
             String path = group_path + f_name + '/';
             // batch_major(path, output_path);
-            batch_major_append(path, output_path);
+            batch_major2(path, output_path);
         } 
         long etime = System.currentTimeMillis();
         System.out.printf("the program takes: %d s.", (etime - stime)/1000);
     }
-
-
 
 
     public static void run_major(String[] args) throws IOException {
@@ -99,6 +97,33 @@ public class Main {
                     writer.append(Double.toString(evaluation[i])+",");
                 }
                 writer.append("\n");
+            }
+            writer.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private static void batch_major2(String input_path, String output_path) throws IOException {
+        Instance ins = new Instance(input_path);
+        String[] components = input_path.split("/");
+        String group_name = components[components.length - 2]; 
+        String output_file = output_path + group_name + "_output.csv";
+        double drone_max_endurance = 20, punish_factor = 600;
+        int[] NumOfCouriers = new int[] {3,4,5};
+        int[] NumOfDrones= new int[] {1,2};
+        try {
+            FileWriter writer = new FileWriter(output_file, true);
+            for (int Nc: NumOfCouriers) {
+                for (int Nd: NumOfDrones) {
+                    Setting set_i = new Setting(ins, Nc, Nd, drone_max_endurance, punish_factor);
+                    double[] evaluation = Batch.run_resupply(ins, set_i);
+                    writer.append(ins.name+","+Nc+","+Nd+","+drone_max_endurance+",");
+                    for (int i = 0; i < evaluation.length; i++) {
+                        writer.append(Double.toString(evaluation[i])+",");
+                    }
+                    writer.append("\n");
+                }
             }
             writer.close();
         } catch (IOException e) {

@@ -84,7 +84,7 @@ class Nodes{
 class Node {
     int id;
     double[] coord = new double[2];
-    int orderNum = -1;
+    int orderId = -1;
     double  orderT;   //storge the time information, 
                     //not useful in nodes, just use to initialize 'Orders'.
     String  nodeClass;
@@ -116,7 +116,7 @@ class Node {
         this.id = id;
         coord[0] = (double)x;
         coord[1] = (double)y;
-        orderNum = o;
+        orderId = o;
         this.orderT = orderT;
         isSply = true;
         isDrbs = false;

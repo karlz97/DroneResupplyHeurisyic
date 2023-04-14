@@ -229,7 +229,7 @@ class TrivalSolver extends TruckOnly_Solver_ {
         ArrayList<Order> toremoveOrderList = new ArrayList<>();
         for (Node n : routeSeq) {
             if (n.isRstr) { //通过Rstr点来确定该点对应的订单是否由courier承运
-                Order o = orders.OrderList[n.orderNum];
+                Order o = orders.OrderList[n.orderId];
                 if (!o.rstrNode.isMeet && !o.cstmNode.isMeet) { //确定被移除的order对应的node不是meetNode
                     toremoveOrderList.add(o);    
                 }

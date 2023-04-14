@@ -1,4 +1,5 @@
 import java.io.FileWriter;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -10,6 +11,7 @@ import java.util.List;
 class Functions{
     //for static functions only
     static boolean debug = true;
+    static DecimalFormat df = new DecimalFormat("#.00");
     static public void printAlert(String s){
         System.out.println("\033[31;1m" + "\t<Alert!>\t" + s + "\033[0m");
     }
@@ -61,7 +63,7 @@ class Functions{
         System.out.println("Routes: ");
         for (Iterator<Node> it = routeSeq.iterator(); it.hasNext();) {
             Node n = it.next();
-            System.out.print( n.id + "[" + n.T_courier + "] --> ");
+            System.out.print( n.id + "[" + df.format(n.T_courier) + "] --> ");
         }
         System.out.print("over");
         System.out.println();
@@ -77,7 +79,7 @@ class Functions{
             if (n == null)
                 continue;   
             if (n.isMeet) 
-                System.out.print( n.id + "[" + n.T_drone + "] --> ");  
+                System.out.print( n.id + "[" + df.format(n.T_drone) + "] --> ");  
             else
                 System.out.print( n.id + " --> ");
         }
